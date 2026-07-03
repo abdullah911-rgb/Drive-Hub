@@ -1,0 +1,824 @@
+'use client'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
+import { toast } from 'sonner'
+import { StatusBadge } from '@/components/ui'
+import { getPaymentGateways, formatDate } from '@/lib/utils'
+import { convertUSD } from '@/lib/currency'
+import type { Company, Car, Subscription } from '@/types'
+
+const SUBSCRIPTION_USD = 99
+
+export default function CompanyDashboard() {
+  const router = useRouter()
+  const [company, setCompany] = useState<Company | null>(null)
+  const [cars, setCars] = useState<Car[]>([])
+  const [subscription, setSubscription] = useState<Subscription | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [bankDetails, setBankDetails] = useState<{ bankName: string; accountNumber: string; accountName: string } | null>(null)
+  
+  // Dashboard navigation
+  const [activeTab, setActiveTab] = useState<'listings' | 'subscription'>('listings')
+  
+  // Add Car Modal/Form State
+  const [showAddCarModal, setShowAddCarModal] = useState(false)
+  const [submittingCar, setSubmittingCar] = useState(false)
+  const [editingCarId, setEditingCarId] = useState<string | null>(null)
+  const [carForm, setCarForm] = useState({
+    brand: '', model: '', year: new Date().getFullYear().toString(),
+    color: '', regNumber: '', engineNumber: '', mileage: '',
+    fuelType: 'PETROL', seatingCapacity: '5', transmission: 'AUTOMATIC',
+    description: '', featuresInput: '', imageInput: '',
+  })
+
+  const handleOpenAddModal = () => {
+    setEditingCarId(null)
+    setCarForm({
+      brand: '', model: '', year: new Date().getFullYear().toString(),
+      color: '', regNumber: '', engineNumber: '', mileage: '',
+      fuelType: 'PETROL', seatingCapacity: '5', transmission: 'AUTOMATIC',
+      description: '', featuresInput: '', imageInput: '',
+    })
+    setShowAddCarModal(true)
+  }
+
+  const handleOpenEditModal = (car: Car) => {
+    setEditingCarId(car.id)
+    setCarForm({
+      brand: car.brand,
+      model: car.model,
+      year: car.year.toString(),
+      color: car.color,
+      regNumber: car.regNumber,
+      engineNumber: car.engineNumber,
+      mileage: car.mileage.toString(),
+      fuelType: car.fuelType,
+      seatingCapacity: car.seatingCapacity.toString(),
+      transmission: car.transmission,
+      description: car.description,
+      featuresInput: car.features ? car.features.join(', ') : '',
+      imageInput: car.images ? car.images.map(img => img.imageUrl).join(', ') : '',
+    })
+    setShowAddCarModal(true)
+  }
+
+  // Subscription Payment Form State
+  const [submittingPayment, setSubmittingPayment] = useState(false)
+  const [selectedGateway, setSelectedGateway] = useState('')
+  const [transactionId, setTransactionId] = useState('')
+  const [accountDetails, setAccountDetails] = useState('')
+  // Dynamic pricing state
+  const [planPrice, setPlanPrice] = useState(`$${SUBSCRIPTION_USD}`)
+  const [planCurrency, setPlanCurrency] = useState('USD')
+
+  const fetchDashboardData = async () => {
+    try {
+      const res = await fetch('/api/auth/me', { credentials: 'include' })
+      if (!res.ok) {
+        toast.error('Session expired')
+        router.push('/auth')
+        return
+      }
+
+      const userData = await res.json()
+      if (userData.data?.roleName !== 'COMPANY') {
+        toast.error('Unauthorized access')
+        router.push('/')
+        return
+      }
+
+      // Fetch company profile with listings
+      const companyRes = await fetch(`/api/companies/${userData.data.companyId}`, { credentials: 'include' })
+      if (companyRes.ok) {
+        const compData = await companyRes.json()
+        setCompany(compData.data)
+        setCars(compData.data?.cars || [])
+        setSubscription(compData.data?.subscriptions?.[0] || null)
+      }
+
+      const bankRes = await fetch('/api/bank-details', { credentials: 'include' })
+      if (bankRes.ok) {
+        const bankData = await bankRes.json()
+        setBankDetails(bankData.data)
+      }
+
+    } catch (err) {
+      console.error('Error fetching company dashboard data:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchDashboardData()
+  }, [])
+
+  // Resolve dynamic plan price whenever company country changes
+  useEffect(() => {
+    if (!company) return
+    const resolvePrice = async () => {
+      const currCode = (company as Company & { country?: { currency: string } }).country?.currency || 'USD'
+      const { amount } = await convertUSD(SUBSCRIPTION_USD, currCode)
+      const formatted = currCode === 'USD'
+        ? `$${amount.toFixed(2)}`
+        : `${amount.toLocaleString(undefined, { maximumFractionDigits: 0 })} ${currCode}`
+      setPlanPrice(formatted)
+      setPlanCurrency(currCode)
+    }
+    resolvePrice()
+  }, [company?.countryId])
+
+  // Create or Edit Car Handler
+  const handleAddCar = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    // Validations
+    const { brand, model, year, color, regNumber, engineNumber, mileage, description } = carForm
+    if (!brand || !model || !year || !color || !regNumber || !engineNumber || !mileage || !description) {
+      toast.error('Please fill in all required fields')
+      return
+    }
+
+    setSubmittingCar(true)
+    try {
+      // Split comma separated features/images
+      const features = carForm.featuresInput.split(',').map(f => f.trim()).filter(Boolean)
+      const imageUrls = carForm.imageInput.split(',').map(i => i.trim()).filter(Boolean)
+      
+      const imagesPayload = imageUrls.map((url, idx) => ({
+        id: `img-${idx}-${Date.now()}`,
+        imageUrl: url || 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=800',
+        imageType: idx === 0 ? 'FRONT' : 'INTERIOR',
+        isPrimary: idx === 0,
+      }))
+
+      if (imagesPayload.length === 0) {
+        imagesPayload.push({
+          id: `img-default-${Date.now()}`,
+          imageUrl: 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=800',
+          imageType: 'FRONT',
+          isPrimary: true,
+        })
+      }
+
+      const url = editingCarId ? `/api/cars/${editingCarId}` : '/api/cars'
+      const method = editingCarId ? 'PATCH' : 'POST'
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          ...carForm,
+          year: parseInt(carForm.year),
+          mileage: parseInt(carForm.mileage),
+          seatingCapacity: parseInt(carForm.seatingCapacity),
+          features,
+          images: imagesPayload,
+          status: 'PENDING', // Reset status for admin approval
+        }),
+      })
+
+      const data = await res.json()
+      if (res.ok && data.success) {
+        toast.success(editingCarId ? 'Vehicle details updated successfully!' : 'Vehicle listing submitted for admin approval!')
+        setShowAddCarModal(false)
+        setEditingCarId(null)
+        setCarForm({
+          brand: '', model: '', year: new Date().getFullYear().toString(),
+          color: '', regNumber: '', engineNumber: '', mileage: '',
+          fuelType: 'PETROL', seatingCapacity: '5', transmission: 'AUTOMATIC',
+          description: '', featuresInput: '', imageInput: '',
+        })
+        fetchDashboardData()
+      } else {
+        toast.error(data.error || 'Failed to submit vehicle')
+      }
+    } catch (err) {
+      toast.error('Error saving vehicle')
+    } finally {
+      setSubmittingCar(false)
+    }
+  }
+
+  // Submit Subscription Payment Handler
+  const handlePayment = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedGateway) {
+      toast.error('Please select a payment gateway')
+      return
+    }
+    if (!transactionId.trim()) {
+      toast.error('Please enter the Transaction ID')
+      return
+    }
+
+    setSubmittingPayment(true)
+    try {
+      const res = await fetch('/api/subscriptions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          gateway: selectedGateway,
+          transactionId,
+          accountDetails,
+          receiptUrl: '', // Mock receipt
+        }),
+      })
+      const data = await res.json()
+      if (res.ok && data.success) {
+        toast.success('Subscription payment submitted! Awaiting verification.')
+        setTransactionId('')
+        setAccountDetails('')
+        fetchDashboardData()
+      } else {
+        toast.error(data.error || 'Subscription submission failed')
+      }
+    } catch (err) {
+      toast.error('Error submitting payment')
+    } finally {
+      setSubmittingPayment(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="container-app py-16 text-center">
+        <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-slate-400 text-sm">Loading Company Dashboard...</p>
+      </div>
+    )
+  }
+
+  if (!company) return null
+
+
+  // Derive country info for payment gateways
+  const countryCode = (company as Company & { country?: { code: string } }).country?.code || 'US'
+  const paymentGateways = getPaymentGateways(countryCode)
+
+  return (
+    <div className="container-app py-8">
+      {/* Title Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div>
+          <h1 className="font-heading font-black text-3xl text-white">
+            Company <span className="gradient-text">Dashboard</span>
+          </h1>
+          <p className="text-slate-400 text-sm mt-1">{company.name} • Manage fleet and listing subscriptions.</p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <StatusBadge status={company.status} />
+          {subscription ? (
+            <span className={`text-2xs px-2.5 py-1 rounded-md border font-bold ${
+              subscription.status === 'ACTIVE' 
+                ? 'text-emerald-400 bg-emerald-400/5 border-emerald-400/20' 
+                : subscription.status === 'PENDING'
+                  ? 'text-amber-400 bg-amber-400/5 border-amber-400/20'
+                  : 'text-rose-400 bg-rose-400/5 border-rose-400/20'
+            }`}>
+              {subscription.status === 'ACTIVE' 
+                ? 'Subscribed' 
+                : subscription.status === 'PENDING' 
+                  ? 'Subscription Pending' 
+                  : `Subscription ${subscription.status}`}
+            </span>
+          ) : (
+            <span className="text-2xs text-red-400 bg-red-400/5 px-2.5 py-1 rounded-md border border-red-400/20 font-bold">
+              Unsubscribed
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Navigation Sidebar */}
+        <div className="lg:col-span-3 flex flex-col gap-2">
+          <button
+            onClick={() => setActiveTab('listings')}
+            className={`w-full text-left px-4 py-3 rounded-xl font-semibold text-sm transition-all flex items-center justify-between ${
+              activeTab === 'listings'
+                ? 'bg-primary/10 border border-primary/30 text-white shadow-neon-violet/10'
+                : 'glass border border-transparent text-slate-400 hover:text-white'
+            }`}
+          >
+            <span>🚗 My Vehicles List ({cars.length})</span>
+            <span>→</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('subscription')}
+            className={`w-full text-left px-4 py-3 rounded-xl font-semibold text-sm transition-all flex items-center justify-between ${
+              activeTab === 'subscription'
+                ? 'bg-primary/10 border border-primary/30 text-white shadow-neon-violet/10'
+                : 'glass border border-transparent text-slate-400 hover:text-white'
+            }`}
+          >
+            <span>💳 Subscription Plan</span>
+            <span>→</span>
+          </button>
+        </div>
+
+        {/* Dynamic Panel Content */}
+        <div className="lg:col-span-9">
+          {activeTab === 'listings' ? (
+            <motion.div
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex flex-col gap-6"
+            >
+              {/* Header and Add Car Button */}
+              <div className="flex items-center justify-between">
+                <h3 className="font-heading font-bold text-white text-lg">Vehicle Fleet</h3>
+                {subscription?.status === 'ACTIVE' ? (
+                  <button
+                    onClick={handleOpenAddModal}
+                    className="btn-primary text-xs px-4 py-2.5 shadow-neon-violet font-semibold"
+                  >
+                    + Add New Vehicle
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setActiveTab('subscription')
+                      toast.info('Active subscription required to list vehicles.')
+                    }}
+                    className="glass px-4 py-2.5 rounded-xl border border-white/5 text-slate-400 text-xs font-semibold"
+                  >
+                    🔒 Subscribe to Add Vehicles
+                  </button>
+                )}
+              </div>
+
+              {/* Cars Grid */}
+              {cars.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {cars.map((car) => {
+                    const primaryImage = car.images?.find(i => i.isPrimary) || car.images?.[0]
+                    return (
+                      <div
+                        key={car.id}
+                        onClick={() => handleOpenEditModal(car)}
+                        className="glass-card overflow-hidden flex flex-col border border-white/5 cursor-pointer hover:border-primary/40 transition-all hover:scale-[1.02] duration-200"
+                      >
+                        <div className="relative h-40 bg-dark-800">
+                          {primaryImage ? (
+                            <img src={primaryImage.imageUrl} alt={car.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-4xl opacity-20">🚗</div>
+                          )}
+                          <div className="absolute top-2 right-2">
+                            <StatusBadge status={car.status} />
+                          </div>
+                        </div>
+                        <div className="p-4 flex-1 flex flex-col gap-2">
+                          <h4 className="font-heading font-bold text-white text-sm">{car.brand} {car.model}</h4>
+                          <p className="text-slate-500 text-xs">{car.year} • {car.fuelType} • {car.transmission}</p>
+                          <p className="text-slate-400 text-2xs leading-relaxed line-clamp-2 mt-1">{car.description}</p>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : (
+                <div className="glass-card p-16 text-center border border-white/5">
+                  <span className="text-5xl block mb-3">🚗</span>
+                  <h4 className="text-white font-bold text-base mb-1">No Vehicles Listed Yet</h4>
+                  <p className="text-slate-400 text-xs mb-6">Create listings for your cars so clients can discover and rent them.</p>
+                  {subscription?.status === 'ACTIVE' && (
+                    <button onClick={handleOpenAddModal} className="btn-primary text-xs px-6 py-2.5">
+                      Add Your First Car
+                    </button>
+                  )}
+                </div>
+              )}
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="grid grid-cols-1 md:grid-cols-12 gap-8"
+            >
+              {/* Subscription Status Card */}
+              <div className="md:col-span-7 flex flex-col gap-6">
+                <div className="glass-card p-6 border border-white/5">
+                  <h3 className="font-heading font-bold text-white text-base mb-4">Subscription Overview</h3>
+                  
+                  {subscription ? (
+                    <div className="flex flex-col gap-4">
+                      <div className="flex justify-between items-center py-2 border-b border-white/5">
+                        <span className="text-slate-500 text-xs">Plan Name</span>
+                        <span className="text-white text-sm font-semibold">{subscription.planName}</span>
+                      </div>
+                      <div className="flex justify-between items-center py-2 border-b border-white/5">
+                        <span className="text-slate-500 text-xs">Verification Status</span>
+                        <span className={`text-xs font-semibold ${
+                          subscription.status === 'ACTIVE' 
+                            ? 'text-emerald-400' 
+                            : subscription.status === 'PENDING'
+                              ? 'text-amber-400'
+                              : 'text-rose-400'
+                        }`}>
+                          {subscription.status === 'ACTIVE' 
+                            ? 'Active / Verified' 
+                            : subscription.status === 'PENDING' 
+                              ? 'Awaiting Admin Verification'
+                              : `Subscription ${subscription.status}`}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center py-2 border-b border-white/5">
+                        <span className="text-slate-500 text-xs">Car Listings Usage</span>
+                        <span className="text-white text-sm font-semibold">
+                          {cars.length} / {subscription.maxCars} vehicles
+                        </span>
+                      </div>
+                      {subscription.startDate && (
+                        <div className="flex justify-between items-center py-2 border-b border-white/5">
+                          <span className="text-slate-500 text-xs">Started On</span>
+                          <span className="text-white text-sm">{formatDate(subscription.startDate)}</span>
+                        </div>
+                      )}
+                      {subscription.endDate && (
+                        <div className="flex justify-between items-center py-2">
+                          <span className="text-slate-500 text-xs">Expires On</span>
+                          <span className="text-white text-sm font-semibold text-primary">
+                            {formatDate(subscription.endDate)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-6">
+                      <span className="text-4xl block mb-2">💳</span>
+                      <h4 className="text-white font-bold text-sm mb-1">No Active Subscription</h4>
+                      <p className="text-slate-400 text-xs">Subscribe to list up to 10 vehicles on the marketplace.</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Pricing / Plan Details */}
+                <div className="glass-card p-6 border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+                  <h4 className="font-heading font-black text-white text-base mb-1">Standard Market Plan</h4>
+                  <div className="text-2xl font-black text-white my-3">
+                    {planPrice}<span className="text-slate-500 text-sm font-medium"> / month</span>
+                  </div>
+                  <p className="text-slate-500 text-xs">Base price: $99 USD / month</p>
+                  <ul className="text-xs text-slate-300 flex flex-col gap-2 mt-4">
+                    <li className="flex items-center gap-2">✓ List up to 10 cars simultaneously</li>
+                    <li className="flex items-center gap-2">✓ Verified badges on listings</li>
+                    <li className="flex items-center gap-2">✓ Direct WhatsApp CTA leading to your inbox</li>
+                    <li className="flex items-center gap-2">✓ Reviews enabled on your business profile</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Checkout / Payment submission Form */}
+              <div className="md:col-span-5">
+                {(!subscription || subscription.status !== 'ACTIVE') ? (
+                  <div className="glass-card p-6 border border-white/5">
+                    <h3 className="font-heading font-bold text-white text-base mb-4">Activate Subscription</h3>
+                    <form onSubmit={handlePayment} className="flex flex-col gap-4">
+                      {/* Bank Details Card (Direct Transfer) */}
+                      {bankDetails && (
+                        <div className="glass p-4 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent flex flex-col gap-2 mb-2">
+                          <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                            🏦 Admin Bank Transfer Details
+                          </span>
+                          <div className="text-2xs text-slate-400 flex flex-col gap-1.5 mt-1">
+                            <div className="flex justify-between items-center py-1 border-b border-white/5">
+                              <span>Bank Name</span>
+                              <span className="text-white font-medium">{bankDetails.bankName}</span>
+                            </div>
+                            <div className="flex justify-between items-center py-1 border-b border-white/5">
+                              <span>Account Title</span>
+                              <span className="text-white font-medium">{bankDetails.accountName}</span>
+                            </div>
+                            <div className="flex justify-between items-center py-1">
+                              <span>Account / IBAN</span>
+                              <div className="flex items-center gap-1">
+                                <span className="text-white font-mono font-bold select-all bg-dark-900 px-1.5 py-0.5 rounded border border-white/5">{bankDetails.accountNumber}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(bankDetails.accountNumber)
+                                    toast.success('Account number copied!')
+                                  }}
+                                  className="text-primary hover:text-white transition-all text-xs"
+                                  title="Copy Account Number"
+                                >
+                                  📋
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-3xs text-slate-400 mt-2 border-t border-white/5 pt-2 leading-relaxed">
+                            📌 **Instructions**: Please transfer exactly <strong className="text-white">{planPrice}</strong> to the bank account details above, then select your payment channel, enter the Transaction ID, and submit for admin verification.
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Gateway Selection Grid */}
+                      <div>
+                        <label className="text-slate-400 text-xs font-semibold mb-3 block">Select Your Payment Channel</label>
+                        <div className="grid grid-cols-2 gap-3">
+                          {paymentGateways.map(g => (
+                            <button
+                              key={g.id}
+                              type="button"
+                              onClick={() => setSelectedGateway(g.name)}
+                              className={`flex items-center gap-3 p-2.5 rounded-xl border text-left transition-all ${
+                                selectedGateway === g.name
+                                  ? 'bg-primary/20 border-primary text-white shadow-neon-violet/10'
+                                  : 'glass border-white/5 text-slate-400 hover:text-white hover:border-white/10'
+                              }`}
+                            >
+                              <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center p-1 overflow-hidden shrink-0">
+                                {g.logoUrl ? (
+                                  <img src={g.logoUrl} alt={g.name} className="w-full h-full object-contain" />
+                                ) : (
+                                  <span className="text-sm">{g.icon}</span>
+                                )}
+                              </div>
+                              <span className="text-2xs font-semibold leading-tight truncate">{g.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Transaction ID */}
+                      <div>
+                        <label className="text-slate-400 text-xs font-semibold mb-1.5 block">Transaction ID</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. TXN-19283746"
+                          value={transactionId}
+                          onChange={(e) => setTransactionId(e.target.value)}
+                          className="input w-full bg-dark-900/60"
+                        />
+                      </div>
+
+                      {/* Account details */}
+                      <div>
+                        <label className="text-slate-400 text-xs font-semibold mb-1.5 block">Your Account / Phone Number (Optional)</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. +92 300 1234567"
+                          value={accountDetails}
+                          onChange={(e) => setAccountDetails(e.target.value)}
+                          className="input w-full bg-dark-900/60"
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={submittingPayment}
+                        className="btn-primary w-full py-2.5 text-xs font-semibold shadow-neon-violet mt-2"
+                      >
+                        {submittingPayment ? 'Submitting...' : 'Submit Payment'}
+                      </button>
+                    </form>
+                  </div>
+                ) : (
+                  <div className="glass-card p-6 border border-emerald-500/20 bg-emerald-500/5 text-center">
+                    <span className="text-2xl block mb-2">🎉</span>
+                    <h4 className="text-white font-bold text-sm mb-1">Active Subscription</h4>
+                    <p className="text-slate-400 text-xs leading-relaxed">
+                      Your subscription is active and verified. You have full access to add and manage car listings.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </div>
+      </div>
+
+      {/* Add Car Modal Overlay */}
+      <AnimatePresence>
+        {showAddCarModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Modal Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.7 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowAddCarModal(false)}
+              className="absolute inset-0 bg-black"
+            />
+
+            {/* Modal Body */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-2xl bg-dark-900 border border-white/10 rounded-2xl p-6 shadow-2xl flex flex-col max-h-[85vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4">
+                <h3 className="font-heading font-black text-xl text-white">
+                  {editingCarId ? 'Edit / View Vehicle Details' : 'Add New Vehicle Listing'}
+                </h3>
+                <button onClick={() => setShowAddCarModal(false)} className="text-slate-400 hover:text-white text-lg">✕</button>
+              </div>
+
+              <form onSubmit={handleAddCar} className="flex flex-col gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Brand */}
+                  <div>
+                    <label className="text-slate-400 text-xs font-semibold mb-1 block">Brand *</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Toyota"
+                      value={carForm.brand}
+                      onChange={(e) => setCarForm({ ...carForm, brand: e.target.value })}
+                      className="input w-full"
+                      required
+                    />
+                  </div>
+
+                  {/* Model */}
+                  <div>
+                    <label className="text-slate-400 text-xs font-semibold mb-1 block">Model *</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Corolla"
+                      value={carForm.model}
+                      onChange={(e) => setCarForm({ ...carForm, model: e.target.value })}
+                      className="input w-full"
+                      required
+                    />
+                  </div>
+
+                  {/* Year */}
+                  <div>
+                    <label className="text-slate-400 text-xs font-semibold mb-1 block">Year *</label>
+                    <input
+                      type="number"
+                      placeholder="e.g. 2022"
+                      value={carForm.year}
+                      onChange={(e) => setCarForm({ ...carForm, year: e.target.value })}
+                      className="input w-full"
+                      required
+                    />
+                  </div>
+
+                  {/* Color */}
+                  <div>
+                    <label className="text-slate-400 text-xs font-semibold mb-1 block">Color *</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. White"
+                      value={carForm.color}
+                      onChange={(e) => setCarForm({ ...carForm, color: e.target.value })}
+                      className="input w-full"
+                      required
+                    />
+                  </div>
+
+                  {/* Reg number */}
+                  <div>
+                    <label className="text-slate-400 text-xs font-semibold mb-1 block">Registration Number *</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. LE-2022-839"
+                      value={carForm.regNumber}
+                      onChange={(e) => setCarForm({ ...carForm, regNumber: e.target.value })}
+                      className="input w-full"
+                      required
+                    />
+                  </div>
+
+                  {/* Engine number */}
+                  <div>
+                    <label className="text-slate-400 text-xs font-semibold mb-1 block">Engine Number *</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. ENG-928374"
+                      value={carForm.engineNumber}
+                      onChange={(e) => setCarForm({ ...carForm, engineNumber: e.target.value })}
+                      className="input w-full"
+                      required
+                    />
+                  </div>
+
+                  {/* Mileage */}
+                  <div>
+                    <label className="text-slate-400 text-xs font-semibold mb-1 block">Mileage (KM) *</label>
+                    <input
+                      type="number"
+                      placeholder="e.g. 45000"
+                      value={carForm.mileage}
+                      onChange={(e) => setCarForm({ ...carForm, mileage: e.target.value })}
+                      className="input w-full"
+                      required
+                    />
+                  </div>
+
+                  {/* Seating */}
+                  <div>
+                    <label className="text-slate-400 text-xs font-semibold mb-1 block">Seating Capacity *</label>
+                    <select
+                      value={carForm.seatingCapacity}
+                      onChange={(e) => setCarForm({ ...carForm, seatingCapacity: e.target.value })}
+                      className="input w-full"
+                      required
+                    >
+                      <option value="2">2 Passengers</option>
+                      <option value="4">4 Passengers</option>
+                      <option value="5">5 Passengers</option>
+                      <option value="7">7 Passengers</option>
+                    </select>
+                  </div>
+
+                  {/* Fuel type */}
+                  <div>
+                    <label className="text-slate-400 text-xs font-semibold mb-1 block">Fuel Type *</label>
+                    <select
+                      value={carForm.fuelType}
+                      onChange={(e) => setCarForm({ ...carForm, fuelType: e.target.value })}
+                      className="input w-full"
+                      required
+                    >
+                      <option value="PETROL">Petrol</option>
+                      <option value="DIESEL">Diesel</option>
+                      <option value="HYBRID">Hybrid</option>
+                      <option value="ELECTRIC">Electric</option>
+                    </select>
+                  </div>
+
+                  {/* Transmission */}
+                  <div>
+                    <label className="text-slate-400 text-xs font-semibold mb-1 block">Transmission *</label>
+                    <select
+                      value={carForm.transmission}
+                      onChange={(e) => setCarForm({ ...carForm, transmission: e.target.value })}
+                      className="input w-full"
+                      required
+                    >
+                      <option value="AUTOMATIC">Automatic</option>
+                      <option value="MANUAL">Manual</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="text-slate-400 text-xs font-semibold mb-1 block">Vehicle Description *</label>
+                  <textarea
+                    rows={3}
+                    placeholder="Describe your vehicle features, condition, rental pricing guidelines..."
+                    value={carForm.description}
+                    onChange={(e) => setCarForm({ ...carForm, description: e.target.value })}
+                    className="input w-full resize-none py-2"
+                    required
+                  />
+                </div>
+
+                {/* Features list */}
+                <div>
+                  <label className="text-slate-400 text-xs font-semibold mb-1 block">Features (comma-separated)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Air Conditioning, Sunroof, Bluetooth, Leather Seats"
+                    value={carForm.featuresInput}
+                    onChange={(e) => setCarForm({ ...carForm, featuresInput: e.target.value })}
+                    className="input w-full"
+                  />
+                </div>
+
+                {/* Image links */}
+                <div>
+                  <label className="text-slate-400 text-xs font-semibold mb-1 block">Image URLs (comma-separated)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. https://domain.com/car1.jpg, https://domain.com/car2.jpg"
+                    value={carForm.imageInput}
+                    onChange={(e) => setCarForm({ ...carForm, imageInput: e.target.value })}
+                    className="input w-full"
+                  />
+                </div>
+
+                <div className="flex gap-3 justify-end mt-4 border-t border-white/5 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddCarModal(false)}
+                    className="btn-ghost text-xs px-5 py-2.5"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submittingCar}
+                    className="btn-primary text-xs px-5 py-2.5 shadow-neon-violet font-semibold"
+                  >
+                    {submittingCar ? 'Submitting...' : editingCarId ? 'Save Changes' : 'Submit Listing'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
