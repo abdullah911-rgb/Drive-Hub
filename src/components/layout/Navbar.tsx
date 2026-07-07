@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { useTheme } from 'next-themes'
 import RegisterCompanyModal from '@/components/shared/RegisterCompanyModal'
+import InstallAppButton from '@/components/shared/InstallAppButton'
 
 interface User { id: string; email: string; role: string; status: string; fullName?: string; companyId?: string; countryId?: string }
 
@@ -19,7 +20,7 @@ export default function Navbar() {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const pathname = usePathname()
-  
+
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
@@ -59,7 +60,7 @@ export default function Navbar() {
     }
   }, [])
 
-  useEffect(() => { fetchUser() }, [fetchUser, pathname])
+  useEffect(() => { fetchUser() }, [fetchUser])
 
   useEffect(() => {
     const handler = () => setRegisterCompanyOpen(true)
@@ -137,6 +138,8 @@ export default function Navbar() {
                   )}
                 </button>
               )}
+
+              <InstallAppButton variant="navbar" />
 
               {user?.role === 'CUSTOMER' && user.status === 'APPROVED' && (
                 <button onClick={openRegisterCompany} className="btn-secondary text-sm px-4 py-2 font-semibold">
@@ -224,7 +227,7 @@ export default function Navbar() {
                   )}
                 </button>
               )}
-              
+
               <button className="p-2 text-slate-400 hover:text-white" onClick={() => setMenuOpen(!menuOpen)}>
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   {menuOpen
@@ -249,6 +252,7 @@ export default function Navbar() {
                   <Link href="/#companies" className="text-slate-300 hover:text-primary text-sm py-2 font-semibold" onClick={() => setMenuOpen(false)}>Companies</Link>
                   <Link href="/about" className="text-slate-300 hover:text-primary text-sm py-2 font-semibold" onClick={() => setMenuOpen(false)}>About</Link>
                   <Link href="/contact" className="text-slate-300 hover:text-primary text-sm py-2 font-semibold" onClick={() => setMenuOpen(false)}>Contact</Link>
+                  <InstallAppButton variant="menu" />
                   <div className="border-t border-border pt-3 flex flex-col gap-2">
                     {loading ? (
                       <div className="h-8 bg-slate-500/10 rounded-xl animate-pulse" />

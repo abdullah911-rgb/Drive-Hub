@@ -29,14 +29,13 @@ export default function ContactPage() {
     <div className="min-h-screen bg-background relative overflow-hidden flex flex-col">
       <ParticleBackground />
 
-      {/* Ambient background glows */}
       <div className="fixed top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
       <div className="fixed bottom-1/4 right-1/4 w-80 h-80 bg-secondary/5 rounded-full blur-3xl pointer-events-none" />
 
       <Navbar />
 
       <main className="flex-grow pt-24 pb-16 relative z-10 container-app">
-        {/* Header */}
+
         <div className="text-center max-w-2xl mx-auto mb-12">
           <span className="inline-flex items-center gap-2 glass px-4 py-2 rounded-full mb-6 border border-primary/20 text-xs font-semibold text-primary uppercase tracking-wider">
             Get in Touch
@@ -57,7 +56,6 @@ export default function ContactPage() {
           </div>
         </div>
 
-        {/* Contact Form Centered */}
         <div className="max-w-2xl mx-auto">
           <div className="glass-card p-6 md:p-10 border border-white/5 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-2xl pointer-events-none" />

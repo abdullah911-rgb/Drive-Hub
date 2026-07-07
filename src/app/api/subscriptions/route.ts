@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
-import { convertUSD } from '@/lib/currency'
-
-const SUBSCRIPTION_USD = 99
+import { convertPKR } from '@/lib/currency'
+import { SUBSCRIPTION_BASE_PKR } from '@/lib/subscription'
 
 export async function GET(request: NextRequest) {
   try {
@@ -35,9 +34,9 @@ export async function POST(request: NextRequest) {
     }
 
     const country = c.country || (await db.getCountryById(c.countryId)) as { currency: string } | null
-    const currencyCode = country?.currency || 'USD'
+    const currencyCode = country?.currency || 'PKR'
 
-    const { amount: localPrice, rate } = await convertUSD(SUBSCRIPTION_USD, currencyCode)
+    const { amount: localPrice, rate } = await convertPKR(SUBSCRIPTION_BASE_PKR, currencyCode)
 
     const sub = await db.createSubscription({
       companyId: c.id,
@@ -66,7 +65,7 @@ export async function POST(request: NextRequest) {
         userId: (admin as { id: string }).id,
         type: 'GENERAL',
         title: 'New Subscription Payment',
-        message: `${c.name} submitted a subscription payment of ${localPrice.toFixed(2)} ${currencyCode} ($${SUBSCRIPTION_USD} USD) via ${body.gateway}. Verification required.`,
+        message: `${c.name} submitted a subscription payment of ${localPrice.toFixed(2)} ${currencyCode} (Rs. ${SUBSCRIPTION_BASE_PKR.toLocaleString()} PKR) via ${body.gateway}. Verification required.`,
         isRead: false,
       })
     }
@@ -77,7 +76,7 @@ export async function POST(request: NextRequest) {
         sub,
         price: localPrice,
         currency: currencyCode,
-        priceUSD: SUBSCRIPTION_USD,
+        pricePKR: SUBSCRIPTION_BASE_PKR,
         rate,
         message: 'Payment submitted. Awaiting admin verification.',
       },

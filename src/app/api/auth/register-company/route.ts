@@ -3,6 +3,10 @@ import { db } from '@/lib/db'
 import { getCurrentUser, signToken, setAuthCookie } from '@/lib/auth'
 import { validateCompanyForm } from '@/lib/countryFormConfig'
 import { validateLicenseNumber } from '@/lib/licenseValidation'
+import {
+  parseCompanyRegistrationRequest,
+  saveCompanyRegistrationDocuments,
+} from '@/lib/registerCompany'
 import { v4 as uuidv4 } from 'uuid'
 
 export async function POST(request: NextRequest) {
@@ -30,15 +34,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'You already have a company registered' }, { status: 409 })
     }
 
-    const data = await request.json()
+    const parsed = await parseCompanyRegistrationRequest(request)
+    if (!parsed.ok) {
+      return NextResponse.json({ success: false, error: parsed.error }, { status: parsed.status })
+    }
+
     const {
       companyName, ownerName, cnicOrId, contactNumber, whatsAppNumber,
-      businessAddress, countryId, licenseNumber,
-    } = data
-
-    if (!companyName || !ownerName || !cnicOrId || !contactNumber || !whatsAppNumber || !businessAddress || !countryId || !licenseNumber) {
-      return NextResponse.json({ success: false, error: 'All company fields are required' }, { status: 400 })
-    }
+      businessAddress, countryId, licenseNumber, documents,
+    } = parsed.data
 
     const country = await db.getCountryById(countryId)
     const validation = validateCompanyForm(country?.code || 'PK', {
@@ -48,14 +52,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: validation.message }, { status: 400 })
     }
 
-    // Additional server-side license format check
     const licenseCheck = validateLicenseNumber(licenseNumber, country?.code || 'PK', cnicOrId)
     if (!licenseCheck.valid) {
       return NextResponse.json({ success: false, error: `Invalid license number: ${licenseCheck.error}` }, { status: 422 })
     }
 
     const companies = await db.getCompanies()
-    if (companies.some((c: any) => c.name.toLowerCase() === companyName.toLowerCase())) {
+    if (companies.some((c: { name: string }) => c.name.toLowerCase() === companyName.toLowerCase())) {
       return NextResponse.json({ success: false, error: 'Company name already taken' }, { status: 409 })
     }
 
@@ -79,6 +82,8 @@ export async function POST(request: NextRequest) {
       status: 'PENDING',
     })
 
+    await saveCompanyRegistrationDocuments(companyId, documents)
+
     await db.updateUser(user.id, {
       roleName: 'COMPANY',
       fullName: ownerName,
@@ -91,7 +96,7 @@ export async function POST(request: NextRequest) {
         userId: adminUser.id,
         type: 'GENERAL',
         title: 'Customer Registered a Company',
-        message: `${user.fullName || user.email} registered "${companyName}" and is awaiting approval.`,
+        message: `${user.fullName || user.email} registered "${companyName}" with verification documents. Awaiting approval.`,
         isRead: false,
       })
     }

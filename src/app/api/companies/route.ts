@@ -13,6 +13,9 @@ export async function GET(request: NextRequest) {
     const cityId = searchParams.get('cityId') || undefined
     const status = isAdmin ? (searchParams.get('status') || undefined) : 'APPROVED'
     const search = searchParams.get('search') || undefined
+    const limit = Math.min(parseInt(searchParams.get('limit') || '100'), isAdmin ? 500 : 100)
+    const offset = parseInt(searchParams.get('offset') || '0')
+    const lite = searchParams.get('lite') !== 'false'
 
     const where: Record<string, unknown> = { deletedAt: null }
     if (countryId) where.countryId = countryId
@@ -27,30 +30,67 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    const companies = await prisma.company.findMany({
-      where,
-      include: {
-        city: true,
-        country: true,
-        reviews: { where: { isVisible: true } },
-        cars: { where: { status: 'APPROVED', deletedAt: null } },
-        subscriptions: { orderBy: { createdAt: 'desc' } },
-      },
-    })
+    const [companies, total] = await Promise.all([
+      prisma.company.findMany({
+        where,
+        take: limit,
+        skip: offset,
+        orderBy: { createdAt: 'desc' },
+        select: lite && !isAdmin
+          ? {
+              id: true,
+              name: true,
+              status: true,
+              whatsAppNumber: true,
+              businessAddress: true,
+              country: { select: { name: true, code: true } },
+              city: { select: { name: true } },
+              reviews: { where: { isVisible: true }, select: { rating: true } },
+              _count: { select: { cars: { where: { status: 'APPROVED', deletedAt: null } } } },
+            }
+          : {
+              id: true,
+              name: true,
+              status: true,
+              ownerName: true,
+              whatsAppNumber: true,
+              businessAddress: true,
+              licenseNumber: true,
+              country: true,
+              city: true,
+              reviews: { where: { isVisible: true } },
+              cars: { where: { status: 'APPROVED', deletedAt: null }, include: { images: { take: 1 } } },
+              subscriptions: { orderBy: { createdAt: 'desc' }, take: 1 },
+            },
+      }),
+      prisma.company.count({ where }),
+    ])
 
     const enriched = companies.map((company) => {
-      const avgRating = company.reviews.length
-        ? company.reviews.reduce((s, r) => s + r.rating, 0) / company.reviews.length
+      const reviews = 'reviews' in company ? company.reviews : []
+      const avgRating = reviews.length
+        ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
         : 0
+      let totalCars = 0
+      if ('_count' in company && company._count && typeof company._count === 'object' && 'cars' in company._count) {
+        totalCars = (company._count as { cars: number }).cars
+      } else if ('cars' in company && Array.isArray(company.cars)) {
+        totalCars = company.cars.length
+      }
+      const { reviews: _r, _count, ...rest } = company as typeof company & { _count?: { cars: number }; reviews: { rating: number }[] }
       return {
-        ...company,
+        ...rest,
         averageRating: Math.round(avgRating * 10) / 10,
-        totalReviews: company.reviews.length,
-        totalCars: company.cars.length,
+        totalReviews: reviews.length,
+        totalCars,
       }
     })
 
-    return NextResponse.json({ success: true, data: serializePrisma(enriched) })
+    return NextResponse.json({
+      success: true,
+      data: serializePrisma(enriched),
+      pagination: { total, limit, offset, hasMore: offset + companies.length < total },
+    })
   } catch (error) {
     console.error('Companies GET error:', error)
     return NextResponse.json({ success: false, error: 'Failed to fetch companies' }, { status: 500 })

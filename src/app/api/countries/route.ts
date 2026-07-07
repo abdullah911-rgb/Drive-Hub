@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { getCachedCountries } from '@/lib/data'
 
 export async function GET() {
   try {
-    const countries = await db.getCountries()
+    const countries = await getCachedCountries()
     return NextResponse.json({ success: true, data: countries })
   } catch (error) {
     console.error('Countries GET error:', error)

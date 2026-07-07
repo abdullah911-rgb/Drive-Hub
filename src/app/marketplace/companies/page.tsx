@@ -11,16 +11,13 @@ function CompaniesContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
 
-  // State
   const [countries, setCountries] = useState<Country[]>([])
   const [companies, setCompanies] = useState<Company[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Filters
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Fetch Countries on load
   useEffect(() => {
     async function fetchCountries() {
       try {
@@ -36,7 +33,6 @@ function CompaniesContent() {
     fetchCountries()
   }, [])
 
-  // Sync selected country with URL query param or SessionStorage
   useEffect(() => {
     if (countries.length === 0) return
 
@@ -54,7 +50,6 @@ function CompaniesContent() {
     }
   }, [countries, searchParams])
 
-  // Fetch filtered companies
   const fetchCompanies = useCallback(async () => {
     if (!selectedCountry) return
     setLoading(true)
@@ -63,6 +58,8 @@ function CompaniesContent() {
       const params = new URLSearchParams()
       params.append('countryId', selectedCountry.id)
       params.append('status', 'APPROVED')
+      params.append('limit', '100')
+      params.append('lite', 'true')
 
       if (searchQuery) params.append('search', searchQuery)
 
@@ -78,7 +75,6 @@ function CompaniesContent() {
     }
   }, [selectedCountry, searchQuery])
 
-  // Debounced search trigger
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
       fetchCompanies()
@@ -98,7 +94,7 @@ function CompaniesContent() {
 
   return (
     <div className="container-app py-8">
-      {/* Title Header */}
+
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
         <div>
           <div className="flex items-center gap-3 mb-2">
@@ -127,9 +123,8 @@ function CompaniesContent() {
           </p>
         </div>
 
-        {/* Filters and Search */}
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-          {/* Search Box */}
+
           <div className="relative w-full sm:w-64">
             <input
               type="text"
@@ -143,7 +138,6 @@ function CompaniesContent() {
         </div>
       </div>
 
-      {/* Grid Display */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (

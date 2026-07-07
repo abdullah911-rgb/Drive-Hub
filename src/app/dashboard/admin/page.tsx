@@ -14,8 +14,7 @@ export default function AdminDashboard() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<AdminTab>('stats')
-  
-  // Data State
+
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [users, setUsers] = useState<User[]>([])
   const [companies, setCompanies] = useState<Company[]>([])
@@ -43,38 +42,23 @@ export default function AdminDashboard() {
         return
       }
 
-      // Fetch stats
-      const statsRes = await fetch('/api/admin?resource=stats', { credentials: 'include' })
-      if (statsRes.ok) {
-        const statsData = await statsRes.json()
-        setStats(statsData.data)
+      const res = await fetch('/api/admin?resource=dashboard', { credentials: 'include' })
+      if (res.ok) {
+        const result = await res.json()
+        if (result.success && result.data) {
+          const { stats, users, companies, cars, payments, reviews, notifications, subscriptions, bankDetails } = result.data
+          setStats(stats || null)
+          setUsers(users || [])
+          setCompanies(companies || [])
+          setCars(cars || [])
+          setPayments(payments || [])
+          setReviews(reviews || [])
+          setNotifications(notifications || [])
+          setSubscriptions(subscriptions || [])
+          setBankDetails(bankDetails || null)
+          setBankForm(bankDetails || { bankName: '', accountNumber: '', accountName: '' })
+        }
       }
-
-      // Fetch other collections
-      const [uRes, compRes, carRes, payRes, revRes, notifRes, subRes, bankRes] = await Promise.all([
-        fetch('/api/admin?resource=users', { credentials: 'include' }),
-        fetch('/api/admin?resource=companies', { credentials: 'include' }),
-        fetch('/api/admin?resource=cars', { credentials: 'include' }),
-        fetch('/api/admin?resource=payments', { credentials: 'include' }),
-        fetch('/api/admin?resource=reviews', { credentials: 'include' }),
-        fetch('/api/notifications', { credentials: 'include' }),
-        fetch('/api/subscriptions', { credentials: 'include' }),
-        fetch('/api/bank-details', { credentials: 'include' }),
-      ])
-
-      if (uRes.ok) setUsers((await uRes.json()).data || [])
-      if (compRes.ok) setCompanies((await compRes.json()).data || [])
-      if (carRes.ok) setCars((await carRes.json()).data || [])
-      if (payRes.ok) setPayments((await payRes.json()).data || [])
-      if (revRes.ok) setReviews((await revRes.json()).data || [])
-      if (notifRes.ok) setNotifications((await notifRes.json()).data || [])
-      if (subRes.ok) setSubscriptions((await subRes.json()).data || [])
-      if (bankRes.ok) {
-        const bankData = await bankRes.json()
-        setBankDetails(bankData.data)
-        setBankForm(bankData.data || { bankName: '', accountNumber: '', accountName: '' })
-      }
-
     } catch (err) {
       console.error('Error loading admin dashboard:', err)
       toast.error('Failed to load dashboard data')
@@ -97,10 +81,9 @@ export default function AdminDashboard() {
       })
       const data = await res.json()
       if (res.ok && data.success) {
-        // Show success + email confirmation
+
         toast.success(`✅ Action "${action}" applied — email notification sent!`)
 
-        // If the response includes a WhatsApp link, show a persistent notification button
         if (data.whatsAppUrl) {
           toast(
             <div className="flex flex-col gap-2">
@@ -119,7 +102,7 @@ export default function AdminDashboard() {
           )
         }
 
-        loadData() // Refresh
+        loadData() 
       } else {
         toast.error(data.error || 'Failed to execute action')
       }
@@ -161,13 +144,11 @@ export default function AdminDashboard() {
     )
   }
 
-  // Filter lists for pending moderation
   const pendingCompanies = companies.filter(c => c.status === 'PENDING')
   const pendingCars = cars.filter(c => c.status === 'PENDING')
   const pendingPayments = payments.filter(p => p.status === 'PENDING')
   const unreadNotifications = notifications.filter(n => !n.isRead)
 
-  // Generate dynamic stats cards for all currencies
   const baseCards = [
     { title: 'Total Registered Users', value: stats?.totalUsers || 0, desc: `${stats?.totalCustomers || 0} Customers` },
     { title: 'Active Partners (Companies)', value: stats?.totalCompanies || 0, desc: 'Vetted car rental agencies' },
@@ -180,7 +161,7 @@ export default function AdminDashboard() {
 
   uniqueCurrencies.forEach(currency => {
     const amount = stats?.revenueByCurrency?.[currency] || 0
-    // Show cards with non-zero revenue, and always show PKR, SAR, and USD even if zero as standard base ones
+
     if (amount > 0 || ['PKR', 'SAR', 'USD'].includes(currency)) {
       const countryObj = COUNTRIES.find(c => c.currency === currency)
       const countryCode = countryObj?.code || 'US'
@@ -205,7 +186,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="container-app py-8">
-      {/* Title */}
+
       <div className="mb-8">
         <h1 className="font-heading font-black text-3xl text-white">
           Admin <span className="gradient-text">Console</span>
@@ -214,7 +195,7 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Navigation Sidebar */}
+
         <div className="lg:col-span-3 flex flex-col gap-2">
           {[
             { id: 'stats', label: '📊 Stats & Performance', badge: 0 },
@@ -243,7 +224,6 @@ export default function AdminDashboard() {
           ))}
         </div>
 
-        {/* Action Panel Content */}
         <div className="lg:col-span-9">
           <AnimatePresence mode="wait">
             {activeTab === 'stats' && (
@@ -254,7 +234,7 @@ export default function AdminDashboard() {
                 exit={{ opacity: 0, y: -10 }}
                 className="flex flex-col gap-6"
               >
-                {/* Stats Cards */}
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {statsCards.map((s, idx) => (
                     <div key={idx} className="glass-card p-5 border border-white/5 relative overflow-hidden">
@@ -304,7 +284,7 @@ export default function AdminDashboard() {
                 className="flex flex-col gap-4"
               >
                 <h3 className="font-heading font-bold text-white text-lg mb-2">Company Management</h3>
-                
+
                 {companies.length > 0 ? (
                   companies.map(comp => {
                     const companySub = subscriptions.find(s => s.companyId === comp.id)
@@ -337,7 +317,25 @@ export default function AdminDashboard() {
                           <p className="text-slate-400 text-xs">Owner: {comp.ownerName} • CNIC: {comp.cnicOrId}</p>
                           <p className="text-slate-400 text-xs">Phone: {comp.contactNumber} • WhatsApp: {comp.whatsAppNumber}</p>
                           <p className="text-slate-500 text-xs mt-1">Address: {comp.businessAddress}</p>
-                          {/* License info with format-check badge */}
+
+                          {(comp as { documents?: { docType: string; fileUrl: string }[] }).documents?.length ? (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {(comp as { documents: { docType: string; fileUrl: string }[] }).documents.map(doc => (
+                                <a
+                                  key={`${comp.id}-${doc.docType}`}
+                                  href={doc.fileUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-2xs px-2 py-1 rounded border border-cyan-400/20 bg-cyan-400/5 text-cyan-300 hover:bg-cyan-400/10 transition-colors"
+                                >
+                                  📎 {doc.docType.replace(/_/g, ' ')}
+                                </a>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-2xs text-amber-400 mt-2">No verification documents uploaded</p>
+                          )}
+
                           {(() => {
                             const code = COUNTRIES.find(c => c.name === (comp as any).country?.name || c.code === (comp as any).country?.code)?.code
                             const sa10 = /^[12]\d{9}$/.test(comp.licenseNumber || '')
@@ -359,7 +357,7 @@ export default function AdminDashboard() {
                           })()}
                         </div>
                         <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row items-stretch sm:items-center md:items-stretch lg:items-center gap-2 mt-2 md:mt-0 flex-shrink-0 justify-center">
-                          {/* Account Approval Action */}
+
                           {comp.status === 'PENDING' && (
                             <div className="flex gap-2">
                               <button
@@ -393,7 +391,6 @@ export default function AdminDashboard() {
                             </button>
                           )}
 
-                          {/* Subscription Panel Toggle Action */}
                           {comp.status === 'APPROVED' && (
                             <div className="flex gap-2 border-t md:border-t-0 md:border-l border-white/5 pt-2 md:pt-0 md:pl-2">
                               {subStatus !== 'ACTIVE' ? (
@@ -434,7 +431,7 @@ export default function AdminDashboard() {
                 className="flex flex-col gap-4"
               >
                 <h3 className="font-heading font-bold text-white text-lg mb-2">Pending Vehicle Listings</h3>
-                
+
                 {pendingCars.length > 0 ? (
                   pendingCars.map(car => (
                     <div key={car.id} className="glass-card p-5 border border-white/5 flex flex-col md:flex-row justify-between gap-4">
@@ -476,11 +473,11 @@ export default function AdminDashboard() {
                 exit={{ opacity: 0, y: -10 }}
                 className="flex flex-col gap-8"
               >
-                {/* Bank Account Config Form */}
+
                 <div className="glass-card p-6 border border-white/5">
                   <h3 className="font-heading font-bold text-white text-base mb-1">🏦 Configure Bank Transfer Account</h3>
                   <p className="text-slate-400 text-xs mb-4">Set the bank details shown to companies when they subscribe.</p>
-                  
+
                   <form onSubmit={handleSaveBankDetails} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                     <div>
                       <label className="text-slate-400 text-2xs font-semibold mb-1 block">Bank Name</label>
@@ -527,10 +524,9 @@ export default function AdminDashboard() {
                   </form>
                 </div>
 
-                {/* Pending Verification Payments */}
                 <div className="flex flex-col gap-4">
                   <h3 className="font-heading font-bold text-white text-lg">Pending Subscriptions Verification</h3>
-                  
+
                   {pendingPayments.length > 0 ? (
                     pendingPayments.map(pay => (
                       <div key={pay.id} className="glass-card p-5 border border-white/5 flex flex-col md:flex-row justify-between gap-4">
@@ -574,7 +570,7 @@ export default function AdminDashboard() {
                 className="flex flex-col gap-4"
               >
                 <h3 className="font-heading font-bold text-white text-lg mb-2">Registered Accounts</h3>
-                
+
                 {users.map(u => (
                   <div key={u.id} className="glass-card p-5 border border-white/5 flex flex-col md:flex-row justify-between gap-4">
                     <div>
@@ -621,7 +617,7 @@ export default function AdminDashboard() {
                 className="flex flex-col gap-4"
               >
                 <h3 className="font-heading font-bold text-white text-lg mb-2">Reviews Moderation</h3>
-                
+
                 {reviews.map(rev => (
                   <div key={rev.id} className="glass-card p-5 border border-white/5 flex flex-col md:flex-row justify-between gap-4">
                     <div>

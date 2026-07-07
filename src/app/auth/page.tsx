@@ -5,10 +5,18 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import ParticleBackground from '@/components/shared/ParticleBackground'
 import CompanyFormFields from '@/components/shared/CompanyFormFields'
+import CompanyDocumentUploads, {
+  EMPTY_COMPANY_DOCUMENTS,
+  appendCompanyDocumentsToFormData,
+  type CompanyDocumentFiles,
+} from '@/components/shared/CompanyDocumentUploads'
 import ValidatedInput from '@/components/shared/ValidatedInput'
 import { getFlagEmoji } from '@/lib/utils'
 import { validateCompanyForm, getCountryFormConfig, applyFieldFormat, validateCountryField } from '@/lib/countryFormConfig'
 import { validateRequiredText, validateEmail } from '@/lib/liveValidation'
+import { validateCompanyDocuments } from '@/lib/companyDocuments'
+import { SUBSCRIPTION_BASE_PKR } from '@/lib/subscription'
+import { formatSubscriptionPrice } from '@/lib/currency'
 
 type AuthTab = 'login' | 'signup'
 type SignupRole = 'CUSTOMER' | 'COMPANY'
@@ -22,13 +30,17 @@ function AuthContent() {
 
   const [countries, setCountries] = useState<{ id: string; name: string; code: string; currency: string }[]>([])
   const [selectedCountryCode, setSelectedCountryCode] = useState<string>('')
-  const [subscriptionPreview, setSubscriptionPreview] = useState<{ price: string; currency: string }>({ price: '$99.00', currency: 'USD' })
+  const [subscriptionPreview, setSubscriptionPreview] = useState<{ price: string; currency: string }>({
+    price: formatSubscriptionPrice(SUBSCRIPTION_BASE_PKR, 'PKR'),
+    currency: 'PKR',
+  })
+  const [companyDocuments, setCompanyDocuments] = useState<CompanyDocumentFiles>({ ...EMPTY_COMPANY_DOCUMENTS })
 
   useEffect(() => {
     if (searchParams.get('tab') === 'signup') setTab('signup')
     const roleParam = searchParams.get('role')
     if (roleParam === 'COMPANY') setSignupRole('COMPANY')
-    
+
     const error = searchParams.get('error')
     if (error === 'unauthorized') toast.error('Access denied. Please log in with the correct role.')
     if (error === 'account_suspended') toast.error('Your account has been suspended.')
@@ -36,7 +48,6 @@ function AuthContent() {
     if (status === 'pending') toast.info('Your account is pending admin approval.')
   }, [searchParams])
 
-  // Fetch countries
   useEffect(() => {
     async function loadCountries() {
       try {
@@ -44,7 +55,7 @@ function AuthContent() {
         const data = await res.json()
         if (data.success) {
           setCountries(data.data)
-          // Initialize selected country from session or default to first country
+
           const sessionCountry = sessionStorage.getItem('selectedCountry')
           if (sessionCountry) {
             setSelectedCountryCode(sessionCountry)
@@ -60,7 +71,6 @@ function AuthContent() {
     loadCountries()
   }, [])
 
-  // Login Form
   const [loginData, setLoginData] = useState({ emailOrPhone: '', password: '' })
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -83,20 +93,18 @@ function AuthContent() {
     finally { setLoading(false) }
   }
 
-  // Customer Registration
   const [custData, setCustData] = useState({
     fullName: '', fatherName: '', cnicOrId: '', dateOfBirth: '', phone: '',
     email: '', address: '', countryId: '', emergencyName: '', emergencyPhone: '',
     password: '', confirmPassword: ''
   })
-  // Company Registration
+
   const [compData, setCompData] = useState({
     companyName: '', ownerName: '', cnicOrId: '', contactNumber: '', whatsAppNumber: '',
     email: '', businessAddress: '', countryId: '', licenseNumber: '',
     password: '', confirmPassword: ''
   })
 
-  // Synchronize Global selectedCountryCode with forms
   useEffect(() => {
     if (selectedCountryCode && countries.length > 0) {
       const matched = countries.find(c => c.code === selectedCountryCode)
@@ -112,24 +120,26 @@ function AuthContent() {
     sessionStorage.setItem('selectedCountry', code)
   }
 
-  // Fetch dynamic subscription price when country changes
   useEffect(() => {
     if (!selectedCountryCode || countries.length === 0) return
     const country = countries.find(c => c.code === selectedCountryCode)
     if (!country) return
     const fetchPrice = async () => {
       try {
-        const res = await fetch(`/api/currency?to=${country.currency}&amount=99`)
+        const res = await fetch(`/api/currency?to=${country.currency}&amount=${SUBSCRIPTION_BASE_PKR}`)
         const data = await res.json()
         if (data.success) {
           const { converted, to } = data.data
-          const formatted = to === 'USD'
-            ? `$${converted.toFixed(2)}`
-            : `${converted.toLocaleString(undefined, { maximumFractionDigits: 0 })} ${to}`
-          setSubscriptionPreview({ price: formatted, currency: to })
+          setSubscriptionPreview({
+            price: formatSubscriptionPrice(converted, to),
+            currency: to,
+          })
         }
       } catch {
-        setSubscriptionPreview({ price: '$99.00', currency: 'USD' })
+        setSubscriptionPreview({
+          price: formatSubscriptionPrice(SUBSCRIPTION_BASE_PKR, 'PKR'),
+          currency: 'PKR',
+        })
       }
     }
     fetchPrice()
@@ -148,6 +158,11 @@ function AuthContent() {
       const validation = validateCompanyForm(country?.code || 'PK', compData)
       if (!validation.valid) {
         toast.error(validation.message || 'Please check your form fields')
+        return
+      }
+      const docValidation = validateCompanyDocuments(companyDocuments)
+      if (!docValidation.valid) {
+        toast.error(docValidation.error || 'Please upload all required documents')
         return
       }
     }
@@ -172,12 +187,24 @@ function AuthContent() {
 
     setLoading(true)
     try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ type: signupRole === 'CUSTOMER' ? 'customer' : 'company', ...data })
-      })
+      let res: Response
+      if (signupRole === 'COMPANY') {
+        const formData = new FormData()
+        Object.entries(compData).forEach(([key, value]) => formData.append(key, value))
+        appendCompanyDocumentsToFormData(formData, companyDocuments)
+        res = await fetch('/api/auth/register', {
+          method: 'POST',
+          credentials: 'include',
+          body: formData,
+        })
+      } else {
+        res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ type: 'customer', ...custData }),
+        })
+      }
       const json = await res.json()
       if (json.success) {
         toast.success('Registration submitted! Awaiting admin approval.')
@@ -212,7 +239,7 @@ function AuthContent() {
         transition={{ duration: 0.5 }}
         className="relative z-10 w-full max-w-md"
       >
-        {/* Logo */}
+
         <div className="text-center mb-8">
           <a href="/" className="inline-flex items-center gap-2 mb-3">
             <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center text-white font-bold text-lg shadow-neon-violet">D</div>
@@ -222,7 +249,7 @@ function AuthContent() {
         </div>
 
         <div className="glass-card p-6 md:p-8">
-          {/* Global Country Selector */}
+
           <div className="mb-6">
             <label className={labelClass}>Select Your Country</label>
             <select
@@ -238,7 +265,6 @@ function AuthContent() {
             </select>
           </div>
 
-          {/* Tab Switcher */}
           <div className="flex gap-1 p-1 glass rounded-xl mb-6">
             {(['login', 'signup'] as AuthTab[]).map(t => (
               <button key={t} onClick={() => setTab(t)}
@@ -251,7 +277,7 @@ function AuthContent() {
           </div>
 
           <AnimatePresence mode="wait">
-            {/* ── LOGIN ── */}
+
             {tab === 'login' && (
               <motion.form key="login" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}
                 onSubmit={handleLogin} className="space-y-4">
@@ -274,10 +300,9 @@ function AuthContent() {
               </motion.form>
             )}
 
-            {/* ── SIGNUP ── */}
             {tab === 'signup' && (
               <motion.div key="signup" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                {/* Role Selector */}
+
                 <div className="flex gap-2 mb-5">
                   {([
                     { role: 'CUSTOMER', icon: '👤', label: 'Customer' },
@@ -395,10 +420,17 @@ function AuthContent() {
                         onCountryChange={(_id, code) => handleGlobalCountryChange(code)}
                         countries={countries}
                         countryPosition="bottom"
+                        showDocumentHint={false}
+                      />
+                      <CompanyDocumentUploads
+                        documents={companyDocuments}
+                        onChange={(docType, file) => setCompanyDocuments(prev => ({ ...prev, [docType]: file }))}
+                        idLabel={countries.find(c => c.id === compData.countryId)?.code === 'PK' ? 'CNIC' : 'National ID'}
+                        licenseLabel="Business License"
                       />
                       <div><label className={labelClass}>Email *</label>
                         <input className={inputClass} type="email" placeholder="company@example.com" value={compData.email} onChange={e => setCompData(p => ({ ...p, email: e.target.value }))} required /></div>
-                      {/* Subscription price preview */}
+
                       <div className="glass rounded-xl p-3 border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
                         <div className="flex items-center justify-between">
                           <span className="text-xs text-slate-400">📋 Monthly Subscription</span>
@@ -407,7 +439,7 @@ function AuthContent() {
                             <span className="text-slate-500 text-2xs"> / mo</span>
                           </div>
                         </div>
-                        {/* Only show the localized country currency price (no USD conversion line) */}
+
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div><label className={labelClass}>Password *</label>

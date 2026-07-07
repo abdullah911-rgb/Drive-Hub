@@ -5,10 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { StatusBadge } from '@/components/ui'
 import { getPaymentGateways, formatDate } from '@/lib/utils'
-import { convertUSD } from '@/lib/currency'
+import { convertPKR, formatSubscriptionPrice } from '@/lib/currency'
+import { SUBSCRIPTION_BASE_PKR } from '@/lib/subscription'
 import type { Company, Car, Subscription } from '@/types'
-
-const SUBSCRIPTION_USD = 99
 
 export default function CompanyDashboard() {
   const router = useRouter()
@@ -17,11 +16,9 @@ export default function CompanyDashboard() {
   const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [loading, setLoading] = useState(true)
   const [bankDetails, setBankDetails] = useState<{ bankName: string; accountNumber: string; accountName: string } | null>(null)
-  
-  // Dashboard navigation
+
   const [activeTab, setActiveTab] = useState<'listings' | 'subscription'>('listings')
-  
-  // Add Car Modal/Form State
+
   const [showAddCarModal, setShowAddCarModal] = useState(false)
   const [submittingCar, setSubmittingCar] = useState(false)
   const [editingCarId, setEditingCarId] = useState<string | null>(null)
@@ -63,14 +60,13 @@ export default function CompanyDashboard() {
     setShowAddCarModal(true)
   }
 
-  // Subscription Payment Form State
   const [submittingPayment, setSubmittingPayment] = useState(false)
   const [selectedGateway, setSelectedGateway] = useState('')
   const [transactionId, setTransactionId] = useState('')
   const [accountDetails, setAccountDetails] = useState('')
-  // Dynamic pricing state
-  const [planPrice, setPlanPrice] = useState(`$${SUBSCRIPTION_USD}`)
-  const [planCurrency, setPlanCurrency] = useState('USD')
+
+  const [planPrice, setPlanPrice] = useState(formatSubscriptionPrice(SUBSCRIPTION_BASE_PKR, 'PKR'))
+  const [planCurrency, setPlanCurrency] = useState('PKR')
 
   const fetchDashboardData = async () => {
     try {
@@ -88,7 +84,6 @@ export default function CompanyDashboard() {
         return
       }
 
-      // Fetch company profile with listings
       const companyRes = await fetch(`/api/companies/${userData.data.companyId}`, { credentials: 'include' })
       if (companyRes.ok) {
         const compData = await companyRes.json()
@@ -114,26 +109,20 @@ export default function CompanyDashboard() {
     fetchDashboardData()
   }, [])
 
-  // Resolve dynamic plan price whenever company country changes
   useEffect(() => {
     if (!company) return
     const resolvePrice = async () => {
-      const currCode = (company as Company & { country?: { currency: string } }).country?.currency || 'USD'
-      const { amount } = await convertUSD(SUBSCRIPTION_USD, currCode)
-      const formatted = currCode === 'USD'
-        ? `$${amount.toFixed(2)}`
-        : `${amount.toLocaleString(undefined, { maximumFractionDigits: 0 })} ${currCode}`
-      setPlanPrice(formatted)
+      const currCode = (company as Company & { country?: { currency: string } }).country?.currency || 'PKR'
+      const { amount } = await convertPKR(SUBSCRIPTION_BASE_PKR, currCode)
+      setPlanPrice(formatSubscriptionPrice(amount, currCode))
       setPlanCurrency(currCode)
     }
     resolvePrice()
   }, [company?.countryId])
 
-  // Create or Edit Car Handler
   const handleAddCar = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    // Validations
+
     const { brand, model, year, color, regNumber, engineNumber, mileage, description } = carForm
     if (!brand || !model || !year || !color || !regNumber || !engineNumber || !mileage || !description) {
       toast.error('Please fill in all required fields')
@@ -142,10 +131,10 @@ export default function CompanyDashboard() {
 
     setSubmittingCar(true)
     try {
-      // Split comma separated features/images
+
       const features = carForm.featuresInput.split(',').map(f => f.trim()).filter(Boolean)
       const imageUrls = carForm.imageInput.split(',').map(i => i.trim()).filter(Boolean)
-      
+
       const imagesPayload = imageUrls.map((url, idx) => ({
         id: `img-${idx}-${Date.now()}`,
         imageUrl: url || 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=800',
@@ -176,7 +165,7 @@ export default function CompanyDashboard() {
           seatingCapacity: parseInt(carForm.seatingCapacity),
           features,
           images: imagesPayload,
-          status: 'PENDING', // Reset status for admin approval
+          status: 'PENDING', 
         }),
       })
 
@@ -202,7 +191,6 @@ export default function CompanyDashboard() {
     }
   }
 
-  // Submit Subscription Payment Handler
   const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedGateway) {
@@ -223,7 +211,7 @@ export default function CompanyDashboard() {
           gateway: selectedGateway,
           transactionId,
           accountDetails,
-          receiptUrl: '', // Mock receipt
+          receiptUrl: '', 
         }),
       })
       const data = await res.json()
@@ -253,14 +241,12 @@ export default function CompanyDashboard() {
 
   if (!company) return null
 
-
-  // Derive country info for payment gateways
   const countryCode = (company as Company & { country?: { code: string } }).country?.code || 'US'
   const paymentGateways = getPaymentGateways(countryCode)
 
   return (
     <div className="container-app py-8">
-      {/* Title Header */}
+
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
           <h1 className="font-heading font-black text-3xl text-white">
@@ -294,7 +280,7 @@ export default function CompanyDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Navigation Sidebar */}
+
         <div className="lg:col-span-3 flex flex-col gap-2">
           <button
             onClick={() => setActiveTab('listings')}
@@ -320,7 +306,6 @@ export default function CompanyDashboard() {
           </button>
         </div>
 
-        {/* Dynamic Panel Content */}
         <div className="lg:col-span-9">
           {activeTab === 'listings' ? (
             <motion.div
@@ -328,7 +313,7 @@ export default function CompanyDashboard() {
               animate={{ opacity: 1, x: 0 }}
               className="flex flex-col gap-6"
             >
-              {/* Header and Add Car Button */}
+
               <div className="flex items-center justify-between">
                 <h3 className="font-heading font-bold text-white text-lg">Vehicle Fleet</h3>
                 {subscription?.status === 'ACTIVE' ? (
@@ -351,7 +336,6 @@ export default function CompanyDashboard() {
                 )}
               </div>
 
-              {/* Cars Grid */}
               {cars.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {cars.map((car) => {
@@ -400,11 +384,11 @@ export default function CompanyDashboard() {
               animate={{ opacity: 1, x: 0 }}
               className="grid grid-cols-1 md:grid-cols-12 gap-8"
             >
-              {/* Subscription Status Card */}
+
               <div className="md:col-span-7 flex flex-col gap-6">
                 <div className="glass-card p-6 border border-white/5">
                   <h3 className="font-heading font-bold text-white text-base mb-4">Subscription Overview</h3>
-                  
+
                   {subscription ? (
                     <div className="flex flex-col gap-4">
                       <div className="flex justify-between items-center py-2 border-b border-white/5">
@@ -457,13 +441,12 @@ export default function CompanyDashboard() {
                   )}
                 </div>
 
-                {/* Pricing / Plan Details */}
                 <div className="glass-card p-6 border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
                   <h4 className="font-heading font-black text-white text-base mb-1">Standard Market Plan</h4>
                   <div className="text-2xl font-black text-white my-3">
                     {planPrice}<span className="text-slate-500 text-sm font-medium"> / month</span>
                   </div>
-                  <p className="text-slate-500 text-xs">Base price: $99 USD / month</p>
+                  <p className="text-slate-500 text-xs">Base price: Rs. {SUBSCRIPTION_BASE_PKR.toLocaleString()} PKR / month</p>
                   <ul className="text-xs text-slate-300 flex flex-col gap-2 mt-4">
                     <li className="flex items-center gap-2">✓ List up to 10 cars simultaneously</li>
                     <li className="flex items-center gap-2">✓ Verified badges on listings</li>
@@ -473,13 +456,12 @@ export default function CompanyDashboard() {
                 </div>
               </div>
 
-              {/* Checkout / Payment submission Form */}
               <div className="md:col-span-5">
                 {(!subscription || subscription.status !== 'ACTIVE') ? (
                   <div className="glass-card p-6 border border-white/5">
                     <h3 className="font-heading font-bold text-white text-base mb-4">Activate Subscription</h3>
                     <form onSubmit={handlePayment} className="flex flex-col gap-4">
-                      {/* Bank Details Card (Direct Transfer) */}
+
                       {bankDetails && (
                         <div className="glass p-4 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent flex flex-col gap-2 mb-2">
                           <span className="text-xs font-bold text-white flex items-center gap-1.5">
@@ -518,7 +500,6 @@ export default function CompanyDashboard() {
                         </div>
                       )}
 
-                      {/* Gateway Selection Grid */}
                       <div>
                         <label className="text-slate-400 text-xs font-semibold mb-3 block">Select Your Payment Channel</label>
                         <div className="grid grid-cols-2 gap-3">
@@ -546,7 +527,6 @@ export default function CompanyDashboard() {
                         </div>
                       </div>
 
-                      {/* Transaction ID */}
                       <div>
                         <label className="text-slate-400 text-xs font-semibold mb-1.5 block">Transaction ID</label>
                         <input
@@ -558,7 +538,6 @@ export default function CompanyDashboard() {
                         />
                       </div>
 
-                      {/* Account details */}
                       <div>
                         <label className="text-slate-400 text-xs font-semibold mb-1.5 block">Your Account / Phone Number (Optional)</label>
                         <input
@@ -594,11 +573,10 @@ export default function CompanyDashboard() {
         </div>
       </div>
 
-      {/* Add Car Modal Overlay */}
       <AnimatePresence>
         {showAddCarModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            {/* Modal Backdrop */}
+
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.7 }}
@@ -607,7 +585,6 @@ export default function CompanyDashboard() {
               className="absolute inset-0 bg-black"
             />
 
-            {/* Modal Body */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -623,7 +600,7 @@ export default function CompanyDashboard() {
 
               <form onSubmit={handleAddCar} className="flex flex-col gap-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Brand */}
+
                   <div>
                     <label className="text-slate-400 text-xs font-semibold mb-1 block">Brand *</label>
                     <input
@@ -636,7 +613,6 @@ export default function CompanyDashboard() {
                     />
                   </div>
 
-                  {/* Model */}
                   <div>
                     <label className="text-slate-400 text-xs font-semibold mb-1 block">Model *</label>
                     <input
@@ -649,7 +625,6 @@ export default function CompanyDashboard() {
                     />
                   </div>
 
-                  {/* Year */}
                   <div>
                     <label className="text-slate-400 text-xs font-semibold mb-1 block">Year *</label>
                     <input
@@ -662,7 +637,6 @@ export default function CompanyDashboard() {
                     />
                   </div>
 
-                  {/* Color */}
                   <div>
                     <label className="text-slate-400 text-xs font-semibold mb-1 block">Color *</label>
                     <input
@@ -675,7 +649,6 @@ export default function CompanyDashboard() {
                     />
                   </div>
 
-                  {/* Reg number */}
                   <div>
                     <label className="text-slate-400 text-xs font-semibold mb-1 block">Registration Number *</label>
                     <input
@@ -688,7 +661,6 @@ export default function CompanyDashboard() {
                     />
                   </div>
 
-                  {/* Engine number */}
                   <div>
                     <label className="text-slate-400 text-xs font-semibold mb-1 block">Engine Number *</label>
                     <input
@@ -701,7 +673,6 @@ export default function CompanyDashboard() {
                     />
                   </div>
 
-                  {/* Mileage */}
                   <div>
                     <label className="text-slate-400 text-xs font-semibold mb-1 block">Mileage (KM) *</label>
                     <input
@@ -714,7 +685,6 @@ export default function CompanyDashboard() {
                     />
                   </div>
 
-                  {/* Seating */}
                   <div>
                     <label className="text-slate-400 text-xs font-semibold mb-1 block">Seating Capacity *</label>
                     <select
@@ -730,7 +700,6 @@ export default function CompanyDashboard() {
                     </select>
                   </div>
 
-                  {/* Fuel type */}
                   <div>
                     <label className="text-slate-400 text-xs font-semibold mb-1 block">Fuel Type *</label>
                     <select
@@ -746,7 +715,6 @@ export default function CompanyDashboard() {
                     </select>
                   </div>
 
-                  {/* Transmission */}
                   <div>
                     <label className="text-slate-400 text-xs font-semibold mb-1 block">Transmission *</label>
                     <select
@@ -761,7 +729,6 @@ export default function CompanyDashboard() {
                   </div>
                 </div>
 
-                {/* Description */}
                 <div>
                   <label className="text-slate-400 text-xs font-semibold mb-1 block">Vehicle Description *</label>
                   <textarea
@@ -774,7 +741,6 @@ export default function CompanyDashboard() {
                   />
                 </div>
 
-                {/* Features list */}
                 <div>
                   <label className="text-slate-400 text-xs font-semibold mb-1 block">Features (comma-separated)</label>
                   <input
@@ -786,7 +752,6 @@ export default function CompanyDashboard() {
                   />
                 </div>
 
-                {/* Image links */}
                 <div>
                   <label className="text-slate-400 text-xs font-semibold mb-1 block">Image URLs (comma-separated)</label>
                   <input

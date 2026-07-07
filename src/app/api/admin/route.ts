@@ -3,11 +3,10 @@ import { db } from '@/lib/db'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
 import { notifications } from '@/lib/email'
+import { convertPKR } from '@/lib/currency'
+import { SUBSCRIPTION_BASE_PKR } from '@/lib/subscription'
 import { v4 as uuidv4 } from 'uuid'
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Admin: get all users, companies, cars, payments with stats
-// ──────────────────────────────────────────────────────────────────────────────
 export async function GET(request: NextRequest) {
   try {
     const currentUser = await getCurrentUser()
@@ -16,6 +15,34 @@ export async function GET(request: NextRequest) {
     }
     const { searchParams } = new URL(request.url)
     const resource = searchParams.get('resource')
+
+    if (resource === 'dashboard') {
+      const [stats, users, companies, cars, payments, reviews, notifications, subscriptions, bankDetails] = await Promise.all([
+        db.getStats(),
+        db.getUsers(),
+        db.getCompanies(),
+        db.getCars({}),
+        db.getPayments(),
+        db.getAllReviews(),
+        db.getNotificationsByUserId(currentUser.userId),
+        db.getAllSubscriptions(),
+        db.getBankDetails(),
+      ])
+      return NextResponse.json({
+        success: true,
+        data: {
+          stats,
+          users,
+          companies,
+          cars,
+          payments,
+          reviews,
+          notifications,
+          subscriptions,
+          bankDetails,
+        },
+      })
+    }
 
     if (resource === 'stats') {
       const stats = await db.getStats()
@@ -48,10 +75,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Admin: approve / reject / suspend / ban resources
-// Returns whatsAppUrl so the admin frontend can show a one-tap send button
-// ──────────────────────────────────────────────────────────────────────────────
 export async function PATCH(request: NextRequest) {
   try {
     const currentUser = await getCurrentUser()
@@ -62,7 +85,6 @@ export async function PATCH(request: NextRequest) {
     const { resource, id, action } = body
     let whatsAppUrl: string | null = null
 
-    // ── USER ────────────────────────────────────────────────────────────────
     if (resource === 'user') {
       const statusMap: Record<string, string> = {
         approve: 'APPROVED', reject: 'REJECTED', suspend: 'SUSPENDED', ban: 'BANNED', restore: 'APPROVED',
@@ -70,7 +92,6 @@ export async function PATCH(request: NextRequest) {
       const user = await db.updateUser(id, { status: statusMap[action] })
       if (!user) return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 })
 
-      // In-app notification
       await db.createNotification({
         id: uuidv4(), userId: id,
         type: action === 'approve' ? 'ACCOUNT_APPROVED' : 'ACCOUNT_REJECTED',
@@ -81,7 +102,6 @@ export async function PATCH(request: NextRequest) {
         isRead: false,
       })
 
-      // Email + WhatsApp notification
       const u = user as { email: string; phone: string; fullName?: string }
       if (action === 'approve') {
         whatsAppUrl = await notifications.userApproved(u.email, u.phone, u.fullName)
@@ -94,13 +114,11 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ success: true, data: user, whatsAppUrl })
     }
 
-    // ── COMPANY ─────────────────────────────────────────────────────────────
     if (resource === 'company') {
       const statusMap: Record<string, string> = {
         approve: 'APPROVED', reject: 'REJECTED', suspend: 'SUSPENDED', restore: 'APPROVED',
       }
 
-      // Sub-actions: activate / deactivate subscription
       if (action === 'activate_sub' || action === 'deactivate_sub') {
         const company = await db.getCompanyById(id)
         if (!company) return NextResponse.json({ success: false, error: 'Company not found' }, { status: 404 })
@@ -113,8 +131,12 @@ export async function PATCH(request: NextRequest) {
           if (sub) {
             sub = await db.updateSubscription((sub as { id: string }).id, { status: 'ACTIVE', startDate, endDate })
           } else {
+            const companyRecord = company as { countryId: string; country?: { currency: string } }
+            const country = companyRecord.country || (await db.getCountryById(companyRecord.countryId)) as { currency: string } | null
+            const currencyCode = country?.currency || 'PKR'
+            const { amount: localPrice } = await convertPKR(SUBSCRIPTION_BASE_PKR, currencyCode)
             sub = await db.createSubscription({
-              id: uuidv4(), companyId: c.id, planName: 'Standard Plan', maxCars: 10, price: 99,
+              id: uuidv4(), companyId: c.id, planName: 'Standard Plan', maxCars: 10, price: localPrice,
               durationDays: 30,
               features: ['Up to 10 car listings', 'WhatsApp integration', 'Company profile page', 'Customer reviews'],
               status: 'ACTIVE', startDate, endDate,
@@ -126,7 +148,7 @@ export async function PATCH(request: NextRequest) {
             message: 'Your company subscription has been activated. You can now list and manage your fleet!',
             isRead: false,
           })
-          // Email + WhatsApp
+
           const user = await db.getUserById(c.userId) as { email: string; phone: string } | null
           if (user) {
             const expiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -150,7 +172,6 @@ export async function PATCH(request: NextRequest) {
         return NextResponse.json({ success: true, data: sub, whatsAppUrl })
       }
 
-      // Normal approve / reject / suspend
       const company = await db.updateCompany(id, { status: statusMap[action] })
       if (!company) return NextResponse.json({ success: false, error: 'Company not found' }, { status: 404 })
       const c = company as { id: string; userId: string; name: string }
@@ -179,7 +200,6 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ success: true, data: company, whatsAppUrl })
     }
 
-    // ── CAR ─────────────────────────────────────────────────────────────────
     if (resource === 'car') {
       const statusMap: Record<string, string> = { approve: 'APPROVED', reject: 'REJECTED', suspend: 'SUSPENDED' }
       const car = await db.updateCar(id, { status: statusMap[action] })
@@ -212,9 +232,8 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ success: true, data: car, whatsAppUrl })
     }
 
-    // ── PAYMENT ─────────────────────────────────────────────────────────────
     if (resource === 'payment') {
-      // Direct lookup — avoids fetching ALL payments just to find one
+
       const payment = await prisma.payment.findUnique({
         where: { id },
         include: { subscription: { include: { company: true } } },
@@ -232,7 +251,6 @@ export async function PATCH(request: NextRequest) {
         })
         await db.updatePayment(id, { status: 'PAID', verifiedAt: new Date().toISOString() })
 
-        // Notify company
         await db.createNotification({
           id: uuidv4(), userId: companyRecord.userId, type: 'GENERAL',
           title: 'Payment Verified — Subscription Active',
@@ -267,7 +285,6 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Unknown payment action' }, { status: 400 })
     }
 
-    // ── REVIEW ───────────────────────────────────────────────────────────────
     if (resource === 'review') {
       const review = await db.updateReview(id, { isVisible: action === 'show' })
       if (!review) return NextResponse.json({ success: false, error: 'Review not found' }, { status: 404 })

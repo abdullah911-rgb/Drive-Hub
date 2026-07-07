@@ -38,14 +38,13 @@ export default function AboutPage() {
     <div className="min-h-screen bg-background relative overflow-hidden flex flex-col">
       <ParticleBackground />
 
-      {/* Ambient background glows */}
       <div className="fixed top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
       <div className="fixed bottom-1/4 right-1/4 w-80 h-80 bg-secondary/5 rounded-full blur-3xl pointer-events-none" />
 
       <Navbar />
 
       <main className="flex-grow pt-24 pb-16 relative z-10 container-app max-w-6xl">
-        {/* Hero Section */}
+
         <div className="text-center max-w-3xl mx-auto mb-16">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -64,7 +63,6 @@ export default function AboutPage() {
           </motion.div>
         </div>
 
-        {/* Story Section */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-20 items-center">
           <motion.div
             className="lg:col-span-7 space-y-6"
@@ -117,7 +115,6 @@ export default function AboutPage() {
           </motion.div>
         </div>
 
-        {/* Features / Why Us Grid */}
         <div className="space-y-12">
           <div className="text-center max-w-xl mx-auto">
             <h2 className="font-heading font-black text-2xl sm:text-3xl text-white mb-4">

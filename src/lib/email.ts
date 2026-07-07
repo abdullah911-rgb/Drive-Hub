@@ -1,8 +1,5 @@
 import nodemailer from 'nodemailer'
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Transporter — reads from environment variables at runtime
-// ──────────────────────────────────────────────────────────────────────────────
 function createTransporter() {
   return nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -15,9 +12,6 @@ function createTransporter() {
   })
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
-// HTML Email Template — premium dark design matching DriveHub brand
-// ──────────────────────────────────────────────────────────────────────────────
 function buildHtml(title: string, bodyHtml: string, ctaLabel?: string, ctaUrl?: string): string {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
   return `<!DOCTYPE html>
@@ -81,9 +75,6 @@ function buildHtml(title: string, bodyHtml: string, ctaLabel?: string, ctaUrl?: 
 </html>`
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Core send function — never throws; email failure must not break approvals
-// ──────────────────────────────────────────────────────────────────────────────
 export async function sendEmail(opts: {
   to: string
   subject: string
@@ -112,22 +103,15 @@ export async function sendEmail(opts: {
   }
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
-// WhatsApp pre-filled link generator (wa.me protocol — no API key needed)
-// ──────────────────────────────────────────────────────────────────────────────
 export function buildWhatsAppNotificationUrl(phone: string, message: string): string {
   const digits = phone.replace(/[\s+\-().]/g, '')
   return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Pre-built notification templates
-// ──────────────────────────────────────────────────────────────────────────────
 const APP_URL = () => process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
 export const notifications = {
 
-  // ── Customer / User ──────────────────────────────────────────────────────
   async userApproved(to: string, phone: string, fullName?: string) {
     const msg = `Hello ${fullName || 'there'} 👋\n\nYour DriveHub account has been approved! You can now browse and contact car rental companies directly.\n\nLogin at: ${APP_URL()}/auth`
     await sendEmail({
@@ -163,7 +147,6 @@ export const notifications = {
     return buildWhatsAppNotificationUrl(phone, msg)
   },
 
-  // ── Company ───────────────────────────────────────────────────────────────
   async companyApproved(to: string, phone: string, companyName: string) {
     const msg = `Hello ${companyName} 🎉\n\nYour company profile on DriveHub has been APPROVED! Log in to your dashboard to subscribe and start listing your vehicles.\n\nDashboard: ${APP_URL()}/dashboard/company`
     await sendEmail({
@@ -204,7 +187,6 @@ export const notifications = {
     return buildWhatsAppNotificationUrl(phone, msg)
   },
 
-  // ── Car Listing ───────────────────────────────────────────────────────────
   async carApproved(to: string, phone: string, carName: string) {
     const msg = `Great news! ✅\n\nYour vehicle listing for "${carName}" on DriveHub has been APPROVED and is now live on the marketplace!\n\nView it at: ${APP_URL()}/marketplace`
     await sendEmail({
@@ -246,7 +228,6 @@ export const notifications = {
     return buildWhatsAppNotificationUrl(phone, msg)
   },
 
-  // ── Subscription / Payment ────────────────────────────────────────────────
   async subscriptionActivated(to: string, phone: string, companyName: string, endDate: string) {
     const msg = `Hello ${companyName} ✅\n\nYour DriveHub subscription has been activated! Your account is now active until ${endDate}. Start adding your cars now: ${APP_URL()}/dashboard/company`
     await sendEmail({

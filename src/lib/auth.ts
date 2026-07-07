@@ -12,8 +12,6 @@ export interface JWTPayload {
   exp?: number
 }
 
-// ─── Password Utilities ───────────────────────────────────────────────────────
-
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 12)
 }
@@ -21,8 +19,6 @@ export async function hashPassword(password: string): Promise<string> {
 export async function verifyPassword(password: string, hash: string): Promise<boolean> {
   return bcrypt.compare(password, hash)
 }
-
-// ─── JWT Utilities ────────────────────────────────────────────────────────────
 
 export async function signToken(payload: Omit<JWTPayload, 'iat' | 'exp'>): Promise<string> {
   return new SignJWT(payload as Record<string, unknown>)
@@ -41,15 +37,13 @@ export async function verifyToken(token: string): Promise<JWTPayload | null> {
   }
 }
 
-// ─── Cookie Utilities ─────────────────────────────────────────────────────────
-
 export async function setAuthCookie(token: string) {
   const cookieStore = await cookies()
   cookieStore.set('auth_token', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 7, // 7 days
+    maxAge: 60 * 60 * 24 * 7, 
     path: '/',
   })
 }
@@ -70,8 +64,6 @@ export async function getCurrentUser(): Promise<JWTPayload | null> {
   return verifyToken(token)
 }
 
-// ─── OTP Utilities ────────────────────────────────────────────────────────────
-
 export function generateOTP(): string {
   return Math.floor(100000 + Math.random() * 900000).toString()
 }
@@ -79,8 +71,6 @@ export function generateOTP(): string {
 export function isOTPExpired(expiresAt: Date): boolean {
   return new Date() > expiresAt
 }
-
-// ─── Password Validation ─────────────────────────────────────────────────────
 
 export function validatePassword(password: string): { valid: boolean; errors: string[] } {
   const errors: string[] = []

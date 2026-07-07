@@ -8,7 +8,6 @@ export default function TermsPage() {
     <div className="min-h-screen bg-background relative overflow-hidden flex flex-col">
       <ParticleBackground />
 
-      {/* Ambient background glows */}
       <div className="fixed top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
       <div className="fixed bottom-1/4 right-1/4 w-80 h-80 bg-secondary/5 rounded-full blur-3xl pointer-events-none" />
 

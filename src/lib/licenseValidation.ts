@@ -1,15 +1,3 @@
-/**
- * License number format validators per country.
- *
- * NOTE ON REAL VERIFICATION:
- * These validators check FORMAT only. Cross-verifying a business license
- * against a CNIC/Iqama requires an enterprise API partnership:
- *   - Pakistan: NADRA / SECP / 1Link vendor
- *   - Saudi Arabia: Ministry of Commerce (Sijilat API)
- *   - UAE: Ministry of Economy
- *
- * Without those APIs we perform the best possible format + heuristic checks.
- */
 
 export interface LicenseValidationResult {
   valid: boolean
@@ -20,14 +8,9 @@ export interface LicenseValidationResult {
 
 type Validator = (license: string, cnicOrId?: string) => LicenseValidationResult
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Per-country validators
-// ──────────────────────────────────────────────────────────────────────────────
-
 const PK: Validator = (license, cnic) => {
   const cleaned = license.replace(/[\s-]/g, '')
 
-  // NTN: exactly 7 digits
   if (/^\d{7}$/.test(cleaned)) {
     const result: LicenseValidationResult = { valid: true, formatName: 'Pakistan NTN' }
     if (cnic) {
@@ -41,12 +24,10 @@ const PK: Validator = (license, cnic) => {
     return result
   }
 
-  // SECP company registration: e.g. K-010345 or 0012345-6
   if (/^[A-Z]{1,3}-\d{4,8}$/i.test(license)) {
     return { valid: true, formatName: 'Pakistan SECP Registration' }
   }
 
-  // Generic FBR / provincial registration: alphanumeric 6–20 chars
   if (/^[A-Z0-9]{6,20}$/i.test(cleaned)) {
     return { valid: true, formatName: 'Pakistan Business License', warning: 'Manual license verification recommended.' }
   }
@@ -59,7 +40,7 @@ const PK: Validator = (license, cnic) => {
 
 const SA: Validator = (license) => {
   const cleaned = license.replace(/\s/g, '')
-  // Saudi CR: 10 digits starting with 1 or 2
+
   if (/^[12]\d{9}$/.test(cleaned)) {
     return { valid: true, formatName: 'Saudi Arabia Commercial Registration (CR)' }
   }
@@ -71,11 +52,11 @@ const SA: Validator = (license) => {
 
 const AE: Validator = (license) => {
   const cleaned = license.replace(/[\s-]/g, '')
-  // UAE TRN: 15 digits starting with 1
+
   if (/^1\d{14}$/.test(cleaned)) return { valid: true, formatName: 'UAE Tax Registration Number (TRN)' }
-  // UAE Trade License: typically CN-XXXXXXXX
+
   if (/^CN-\d{7,9}$/i.test(license)) return { valid: true, formatName: 'UAE Trade License' }
-  // Generic
+
   if (/^[A-Z0-9\-]{5,20}$/i.test(cleaned)) return { valid: true, formatName: 'UAE Business License', warning: 'Manual license verification recommended.' }
   return { valid: false, error: 'UAE license must be a TRN (15 digits), Trade License (CN-XXXXXXXX), or 5–20 alphanumeric characters.' }
 }
@@ -105,9 +86,6 @@ const DEFAULT: Validator = (license) => {
 
 const VALIDATORS: Record<string, Validator> = { PK, SA, AE, QA, GB }
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Main export
-// ──────────────────────────────────────────────────────────────────────────────
 export function validateLicenseNumber(
   licenseNumber: string,
   countryCode: string,
@@ -120,10 +98,6 @@ export function validateLicenseNumber(
   return validator(licenseNumber, cnicOrId)
 }
 
-/**
- * Returns a human-readable description of the expected license format for a country.
- * Shown in the registration form as a hint.
- */
 export function getLicenseFormatHint(countryCode: string): string {
   const hints: Record<string, string> = {
     PK: 'Enter your NTN (7 digits), SECP number (e.g. K-010345), or provincial license number.',

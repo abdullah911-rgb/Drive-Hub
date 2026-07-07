@@ -1,6 +1,3 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Shared TypeScript Types
-// ─────────────────────────────────────────────────────────────────────────────
 
 export type RoleName = 'CUSTOMER' | 'COMPANY' | 'ADMIN' | 'SUPER_ADMIN'
 export type ApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED' | 'BANNED'
@@ -56,6 +53,15 @@ export interface User {
   updatedAt: string
 }
 
+export interface CompanyDocument {
+  id: string
+  companyId: string
+  docType: string
+  fileUrl: string
+  createdAt: string
+  updatedAt: string
+}
+
 export interface Company {
   id: string
   userId: string
@@ -73,6 +79,7 @@ export interface Company {
   countryId: string
   country?: Country
   status: ApprovalStatus
+  documents?: CompanyDocument[]
   subscriptions?: Subscription[]
   cars?: Car[]
   reviews?: Review[]
@@ -201,8 +208,6 @@ export interface AdminStats {
   revenueByCurrency?: Record<string, number>
 }
 
-// ─── API Response Wrappers ────────────────────────────────────────────────────
-
 export interface ApiSuccess<T> {
   success: true
   data: T
@@ -216,8 +221,6 @@ export interface ApiError {
 }
 
 export type ApiResponse<T> = ApiSuccess<T> | ApiError
-
-// ─── Form Types ───────────────────────────────────────────────────────────────
 
 export interface CustomerRegisterForm {
   fullName: string
@@ -255,8 +258,6 @@ export interface LoginForm {
   password: string
   role: RoleName
 }
-
-// ─── Filter Types ─────────────────────────────────────────────────────────────
 
 export interface CarFilters {
   countryId?: string

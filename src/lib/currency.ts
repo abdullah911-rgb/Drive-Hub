@@ -1,7 +1,3 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// CURRENCY CONVERSION UTILITY
-// Dynamic currency rates with offline fallback rates
-// ─────────────────────────────────────────────────────────────────────────────
 
 const FALLBACK_RATES: Record<string, number> = {
   USD: 1.0,
@@ -15,17 +11,13 @@ const FALLBACK_RATES: Record<string, number> = {
   AUD: 1.51,
 }
 
-/**
- * Fetches the latest exchange rate for a given currency code against USD.
- * Falls back to hardcoded rates if the API is unreachable.
- */
 export async function getExchangeRate(targetCurrency: string): Promise<number> {
   const currency = targetCurrency.toUpperCase().trim()
   if (currency === 'USD') return 1.0
 
   try {
     const res = await fetch('https://open.er-api.com/v6/latest/USD', {
-      next: { revalidate: 3600 } // Cache for 1 hour in Next.js fetch
+      next: { revalidate: 3600 } 
     })
     if (res.ok) {
       const data = await res.json()
@@ -40,12 +32,35 @@ export async function getExchangeRate(targetCurrency: string): Promise<number> {
   return FALLBACK_RATES[currency] || 1.0
 }
 
-/**
- * Converts a USD amount to target currency.
- * Returns both the converted amount and the rate used.
- */
 export async function convertUSD(amountUSD: number, targetCurrency: string): Promise<{ amount: number; rate: number }> {
   const rate = await getExchangeRate(targetCurrency)
-  const amount = Math.round(amountUSD * rate * 100) / 100 // Round to 2 decimal places
+  const amount = Math.round(amountUSD * rate * 100) / 100
   return { amount, rate }
+}
+
+/** Convert an amount in PKR to the target currency using USD as the bridge. */
+export async function convertPKR(amountPKR: number, targetCurrency: string): Promise<{ amount: number; rate: number }> {
+  const currency = targetCurrency.toUpperCase().trim()
+  if (currency === 'PKR') {
+    return { amount: amountPKR, rate: 1 }
+  }
+
+  const pkrPerUsd = await getExchangeRate('PKR')
+  const amountUSD = amountPKR / pkrPerUsd
+  const targetRate = currency === 'USD' ? 1 : await getExchangeRate(currency)
+  const amount = Math.round(amountUSD * targetRate * 100) / 100
+  const rate = targetRate / pkrPerUsd
+
+  return { amount, rate }
+}
+
+export function formatSubscriptionPrice(amount: number, currency: string): string {
+  const code = currency.toUpperCase()
+  if (code === 'PKR') return `Rs. ${amount.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
+  if (code === 'USD') return `$${amount.toFixed(2)}`
+  if (code === 'EUR' || code === 'GBP') {
+    const symbol = code === 'EUR' ? '€' : '£'
+    return `${symbol}${amount.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
+  }
+  return `${amount.toLocaleString(undefined, { maximumFractionDigits: 0 })} ${code}`
 }

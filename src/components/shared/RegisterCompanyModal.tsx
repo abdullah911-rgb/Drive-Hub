@@ -3,7 +3,13 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import CompanyFormFields, { type CompanyFormValues } from '@/components/shared/CompanyFormFields'
+import CompanyDocumentUploads, {
+  EMPTY_COMPANY_DOCUMENTS,
+  appendCompanyDocumentsToFormData,
+  type CompanyDocumentFiles,
+} from '@/components/shared/CompanyDocumentUploads'
 import { validateCompanyForm } from '@/lib/countryFormConfig'
+import { validateCompanyDocuments } from '@/lib/companyDocuments'
 
 interface RegisterCompanyModalProps {
   open: boolean
@@ -32,6 +38,7 @@ export default function RegisterCompanyModal({
   const [loading, setLoading] = useState(false)
   const [countries, setCountries] = useState<{ id: string; name: string; code: string }[]>([])
   const [form, setForm] = useState<CompanyFormValues>({ ...EMPTY_FORM, countryId: defaultCountryId })
+  const [documents, setDocuments] = useState<CompanyDocumentFiles>({ ...EMPTY_COMPANY_DOCUMENTS })
 
   useEffect(() => {
     if (!open) return
@@ -44,6 +51,7 @@ export default function RegisterCompanyModal({
             ...EMPTY_FORM,
             countryId: defaultCountryId || prev.countryId || data.data[0]?.id || '',
           }))
+          setDocuments({ ...EMPTY_COMPANY_DOCUMENTS })
         }
       })
       .catch(() => toast.error('Failed to load countries'))
@@ -51,6 +59,10 @@ export default function RegisterCompanyModal({
 
   const handleChange = useCallback((updates: Partial<CompanyFormValues>) => {
     setForm(prev => ({ ...prev, ...updates }))
+  }, [])
+
+  const handleDocumentChange = useCallback((docType: keyof CompanyDocumentFiles, file: File | null) => {
+    setDocuments(prev => ({ ...prev, [docType]: file }))
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,13 +75,22 @@ export default function RegisterCompanyModal({
       return
     }
 
+    const docValidation = validateCompanyDocuments(documents)
+    if (!docValidation.valid) {
+      toast.error(docValidation.error || 'Please upload all required documents')
+      return
+    }
+
     setLoading(true)
     try {
+      const formData = new FormData()
+      Object.entries(form).forEach(([key, value]) => formData.append(key, value))
+      appendCompanyDocumentsToFormData(formData, documents)
+
       const res = await fetch('/api/auth/register-company', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(form),
+        body: formData,
       })
       const data = await res.json()
       if (data.success) {
@@ -88,6 +109,8 @@ export default function RegisterCompanyModal({
       setLoading(false)
     }
   }
+
+  const countryConfig = countries.find(c => c.id === form.countryId)
 
   return (
     <AnimatePresence>
@@ -133,6 +156,14 @@ export default function RegisterCompanyModal({
                 onChange={handleChange}
                 countries={countries}
                 countryPosition="top"
+                showDocumentHint={false}
+              />
+
+              <CompanyDocumentUploads
+                documents={documents}
+                onChange={handleDocumentChange}
+                idLabel={countryConfig?.code === 'PK' ? 'CNIC' : 'National ID'}
+                licenseLabel="Business License"
               />
 
               <div className="glass rounded-xl p-3 text-xs text-amber-400 border border-amber-400/20">

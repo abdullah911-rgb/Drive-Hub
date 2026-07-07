@@ -10,7 +10,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Email/phone and password required' }, { status: 400 })
     }
 
-    // Find user by email or phone
     let user = await db.getUserByEmail(emailOrPhone)
     if (!user) user = await db.getUserByPhone(emailOrPhone)
     if (!user) {

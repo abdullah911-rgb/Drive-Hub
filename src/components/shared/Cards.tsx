@@ -1,36 +1,32 @@
 'use client'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import SafeImage from '@/components/shared/SafeImage'
 import { buildWhatsAppUrl, WHATSAPP_DEFAULT_MESSAGE } from '@/lib/utils'
 import { RatingStars, StatusBadge } from '@/components/ui'
 import type { Car, Company } from '@/types'
 
-interface CarCardProps { car: Car; showStatus?: boolean }
+interface CarCardProps { car: Car; showStatus?: boolean; priority?: boolean }
 
-export function CarCard({ car, showStatus = false }: CarCardProps) {
+export function CarCard({ car, showStatus = false, priority = false }: CarCardProps) {
   const primaryImage = car.images?.find(i => i.isPrimary) || car.images?.[0]
   const company = car.company as Company | undefined
   const waUrl = company ? buildWhatsAppUrl(company.whatsAppNumber, WHATSAPP_DEFAULT_MESSAGE) : '#'
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="glass-card overflow-hidden flex flex-col group hover:shadow-xl"
-    >
-      {/* Image */}
+    <div className="glass-card overflow-hidden flex flex-col group hover:shadow-xl animate-fade-in">
       <div className="relative h-36 overflow-hidden bg-slate-100 dark:bg-dark-700">
         {primaryImage ? (
-          <img
+          <SafeImage
             src={primaryImage.imageUrl}
-            alt={car.name}
-            className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-108"
+            alt={`${car.brand} ${car.model} ${car.year} rental`}
+            fill
+            priority={priority}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-4xl opacity-20">🚗</div>
         )}
-        {/* Overlays */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <div className="absolute top-2 left-2 flex gap-1.5">
           <span className="bg-secondary-500/10 text-secondary-500 backdrop-blur-md px-2 py-0.5 rounded-md text-2xs font-bold uppercase tracking-wider border border-secondary-500/20">
@@ -42,10 +38,8 @@ export function CarCard({ car, showStatus = false }: CarCardProps) {
             <StatusBadge status={car.status} />
           </div>
         )}
-
       </div>
 
-      {/* Content */}
       <div className="p-3 flex flex-col gap-2 flex-1">
         <div>
           <h3 className="font-heading font-bold text-white text-sm leading-tight group-hover:text-primary transition-colors">
@@ -54,7 +48,6 @@ export function CarCard({ car, showStatus = false }: CarCardProps) {
           <p className="text-slate-400 text-2xs mt-0.5 font-medium">{car.year} • {car.color}</p>
         </div>
 
-        {/* Specs Pills */}
         <div className="flex flex-wrap gap-1">
           <span className="text-2xs glass px-2 py-0.5 rounded-full text-slate-300 font-semibold border border-border">
             ⛽ {car.fuelType}
@@ -67,10 +60,8 @@ export function CarCard({ car, showStatus = false }: CarCardProps) {
           </span>
         </div>
 
-        {/* Description */}
         <p className="text-slate-500 text-2xs leading-relaxed line-clamp-2">{car.description}</p>
 
-        {/* Buttons */}
         <div className="flex gap-2 mt-auto pt-2 border-t border-border/10">
           <Link href={`/marketplace/cars/${car.id}`} className="btn-primary text-2xs flex-1 py-1.5 font-bold rounded-lg shadow-sm">
             View Details
@@ -85,7 +76,7 @@ export function CarCard({ car, showStatus = false }: CarCardProps) {
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }
 
@@ -95,12 +86,7 @@ export function CompanyCard({ company }: CompanyCardProps) {
   const waUrl = buildWhatsAppUrl(company.whatsAppNumber, WHATSAPP_DEFAULT_MESSAGE)
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="glass-card p-4 flex flex-col gap-3 group hover:shadow-xl"
-    >
+    <div className="glass-card p-4 flex flex-col gap-3 group hover:shadow-xl animate-fade-in">
       <div className="flex items-start gap-2.5">
         <div className="w-10 h-10 rounded-lg gradient-primary flex items-center justify-center text-white font-black text-base flex-shrink-0 shadow-sm transition-transform duration-300 group-hover:rotate-6">
           {company.name[0].toUpperCase()}
@@ -138,6 +124,6 @@ export function CompanyCard({ company }: CompanyCardProps) {
           WhatsApp
         </a>
       </div>
-    </motion.div>
+    </div>
   )
 }

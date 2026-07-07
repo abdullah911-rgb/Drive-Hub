@@ -172,7 +172,11 @@ export const db = {
     if (filters?.status) where.status = filters.status
     const list = await prisma.company.findMany({
       where,
-      include: { subscriptions: true },
+      include: {
+        subscriptions: true,
+        documents: { where: { deletedAt: null } },
+        country: true,
+      },
     })
     return serializePrisma(list)
   },
@@ -233,6 +237,14 @@ export const db = {
       },
     })
     return serializePrisma(res)
+  },
+
+  async createCompanyDocuments(
+    documents: { id: string; companyId: string; docType: string; fileUrl: string }[]
+  ) {
+    if (documents.length === 0) return []
+    const res = await prisma.companyDocument.createMany({ data: documents })
+    return res
   },
 
   async getCars(filters?: {

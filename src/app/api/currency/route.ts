@@ -1,28 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { convertUSD } from '@/lib/currency'
+import { convertPKR } from '@/lib/currency'
+import { SUBSCRIPTION_BASE_PKR } from '@/lib/subscription'
 
-/**
- * GET /api/currency?from=USD&to=PKR&amount=99
- * Converts an amount from one currency to another (defaults to USD→target).
- */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const to = searchParams.get('to') || 'USD'
-    const amount = parseFloat(searchParams.get('amount') || '99')
+    const to = searchParams.get('to') || 'PKR'
+    const amount = parseFloat(searchParams.get('amount') || String(SUBSCRIPTION_BASE_PKR))
 
     if (isNaN(amount)) {
       return NextResponse.json({ success: false, error: 'Invalid amount' }, { status: 400 })
     }
 
-    const { amount: converted, rate } = await convertUSD(amount, to)
+    const { amount: converted, rate } = await convertPKR(amount, to)
 
     return NextResponse.json({
       success: true,
       data: {
-        from: 'USD',
+        from: 'PKR',
         to: to.toUpperCase(),
-        amountUSD: amount,
+        amountPKR: amount,
         converted: Math.round(converted * 100) / 100,
         rate,
       },

@@ -2,17 +2,32 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { hashPassword } from '@/lib/auth'
 import { validateCompanyForm } from '@/lib/countryFormConfig'
+import { validateLicenseNumber } from '@/lib/licenseValidation'
+import {
+  parseCompanyRegistrationRequest,
+  saveCompanyRegistrationDocuments,
+} from '@/lib/registerCompany'
 import { v4 as uuidv4 } from 'uuid'
 
 export async function POST(request: NextRequest) {
   try {
+    const contentType = request.headers.get('content-type') || ''
+
+    if (contentType.includes('multipart/form-data')) {
+      return await registerCompanyWithDocuments(request)
+    }
+
     const body = await request.json()
     const { type, ...data } = body
 
     if (type === 'customer') {
       return await registerCustomer(data)
-    } else if (type === 'company') {
-      return await registerCompany(data)
+    }
+    if (type === 'company') {
+      return NextResponse.json({
+        success: false,
+        error: 'Company registration requires CNIC and license document uploads. Please use the updated registration form.',
+      }, { status: 400 })
     }
 
     return NextResponse.json({ success: false, error: 'Invalid registration type' }, { status: 400 })
@@ -74,14 +89,16 @@ async function registerCustomer(data: {
   })
 }
 
-async function registerCompany(data: {
-  companyName: string; ownerName: string; cnicOrId: string; contactNumber: string
-  whatsAppNumber: string; email: string; businessAddress: string;
-  countryId: string; licenseNumber: string; password: string
-}) {
-  const existing = await db.getUserByEmail(data.email)
-  if (existing) return NextResponse.json({ success: false, error: 'Email already registered' }, { status: 409 })
+async function registerCompanyWithDocuments(request: NextRequest) {
+  const parsed = await parseCompanyRegistrationRequest(request, {
+    requireEmail: true,
+    requirePassword: true,
+  })
+  if (!parsed.ok) {
+    return NextResponse.json({ success: false, error: parsed.error }, { status: parsed.status })
+  }
 
+  const data = parsed.data
   const country = await db.getCountryById(data.countryId) as { code: string } | null
   const validation = validateCompanyForm(country?.code || 'PK', {
     cnicOrId: data.cnicOrId,
@@ -94,14 +111,27 @@ async function registerCompany(data: {
     return NextResponse.json({ success: false, error: validation.message }, { status: 400 })
   }
 
-  const passwordHash = await hashPassword(data.password)
+  const licenseCheck = validateLicenseNumber(
+    data.licenseNumber,
+    country?.code || 'PK',
+    data.cnicOrId
+  )
+  if (!licenseCheck.valid) {
+    return NextResponse.json({ success: false, error: `Invalid license number: ${licenseCheck.error}` }, { status: 422 })
+  }
+
+  const existing = await db.getUserByEmail(data.email!)
+  if (existing) return NextResponse.json({ success: false, error: 'Email already registered' }, { status: 409 })
+
+  const passwordHash = await hashPassword(data.password!)
   const userId = uuidv4()
   const countryCities = await db.getCities(data.countryId)
   const cityId = (countryCities as { id: string }[])[0]?.id || ''
+  const companyId = uuidv4()
 
   await db.createUser({
     id: userId,
-    email: data.email,
+    email: data.email!,
     phone: data.contactNumber,
     passwordHash,
     roleName: 'COMPANY',
@@ -112,14 +142,14 @@ async function registerCompany(data: {
   })
 
   await db.createCompany({
-    id: uuidv4(),
+    id: companyId,
     userId,
     name: data.companyName,
     ownerName: data.ownerName,
     cnicOrId: data.cnicOrId,
     contactNumber: data.contactNumber,
     whatsAppNumber: data.whatsAppNumber.replace(/\D/g, ''),
-    email: data.email,
+    email: data.email!,
     businessAddress: data.businessAddress,
     licenseNumber: data.licenseNumber,
     cityId,
@@ -127,13 +157,15 @@ async function registerCompany(data: {
     status: 'PENDING',
   })
 
+  await saveCompanyRegistrationDocuments(companyId, data.documents)
+
   const adminUser = await db.getAdminUser()
   if (adminUser) {
     await db.createNotification({
       userId: (adminUser as { id: string }).id,
       type: 'GENERAL',
       title: 'New Company Registration',
-      message: `${data.companyName} has registered and is awaiting approval.`,
+      message: `${data.companyName} has registered with verification documents and is awaiting approval.`,
       isRead: false,
     })
   }

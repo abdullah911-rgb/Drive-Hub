@@ -28,6 +28,7 @@ interface CompanyFormFieldsProps {
   countries: { id: string; name: string; code: string }[]
   countryPosition?: 'top' | 'bottom'
   showCountryBanner?: boolean
+  showDocumentHint?: boolean
 }
 
 const labelClass = 'text-xs font-medium text-slate-400 mb-1 block'
@@ -39,6 +40,7 @@ export default function CompanyFormFields({
   countries,
   countryPosition = 'bottom',
   showCountryBanner = true,
+  showDocumentHint = true,
 }: CompanyFormFieldsProps) {
   const prevCountryId = useRef(form.countryId)
   const config = getCountryFormConfigById(form.countryId, countries)
@@ -216,9 +218,11 @@ export default function CompanyFormFields({
 
       {countryPosition === 'bottom' && countrySelect}
 
-      <div className="glass rounded-xl p-3 text-xs text-amber-400 border border-amber-400/20">
-        📄 {config.documentHint}
-      </div>
+      {showDocumentHint && (
+        <div className="glass rounded-xl p-3 text-xs text-amber-400 border border-amber-400/20">
+          📄 {config.documentHint}
+        </div>
+      )}
     </div>
   )
 }

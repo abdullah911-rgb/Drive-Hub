@@ -11,12 +11,10 @@ function MarketplaceContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
 
-  // State
   const [countries, setCountries] = useState<Country[]>([])
   const [cars, setCars] = useState<Car[]>([])
   const [loading, setLoading] = useState(true)
-  
-  // Selected Country and Filters
+
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedBrand, setSelectedBrand] = useState('')
@@ -25,7 +23,6 @@ function MarketplaceContent() {
   const [selectedSeating, setSelectedSeating] = useState('')
   const [showMobileFilters, setShowMobileFilters] = useState(false)
 
-  // Fetch Countries on load
   useEffect(() => {
     async function fetchCountries() {
       try {
@@ -41,7 +38,6 @@ function MarketplaceContent() {
     fetchCountries()
   }, [])
 
-  // Sync selected country with URL query param or SessionStorage
   useEffect(() => {
     if (countries.length === 0) return
 
@@ -59,7 +55,6 @@ function MarketplaceContent() {
     }
   }, [countries, searchParams])
 
-  // Fetch filtered cars
   const fetchCars = useCallback(async () => {
     if (!selectedCountry) return
     setLoading(true)
@@ -68,6 +63,8 @@ function MarketplaceContent() {
       const params = new URLSearchParams()
       params.append('countryId', selectedCountry.id)
       params.append('status', 'APPROVED')
+      params.append('limit', '100')
+      params.append('lite', 'true')
 
       if (selectedBrand) params.append('brand', selectedBrand)
       if (selectedFuelType) params.append('fuelType', selectedFuelType)
@@ -87,7 +84,6 @@ function MarketplaceContent() {
     }
   }, [selectedCountry, selectedBrand, selectedFuelType, selectedTransmission, selectedSeating, searchQuery])
 
-  // Trigger search on filter/search change
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
       fetchCars()
@@ -112,7 +108,7 @@ function MarketplaceContent() {
 
   return (
     <div className="container-app py-8">
-      {/* Title Header */}
+
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
         <div>
           <div className="flex items-center gap-3 mb-2">
@@ -141,7 +137,6 @@ function MarketplaceContent() {
           </p>
         </div>
 
-        {/* Search Bar */}
         <div className="relative w-full md:w-80">
           <input
             type="text"
@@ -155,7 +150,7 @@ function MarketplaceContent() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Desktop Sidebar Filters */}
+
         <aside className="hidden lg:block lg:col-span-1 glass-card p-6 h-fit sticky top-24 border border-white/5">
           <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4">
             <h3 className="font-heading font-bold text-white text-base">Filters</h3>
@@ -168,7 +163,7 @@ function MarketplaceContent() {
           </div>
 
           <div className="flex flex-col gap-5">
-            {/* Brand */}
+
             <div>
               <label className="text-slate-400 text-xs font-semibold mb-2 block">Brand</label>
               <select
@@ -190,7 +185,6 @@ function MarketplaceContent() {
               </select>
             </div>
 
-            {/* Transmission */}
             <div>
               <label className="text-slate-400 text-xs font-semibold mb-2 block">Transmission</label>
               <select
@@ -204,7 +198,6 @@ function MarketplaceContent() {
               </select>
             </div>
 
-            {/* Fuel Type */}
             <div>
               <label className="text-slate-400 text-xs font-semibold mb-2 block">Fuel Type</label>
               <select
@@ -220,7 +213,6 @@ function MarketplaceContent() {
               </select>
             </div>
 
-            {/* Seating Capacity */}
             <div>
               <label className="text-slate-400 text-xs font-semibold mb-2 block">Min Seating</label>
               <select
@@ -238,7 +230,6 @@ function MarketplaceContent() {
           </div>
         </aside>
 
-        {/* Mobile Filter Toggle */}
         <div className="lg:hidden flex items-center justify-between gap-4">
           <button
             onClick={() => setShowMobileFilters(true)}
@@ -256,11 +247,10 @@ function MarketplaceContent() {
           )}
         </div>
 
-        {/* Mobile Filters Sliding Drawer */}
         <AnimatePresence>
           {showMobileFilters && (
             <>
-              {/* Overlay */}
+
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 0.5 }}
@@ -268,7 +258,7 @@ function MarketplaceContent() {
                 onClick={() => setShowMobileFilters(false)}
                 className="fixed inset-0 bg-black z-50 lg:hidden"
               />
-              {/* Drawer */}
+
               <motion.div
                 initial={{ x: '100%' }}
                 animate={{ x: 0 }}
@@ -374,7 +364,6 @@ function MarketplaceContent() {
           )}
         </AnimatePresence>
 
-        {/* Cars Grid */}
         <div className="lg:col-span-3">
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

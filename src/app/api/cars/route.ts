@@ -3,6 +3,34 @@ import { prisma } from '@/lib/prisma'
 import { serializePrisma } from '@/lib/serialize'
 import { getCurrentUser } from '@/lib/auth'
 
+const listInclude = {
+  images: { take: 1, orderBy: { isPrimary: 'desc' as const } },
+  country: { select: { id: true, name: true, code: true } },
+  city: { select: { id: true, name: true } },
+  company: {
+    select: {
+      id: true,
+      name: true,
+      whatsAppNumber: true,
+      status: true,
+      country: { select: { name: true } },
+    },
+  },
+}
+
+const fullInclude = {
+  images: true,
+  country: true,
+  city: true,
+  company: {
+    include: {
+      country: true,
+      city: true,
+      subscriptions: { orderBy: { createdAt: 'desc' as const }, take: 1 },
+    },
+  },
+}
+
 export async function GET(request: NextRequest) {
   try {
     const currentUser = await getCurrentUser()
@@ -18,6 +46,9 @@ export async function GET(request: NextRequest) {
     const companyId = searchParams.get('companyId') || undefined
     const search = searchParams.get('search') || undefined
     const status = isAdmin ? (searchParams.get('status') || undefined) : 'APPROVED'
+    const limit = Math.min(parseInt(searchParams.get('limit') || '100'), isAdmin ? 500 : 100)
+    const offset = parseInt(searchParams.get('offset') || '0')
+    const lite = searchParams.get('lite') !== 'false'
 
     const where: Record<string, unknown> = { deletedAt: null }
     if (countryId) where.countryId = countryId
@@ -45,23 +76,22 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const cars = await prisma.car.findMany({
-      where,
-      include: {
-        images: true,
-        country: true,
-        city: true,
-        company: {
-          include: {
-            country: true,
-            city: true,
-            subscriptions: { orderBy: { createdAt: 'desc' } },
-          },
-        },
-      },
-    })
+    const [cars, total] = await Promise.all([
+      prisma.car.findMany({
+        where,
+        include: lite && !isAdmin ? listInclude : fullInclude,
+        take: limit,
+        skip: offset,
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.car.count({ where }),
+    ])
 
-    return NextResponse.json({ success: true, data: serializePrisma(cars) })
+    return NextResponse.json({
+      success: true,
+      data: serializePrisma(cars),
+      pagination: { total, limit, offset, hasMore: offset + cars.length < total },
+    })
   } catch (error) {
     console.error('Cars GET error:', error)
     return NextResponse.json({ success: false, error: 'Failed to fetch cars' }, { status: 500 })

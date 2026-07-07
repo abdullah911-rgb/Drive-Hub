@@ -7,10 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ─────────────────────────────────────────────
-// ENUMS
-// ─────────────────────────────────────────────
-
 enum RoleName {
   CUSTOMER
   COMPANY
@@ -68,10 +64,6 @@ enum NotificationType {
   GENERAL
 }
 
-// ─────────────────────────────────────────────
-// GEOGRAPHIC
-// ─────────────────────────────────────────────
-
 model Country {
   id        String    @id @default(uuid()) @db.Uuid
   name      String    @unique
@@ -106,10 +98,6 @@ model City {
   @@map("cities")
 }
 
-// ─────────────────────────────────────────────
-// ROLES & PERMISSIONS
-// ─────────────────────────────────────────────
-
 model Role {
   id          String       @id @default(uuid()) @db.Uuid
   name        RoleName     @unique
@@ -135,10 +123,6 @@ model Permission {
   @@map("permissions")
 }
 
-// ─────────────────────────────────────────────
-// USERS
-// ─────────────────────────────────────────────
-
 model User {
   id             String          @id @default(uuid()) @db.Uuid
   email          String          @unique
@@ -149,7 +133,7 @@ model User {
   status         ApprovalStatus  @default(PENDING)
   emailVerified  Boolean         @default(false) @map("email_verified")
   phoneVerified  Boolean         @default(false) @map("phone_verified")
-  // Customer-specific fields
+
   fullName       String?         @map("full_name")
   fatherName     String?         @map("father_name")
   cnicOrId       String?         @map("cnic_or_id")
@@ -161,7 +145,7 @@ model User {
   country        Country?        @relation(fields: [countryId], references: [id])
   emergencyName  String?         @map("emergency_name")
   emergencyPhone String?         @map("emergency_phone")
-  // Relations
+
   company        Company?
   reviews        Review[]
   favorites      Favorite[]
@@ -174,12 +158,10 @@ model User {
   updatedAt      DateTime        @updatedAt @map("updated_at")
   deletedAt      DateTime?       @map("deleted_at")
 
+  @@index([status])
+  @@index([deletedAt])
   @@map("users")
 }
-
-// ─────────────────────────────────────────────
-// COMPANIES
-// ─────────────────────────────────────────────
 
 model Company {
   id              String            @id @default(uuid()) @db.Uuid
@@ -207,6 +189,8 @@ model Company {
   updatedAt       DateTime          @updatedAt @map("updated_at")
   deletedAt       DateTime?         @map("deleted_at")
 
+  @@index([status])
+  @@index([deletedAt])
   @@map("companies")
 }
 
@@ -222,10 +206,6 @@ model CompanyDocument {
 
   @@map("company_documents")
 }
-
-// ─────────────────────────────────────────────
-// SUBSCRIPTIONS & PAYMENTS
-// ─────────────────────────────────────────────
 
 model Subscription {
   id           String             @id @default(uuid()) @db.Uuid
@@ -244,6 +224,8 @@ model Subscription {
   updatedAt    DateTime           @updatedAt @map("updated_at")
   deletedAt    DateTime?          @map("deleted_at")
 
+  @@index([companyId])
+  @@index([status])
   @@map("subscriptions")
 }
 
@@ -277,6 +259,8 @@ model Payment {
   updatedAt      DateTime           @updatedAt @map("updated_at")
   deletedAt      DateTime?          @map("deleted_at")
 
+  @@index([subscriptionId])
+  @@index([status])
   @@map("payments")
 }
 
@@ -290,10 +274,6 @@ model BankDetails {
 
   @@map("bank_details")
 }
-
-// ─────────────────────────────────────────────
-// CARS
-// ─────────────────────────────────────────────
 
 model Car {
   id              String           @id @default(uuid()) @db.Uuid
@@ -324,6 +304,11 @@ model Car {
   updatedAt       DateTime         @updatedAt @map("updated_at")
   deletedAt       DateTime?        @map("deleted_at")
 
+  @@index([companyId])
+  @@index([countryId])
+  @@index([cityId])
+  @@index([status])
+  @@index([deletedAt])
   @@map("cars")
 }
 
@@ -354,10 +339,6 @@ model CarDocument {
   @@map("car_documents")
 }
 
-// ─────────────────────────────────────────────
-// REVIEWS & FAVORITES
-// ─────────────────────────────────────────────
-
 model Review {
   id        String    @id @default(uuid()) @db.Uuid
   companyId String    @db.Uuid @map("company_id")
@@ -371,6 +352,9 @@ model Review {
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
+  @@index([companyId])
+  @@index([userId])
+  @@index([isVisible])
   @@map("reviews")
 }
 
@@ -387,10 +371,6 @@ model Favorite {
   @@map("favorites")
 }
 
-// ─────────────────────────────────────────────
-// NOTIFICATIONS & OTP
-// ─────────────────────────────────────────────
-
 model Notification {
   id        String           @id @default(uuid()) @db.Uuid
   userId    String           @db.Uuid @map("user_id")
@@ -403,6 +383,8 @@ model Notification {
   createdAt DateTime         @default(now()) @map("created_at")
   deletedAt DateTime?        @map("deleted_at")
 
+  @@index([userId])
+  @@index([isRead])
   @@map("notifications")
 }
 
@@ -418,10 +400,6 @@ model OtpVerification {
 
   @@map("otp_verifications")
 }
-
-// ─────────────────────────────────────────────
-// AUDIT & LOGS
-// ─────────────────────────────────────────────
 
 model AdminLog {
   id        String   @id @default(uuid()) @db.Uuid
@@ -460,10 +438,6 @@ model ActivityLog {
 
   @@map("activity_logs")
 }
-
-// ─────────────────────────────────────────────
-// SUPPORT
-// ─────────────────────────────────────────────
 
 model SupportTicket {
   id          String    @id @default(uuid()) @db.Uuid

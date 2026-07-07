@@ -1,6 +1,3 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Country-specific registration field patterns, labels, and validation
-// ─────────────────────────────────────────────────────────────────────────────
 
 export type FieldConfig = {
   label: string
@@ -54,10 +51,8 @@ const DEFAULT: CountryRegistrationConfig = {
     example: '123 Main Street, City',
     pattern: /^.{10,200}$/,
   },
-  documentHint: 'Upload ID and license documents from your company dashboard after approval.',
+  documentHint: 'Upload front and back of your ID and business license during registration.',
 }
-
-// ─── Formatters ───────────────────────────────────────────────────────────────
 
 function digitsOnly(v: string) {
   return v.replace(/\D/g, '')
@@ -189,8 +184,6 @@ function formatMXPhone(value: string): string {
   return `+52 ${n.slice(0, 3)} ${n.slice(3, 6)} ${n.slice(6)}`
 }
 
-// ─── Per-country configs ──────────────────────────────────────────────────────
-
 export const COUNTRY_FORM_CONFIGS: Record<string, CountryRegistrationConfig> = {
   PK: {
     code: 'PK',
@@ -227,7 +220,7 @@ export const COUNTRY_FORM_CONFIGS: Record<string, CountryRegistrationConfig> = {
       example: 'Shop 12, Tariq Road, Karachi',
       pattern: /^.{10,200}$/,
     },
-    documentHint: 'Upload CNIC and vehicle rental license from your company dashboard after approval.',
+    documentHint: 'Upload front and back of CNIC and vehicle rental license during registration.',
   },
 
   SA: {
@@ -550,7 +543,6 @@ export const COUNTRY_FORM_CONFIGS: Record<string, CountryRegistrationConfig> = {
     documentHint: 'Laden Sie Personalausweis und Gewerbeschein nach der Freigabe hoch.',
   },
 
-  // ─── Gulf States ────────────────────────────────────────────────────────────
   QA: {
     code: 'QA',
     nationalId: {
@@ -703,7 +695,6 @@ export const COUNTRY_FORM_CONFIGS: Record<string, CountryRegistrationConfig> = {
     documentHint: 'Upload Civil ID and CR after approval.',
   },
 
-  // ─── More regions ───────────────────────────────────────────────────────────
   BD: {
     code: 'BD',
     nationalId: {

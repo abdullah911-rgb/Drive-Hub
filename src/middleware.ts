@@ -3,19 +3,17 @@ import type { NextRequest } from 'next/server'
 import { jwtVerify } from 'jose'
 import { getJwtSecret } from '@/lib/env'
 
-const PUBLIC_PATHS = ['/', '/auth', '/contact', '/privacy', '/terms', '/api/auth/login', '/api/auth/register', '/api/auth/logout', '/api/countries', '/api/cities']
+const PUBLIC_PATHS = ['/', '/about', '/auth', '/contact', '/privacy', '/terms', '/api/auth/login', '/api/auth/register', '/api/auth/logout', '/api/countries', '/api/cities']
 const COMPANY_PATHS = ['/dashboard/company']
 const ADMIN_PATHS = ['/dashboard/admin']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Customer portal removed — redirect to home
   if (pathname.startsWith('/dashboard/customer')) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
-  // Allow public paths and static assets
   if (
     PUBLIC_PATHS.some(p => pathname === p || pathname.startsWith(p + '/')) ||
     pathname.startsWith('/_next') ||
@@ -42,12 +40,10 @@ export async function middleware(request: NextRequest) {
     const role = payload.role as string
     const status = payload.status as string
 
-    // Block suspended/banned users
     if (status === 'BANNED' || status === 'SUSPENDED') {
       return NextResponse.redirect(new URL('/auth?error=account_suspended', request.url))
     }
 
-    // Role-based path protection
     if (ADMIN_PATHS.some(p => pathname.startsWith(p)) && role !== 'ADMIN' && role !== 'SUPER_ADMIN') {
       return NextResponse.redirect(new URL('/auth?error=unauthorized', request.url))
     }
@@ -55,7 +51,6 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/auth?error=unauthorized', request.url))
     }
 
-    // Add user info to headers for server components
     const requestHeaders = new Headers(request.headers)
     requestHeaders.set('x-user-id', payload.userId as string)
     requestHeaders.set('x-user-role', role)
@@ -63,7 +58,7 @@ export async function middleware(request: NextRequest) {
 
     return NextResponse.next({ request: { headers: requestHeaders } })
   } catch {
-    // Invalid token
+
     if (pathname.startsWith('/dashboard')) {
       const response = NextResponse.redirect(new URL('/auth', request.url))
       response.cookies.delete('auth_token')

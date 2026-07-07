@@ -41,7 +41,7 @@ export function slugify(str: string): string {
 }
 
 export function formatPhoneForWhatsApp(phone: string): string {
-  // Remove all non-digit chars, ensure starts without +
+
   return phone.replace(/\D/g, '')
 }
 

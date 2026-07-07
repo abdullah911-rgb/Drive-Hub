@@ -3,35 +3,85 @@ import { Inter, Outfit } from 'next/font/google'
 import './globals.css'
 import { Toaster } from 'sonner'
 import { ThemeProvider } from '@/components/shared/ThemeProvider'
+import ServiceWorkerRegister from '@/components/shared/ServiceWorkerRegister'
+import JsonLd from '@/components/seo/JsonLd'
+import { siteConfig, metadataBase, organizationJsonLd, websiteJsonLd } from '@/lib/seo'
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
-const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit', display: 'swap' })
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+  weight: ['400', '500', '600', '700', '800', '900'],
+})
+const outfit = Outfit({
+  subsets: ['latin'],
+  variable: '--font-outfit',
+  display: 'swap',
+  weight: ['400', '500', '600', '700', '800', '900'],
+})
 
 export const metadata: Metadata = {
-  title: { default: 'DriveHub Marketplace — Find Car Rentals Worldwide', template: '%s | DriveHub Marketplace' },
-  description: 'Connect with trusted car rental companies and individual car owners worldwide. Browse vehicles, view details, and contact owners directly on WhatsApp.',
-  keywords: ['car rental', 'global car rental', 'vehicle rental', 'rent a car', 'car marketplace', 'DriveHub'],
-  authors: [{ name: 'DriveHub' }],
+  metadataBase,
+  title: {
+    default: 'DriveHub Marketplace — Find Car Rentals Worldwide',
+    template: '%s | DriveHub Marketplace',
+  },
+  description: siteConfig.description,
+  keywords: siteConfig.keywords,
+  authors: [{ name: 'DriveHub', url: siteConfig.url }],
+  creator: 'DriveHub',
+  publisher: 'DriveHub',
+  applicationName: siteConfig.shortName,
+  category: 'Automotive',
   openGraph: {
     title: 'DriveHub Marketplace — Global Car Rentals',
-    description: 'Find and rent cars from trusted companies worldwide.',
+    description: siteConfig.description,
     type: 'website',
-    locale: 'en_US',
+    locale: siteConfig.locale,
+    siteName: siteConfig.name,
+    url: siteConfig.url,
+    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: siteConfig.name }],
   },
-  robots: { index: true, follow: true },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'DriveHub Marketplace — Global Car Rentals',
+    description: siteConfig.description,
+    images: ['/opengraph-image'],
+    creator: siteConfig.twitterHandle,
+  },
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
+  alternates: { canonical: siteConfig.url },
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    title: siteConfig.shortName,
+    statusBarStyle: 'default',
+  },
+  icons: {
+    icon: '/icon',
+    apple: '/apple-icon',
+  },
 }
 
 export const viewport: Viewport = {
-  themeColor: '#4F46E5',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#4F46E5' },
+    { media: '(prefers-color-scheme: dark)', color: '#4F46E5' },
+  ],
   width: 'device-width',
   initialScale: 1,
+  maximumScale: 5,
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
+      </head>
       <body className={`${inter.variable} ${outfit.variable} font-sans bg-background text-foreground antialiased transition-colors duration-300`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+          <ServiceWorkerRegister />
           {children}
           <Toaster
             theme="system"
