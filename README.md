@@ -16,7 +16,7 @@ DriveHub is a fully-featured, production-ready, global peer-to-peer and agency-l
 * **🌐 Global Localization:** Multi-country structure (Pakistan, Saudi Arabia, UAE, etc.) with automated country-specific business license formats, currency conversion, dial codes, and flag matching.
 * **🛡️ Secure User Authentication:** Role-based access control (`SUPER_ADMIN`, `ADMIN`, `COMPANY`, `CUSTOMER`) using secure, signed JWT tokens stored in HTTP-only cookies.
 * **💼 Company Fleet Management:** Dedicated dashboard for companies to upload vehicles, manage active listings, and check customer feedback scores.
-* **💳 Subscription System:** Automated $99/month subscription flow with admin-controlled bank wire transfers, Pakistani Safepay integrations, and Saudi Arabian Tap Payment APIs.
+* **💳 Subscription System:** Automated 8500pkr/month subscription flow with admin-controlled bank wire transfers, Pakistani Safepay integrations, and Saudi Arabian Tap Payment APIs.
 * **📋 Business License Verification:** Client-side and server-side format verification (FBR NTN validation for PK, 10-digit Commercial Registration verification for SA) with manual validation indicators.
 * **✉️ Notification Dispatcher:** Real-time Gmail SMTP notifications and automated pre-formatted `wa.me` WhatsApp message generators triggering on all admin approval changes.
 * **⚡ High Performance:** Next.js 15 routing, static generation optimization, fully optimized Prisma indexes, and query optimizations targeting N+1 loads.
