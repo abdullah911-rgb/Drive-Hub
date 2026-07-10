@@ -15,7 +15,7 @@ export async function GET() {
     }
 
     let companyId: string | null = null
-    if (user.roleName === 'COMPANY') {
+    if (user.roleName === 'COMPANY' || user.roleName === 'HOTEL') {
       const company = await db.getCompanyByUserId(user.id)
       companyId = (company as { id: string } | null)?.id || null
     }

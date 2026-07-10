@@ -3,12 +3,22 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
-import { StatusBadge } from '@/components/ui'
 import { formatDate } from '@/lib/utils'
 import { COUNTRIES } from '@/lib/countries'
 import type { AdminStats, User, Company, Car, Payment, Review, Notification, Subscription } from '@/types'
 
-type AdminTab = 'stats' | 'notifications' | 'companies' | 'cars' | 'payments' | 'users' | 'reviews'
+interface Room {
+  id: string
+  name: string
+  roomType: string
+  description: string
+  pricePerNight: number
+  capacity: number
+  status: string
+  company?: { name: string }
+}
+
+type AdminTab = 'stats' | 'notifications' | 'companies' | 'cars' | 'rooms' | 'payments' | 'users' | 'reviews'
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -19,11 +29,11 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<User[]>([])
   const [companies, setCompanies] = useState<Company[]>([])
   const [cars, setCars] = useState<Car[]>([])
+  const [rooms, setRooms] = useState<Room[]>([])
   const [payments, setPayments] = useState<Payment[]>([])
   const [reviews, setReviews] = useState<Review[]>([])
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
-  const [bankDetails, setBankDetails] = useState<{ bankName: string; accountNumber: string; accountName: string } | null>(null)
   const [updatingBank, setUpdatingBank] = useState(false)
   const [bankForm, setBankForm] = useState({ bankName: '', accountNumber: '', accountName: '' })
 
@@ -46,11 +56,12 @@ export default function AdminDashboard() {
       if (res.ok) {
         const result = await res.json()
         if (result.success && result.data) {
-          const { stats, users, companies, cars, payments, reviews, notifications, subscriptions, bankDetails } = result.data
+          const { stats, users, companies, cars, rooms, payments, reviews, notifications, subscriptions, bankDetails } = result.data
           setStats(stats || null)
           setUsers(users || [])
           setCompanies(companies || [])
           setCars(cars || [])
+          setRooms(rooms || [])
           setPayments(payments || [])
           setReviews(reviews || [])
           setNotifications(notifications || [])
@@ -69,7 +80,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     loadData()
-  }, [])
+  }, [loadData])
 
   const handleAdminAction = async (resource: string, id: string, action: string) => {
     try {
@@ -146,14 +157,16 @@ export default function AdminDashboard() {
 
   const pendingCompanies = companies.filter(c => c.status === 'PENDING')
   const pendingCars = cars.filter(c => c.status === 'PENDING')
+  const pendingRooms = rooms.filter(r => r.status === 'PENDING')
   const pendingPayments = payments.filter(p => p.status === 'PENDING')
   const unreadNotifications = notifications.filter(n => !n.isRead)
 
   const baseCards = [
     { title: 'Total Registered Users', value: stats?.totalUsers || 0, desc: `${stats?.totalCustomers || 0} Customers` },
-    { title: 'Active Partners (Companies)', value: stats?.totalCompanies || 0, desc: 'Vetted car rental agencies' },
+    { title: 'Active Partners', value: stats?.totalCompanies || 0, desc: 'Car rental & hotel companies' },
     { title: 'Vehicles Catalog', value: stats?.totalCars || 0, desc: 'Total vehicles listed' },
-    { title: 'Subscribed Companies', value: stats?.activeSubscriptions || 0, desc: 'Active subscription plans' },
+    { title: 'Hotel Rooms', value: (stats as AdminStats & { totalRooms?: number })?.totalRooms || 0, desc: 'Total rooms listed' },
+    { title: 'Subscribed Partners', value: stats?.activeSubscriptions || 0, desc: 'Active subscription plans' },
   ]
 
   const revenueCards: { title: string; value: string; desc: string }[] = []
@@ -201,6 +214,7 @@ export default function AdminDashboard() {
             { id: 'stats', label: '📊 Stats & Performance', badge: 0 },
             { id: 'companies', label: '🏢 Company Approvals', badge: pendingCompanies.length },
             { id: 'cars', label: '🚗 Vehicle Listings', badge: pendingCars.length },
+            { id: 'rooms', label: '🏨 Hotel Rooms', badge: pendingRooms.length },
             { id: 'payments', label: '💳 Payment Verification', badge: pendingPayments.length },
             { id: 'users', label: '👥 User Management', badge: 0 },
             { id: 'reviews', label: '⭐ Review Moderation', badge: 0 },
@@ -337,7 +351,7 @@ export default function AdminDashboard() {
                           )}
 
                           {(() => {
-                            const code = COUNTRIES.find(c => c.name === (comp as any).country?.name || c.code === (comp as any).country?.code)?.code
+                            const code = COUNTRIES.find(c => c.name === comp.country?.name || c.code === comp.country?.code)?.code
                             const sa10 = /^[12]\d{9}$/.test(comp.licenseNumber || '')
                             const pk7 = /^\d{7}$/.test(comp.licenseNumber || '')
                             const generic = /^[A-Z0-9\-\/]{5,20}$/i.test(comp.licenseNumber || '')
@@ -465,6 +479,80 @@ export default function AdminDashboard() {
               </motion.div>
             )}
 
+            {activeTab === 'rooms' && (
+              <motion.div
+                key="rooms"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="flex flex-col gap-4"
+              >
+                <h3 className="font-heading font-bold text-white text-lg mb-2">Hotel Room Listings</h3>
+
+                {pendingRooms.length > 0 ? (
+                  <>
+                    <p className="text-amber-400 text-xs mb-1">{pendingRooms.length} room(s) awaiting approval</p>
+                    {pendingRooms.map(room => (
+                      <div key={room.id} className="glass-card p-5 border border-white/5 flex flex-col md:flex-row justify-between gap-4">
+                        <div>
+                          <h4 className="font-bold text-white text-sm mb-1">{room.name}</h4>
+                          <p className="text-slate-400 text-xs">Type: {room.roomType} • Capacity: {room.capacity} • ${room.pricePerNight}/night</p>
+                          {room.company && <p className="text-primary text-xs">Hotel: {room.company.name}</p>}
+                          <p className="text-slate-500 text-xs mt-1 line-clamp-2">{room.description}</p>
+                        </div>
+                        <div className="flex items-center gap-2 mt-2 md:mt-0 flex-shrink-0">
+                          <button
+                            onClick={() => handleAdminAction('room', room.id, 'approve')}
+                            className="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold px-4 py-2 rounded-lg"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={() => handleAdminAction('room', room.id, 'reject')}
+                            className="bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-4 py-2 rounded-lg"
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                ) : null}
+
+                <h4 className="font-bold text-white text-sm mt-2">All Rooms ({rooms.length})</h4>
+                {rooms.filter(r => r.status !== 'PENDING').length > 0 ? (
+                  rooms.filter(r => r.status !== 'PENDING').map(room => (
+                    <div key={room.id} className="glass-card p-4 border border-white/5 flex flex-col md:flex-row justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-bold text-white text-sm">{room.name}</h4>
+                          <span className={`text-3xs px-2 py-0.5 rounded border font-semibold ${
+                            room.status === 'APPROVED' ? 'text-emerald-400 border-emerald-400/20 bg-emerald-400/5'
+                            : room.status === 'REJECTED' ? 'text-red-400 border-red-400/20 bg-red-400/5'
+                            : 'text-slate-400 border-slate-400/20'
+                          }`}>{room.status}</span>
+                        </div>
+                        <p className="text-slate-400 text-xs">{room.roomType} • Cap: {room.capacity} • ${room.pricePerNight}/night</p>
+                        {room.company && <p className="text-primary text-xs">{room.company.name}</p>}
+                      </div>
+                      {room.status === 'APPROVED' && (
+                        <button
+                          onClick={() => handleAdminAction('room', room.id, 'suspend')}
+                          className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg self-center"
+                        >
+                          Suspend
+                        </button>
+                      )}
+                    </div>
+                  ))
+                ) : rooms.length === 0 ? (
+                  <div className="glass-card p-12 text-center border border-white/5 text-slate-400 text-sm">
+                    No hotel room listings yet.
+                  </div>
+                ) : null}
+              </motion.div>
+            )}
+
             {activeTab === 'payments' && (
               <motion.div
                 key="payments"
@@ -579,27 +667,34 @@ export default function AdminDashboard() {
                       <p className="text-slate-500 text-xs">Phone: {u.phone}</p>
                     </div>
                     <div className="flex items-center gap-2 mt-2 md:mt-0 flex-shrink-0">
-                      {u.status !== 'BANNED' && u.status !== 'SUSPENDED' ? (
+                      {u.status === 'PENDING' ? (
                         <>
+                          <button
+                            onClick={() => handleAdminAction('user', u.id, 'approve')}
+                            className="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg"
+                          >
+                            Approve
+                          </button>
                           <button
                             onClick={() => handleAdminAction('user', u.id, 'suspend')}
                             className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg"
                           >
                             Suspend
                           </button>
-                          <button
-                            onClick={() => handleAdminAction('user', u.id, 'ban')}
-                            className="bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg"
-                          >
-                            Ban
-                          </button>
                         </>
+                      ) : u.status === 'APPROVED' ? (
+                        <button
+                          onClick={() => handleAdminAction('user', u.id, 'suspend')}
+                          className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg"
+                        >
+                          Suspend
+                        </button>
                       ) : (
                         <button
                           onClick={() => handleAdminAction('user', u.id, 'restore')}
                           className="bg-primary hover:bg-primary/80 text-white text-xs font-semibold px-4 py-2 rounded-lg"
                         >
-                          Unban / Restore
+                          Restore
                         </button>
                       )}
                     </div>
@@ -622,7 +717,7 @@ export default function AdminDashboard() {
                   <div key={rev.id} className="glass-card p-5 border border-white/5 flex flex-col md:flex-row justify-between gap-4">
                     <div>
                       <h4 className="font-bold text-white text-sm mb-1">Company ID: {rev.companyId}</h4>
-                      <p className="text-slate-400 text-xs">Rating: {rev.rating} ★ • Comment: "{rev.comment}"</p>
+                      <p className="text-slate-400 text-xs">Rating: {rev.rating} ★ • Comment: &quot;{rev.comment}&quot;</p>
                       <p className="text-slate-500 text-xs">Visible on profile: {rev.isVisible ? 'Yes' : 'No'}</p>
                     </div>
                     <div className="flex items-center gap-2 mt-2 md:mt-0 flex-shrink-0">

@@ -5,6 +5,7 @@ import { getJwtSecret } from '@/lib/env'
 
 const PUBLIC_PATHS = ['/', '/about', '/auth', '/contact', '/privacy', '/terms', '/api/auth/login', '/api/auth/register', '/api/auth/logout', '/api/countries', '/api/cities']
 const COMPANY_PATHS = ['/dashboard/company']
+const HOTEL_PATHS = ['/dashboard/hotel']
 const ADMIN_PATHS = ['/dashboard/admin']
 
 export async function middleware(request: NextRequest) {
@@ -19,6 +20,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/_next') ||
     pathname.startsWith('/favicon') ||
     pathname.startsWith('/api/cars') ||
+    pathname.startsWith('/api/rooms') ||
     pathname.startsWith('/api/companies') ||
     pathname.startsWith('/marketplace') ||
     pathname.includes('.')
@@ -48,6 +50,9 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/auth?error=unauthorized', request.url))
     }
     if (COMPANY_PATHS.some(p => pathname.startsWith(p)) && role !== 'COMPANY') {
+      return NextResponse.redirect(new URL('/auth?error=unauthorized', request.url))
+    }
+    if (HOTEL_PATHS.some(p => pathname.startsWith(p)) && role !== 'HOTEL') {
       return NextResponse.redirect(new URL('/auth?error=unauthorized', request.url))
     }
 

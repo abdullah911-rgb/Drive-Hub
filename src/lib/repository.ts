@@ -124,7 +124,8 @@ export const db = {
     emailVerified?: boolean
     phoneVerified?: boolean
   }) {
-    let { roleId, roleName, dateOfBirth, ...rest } = data
+    let roleId = data.roleId
+    const { roleName, dateOfBirth, ...rest } = data
     if (!roleId || !isValidUuid(roleId)) {
       roleId = undefined
       if (roleName) {
@@ -187,6 +188,7 @@ export const db = {
       include: {
         subscriptions: { orderBy: { createdAt: 'desc' } },
         cars: { where: { deletedAt: null }, include: { images: true } },
+        rooms: { where: { deletedAt: null }, include: { images: true } },
       },
     })
     return serializePrisma(res)
@@ -218,6 +220,7 @@ export const db = {
     cityId: string
     countryId: string
     status: string
+    companyType?: 'CAR_RENTAL' | 'HOTEL'
   }) {
     const res = await prisma.company.create({
       data: {
@@ -516,7 +519,7 @@ export const db = {
   },
 
   async updateBankDetails(data: { bankName?: string; accountNumber?: string; accountName?: string }) {
-    let details = await prisma.bankDetails.findFirst()
+    const details = await prisma.bankDetails.findFirst()
     if (!details) {
       return serializePrisma(await prisma.bankDetails.create({ data: data as { bankName: string; accountNumber: string; accountName: string } }))
     }
@@ -534,11 +537,13 @@ export const db = {
     })
     const totalCompanies = await prisma.company.count({ where: { deletedAt: null } })
     const totalCars = await prisma.car.count({ where: { deletedAt: null } })
+    const totalRooms = await prisma.room.count({ where: { deletedAt: null } })
 
     const pendingApprovals =
       (await prisma.user.count({ where: { status: 'PENDING' } })) +
       (await prisma.company.count({ where: { status: 'PENDING' } })) +
-      (await prisma.car.count({ where: { status: 'PENDING' } }))
+      (await prisma.car.count({ where: { status: 'PENDING' } })) +
+      (await prisma.room.count({ where: { status: 'PENDING' } }))
 
     const activeSubscriptions = await prisma.subscription.count({ where: { status: 'ACTIVE' } })
 
@@ -553,11 +558,108 @@ export const db = {
       totalCustomers,
       totalCompanies,
       totalCars,
+      totalRooms,
       pendingApprovals,
       activeSubscriptions,
       totalRevenuePKR: revenueByCurrency['PKR'] || 0,
       totalRevenueSAR: revenueByCurrency['SAR'] || 0,
       revenueByCurrency,
     }
+  },
+
+  async getRooms(filters?: {
+    countryId?: string
+    cityId?: string
+    roomType?: string
+    capacity?: number
+    status?: string
+    companyId?: string
+    search?: string
+  }) {
+    const where: Record<string, unknown> = { deletedAt: null }
+    if (filters?.countryId) where.countryId = filters.countryId
+    if (filters?.cityId) where.cityId = filters.cityId
+    if (filters?.roomType) where.roomType = filters.roomType
+    if (filters?.capacity) where.capacity = { gte: filters.capacity }
+    if (filters?.status) where.status = filters.status
+    if (filters?.companyId) where.companyId = filters.companyId
+    if (filters?.search) {
+      where.OR = [
+        { name: { contains: filters.search, mode: 'insensitive' } },
+        { description: { contains: filters.search, mode: 'insensitive' } },
+      ]
+    }
+    const list = await prisma.room.findMany({
+      where,
+      include: { images: true },
+    })
+    return serializePrisma(list)
+  },
+
+  async getRoomById(id: string) {
+    const res = await prisma.room.findUnique({
+      where: { id },
+      include: { images: true },
+    })
+    return serializePrisma(res)
+  },
+
+  async createRoom(data: {
+    id?: string
+    companyId: string
+    countryId: string
+    cityId: string
+    name: string
+    roomType: string
+    pricePerNight: number
+    capacity: number
+    floor?: string
+    description: string
+    amenities?: string[]
+    status: string
+    images?: { imageUrl: string; imageType: string; isPrimary: boolean }[]
+  }) {
+    const { images, ...roomData } = data
+    const res = await prisma.room.create({
+      data: {
+        ...roomData,
+        status: roomData.status as 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED' | 'BANNED',
+        images: {
+          create: images?.map((img) => ({
+            imageUrl: img.imageUrl,
+            imageType: img.imageType,
+            isPrimary: img.isPrimary,
+          })),
+        },
+      },
+      include: { images: true },
+    })
+    return serializePrisma(res)
+  },
+
+  async updateRoom(id: string, data: Record<string, unknown>) {
+    const { images, ...roomData } = data
+    if (images) {
+      await prisma.roomImage.deleteMany({ where: { roomId: id } })
+    }
+    const res = await prisma.room.update({
+      where: { id },
+      data: {
+        ...roomData,
+        ...(images
+          ? {
+              images: {
+                create: (images as { imageUrl: string; imageType: string; isPrimary: boolean }[]).map((img) => ({
+                  imageUrl: img.imageUrl,
+                  imageType: img.imageType,
+                  isPrimary: img.isPrimary,
+                })),
+              },
+            }
+          : {}),
+      },
+      include: { images: true },
+    })
+    return serializePrisma(res)
   },
 }

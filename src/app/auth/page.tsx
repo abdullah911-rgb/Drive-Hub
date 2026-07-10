@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, Suspense, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import ParticleBackground from '@/components/shared/ParticleBackground'
@@ -102,7 +103,7 @@ function AuthContent() {
   const [compData, setCompData] = useState({
     companyName: '', ownerName: '', cnicOrId: '', contactNumber: '', whatsAppNumber: '',
     email: '', businessAddress: '', countryId: '', licenseNumber: '',
-    password: '', confirmPassword: ''
+    password: '', confirmPassword: '', companyType: 'CAR_RENTAL'
   })
 
   useEffect(() => {
@@ -155,12 +156,12 @@ function AuthContent() {
 
     if (signupRole === 'COMPANY') {
       const country = countries.find(c => c.id === compData.countryId)
-      const validation = validateCompanyForm(country?.code || 'PK', compData)
+      const validation = validateCompanyForm(country?.code || 'PK', compData, compData.companyType === 'HOTEL')
       if (!validation.valid) {
         toast.error(validation.message || 'Please check your form fields')
         return
       }
-      const docValidation = validateCompanyDocuments(companyDocuments)
+      const docValidation = validateCompanyDocuments(companyDocuments, compData.companyType === 'HOTEL')
       if (!docValidation.valid) {
         toast.error(docValidation.error || 'Please upload all required documents')
         return
@@ -241,10 +242,10 @@ function AuthContent() {
       >
 
         <div className="text-center mb-8">
-          <a href="/" className="inline-flex items-center gap-2 mb-3">
+          <Link href="/" className="inline-flex items-center gap-2 mb-3">
             <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center text-white font-bold text-lg shadow-neon-violet">D</div>
             <span className="font-heading font-bold text-xl gradient-text">DriveHub</span>
-          </a>
+          </Link>
           <p className="text-slate-400 text-sm">Premium Car Rental Marketplace</p>
         </div>
 
@@ -414,6 +415,27 @@ function AuthContent() {
                     </>
                   ) : (
                     <>
+                      {/* Business Type Toggle */}
+                      <div className="flex gap-2 mb-3">
+                        {[
+                          { type: 'CAR_RENTAL', label: '🚗 Car Rental' },
+                          { type: 'HOTEL', label: '🏨 Hotel' },
+                        ].map(opt => (
+                          <button
+                            key={opt.type}
+                            type="button"
+                            onClick={() => setCompData(p => ({ ...p, companyType: opt.type }))}
+                            className={`flex-1 py-2 px-3 rounded-lg border text-xs font-bold transition-all ${
+                              compData.companyType === opt.type
+                                ? 'border-primary/50 bg-primary/10 text-primary'
+                                : 'border-white/10 text-slate-400 hover:border-white/20'
+                            }`}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+
                       <CompanyFormFields
                         form={compData}
                         onChange={handleCompChange}
@@ -421,12 +443,14 @@ function AuthContent() {
                         countries={countries}
                         countryPosition="bottom"
                         showDocumentHint={false}
+                        companyType={compData.companyType as 'CAR_RENTAL' | 'HOTEL'}
                       />
                       <CompanyDocumentUploads
                         documents={companyDocuments}
                         onChange={(docType, file) => setCompanyDocuments(prev => ({ ...prev, [docType]: file }))}
                         idLabel={countries.find(c => c.id === compData.countryId)?.code === 'PK' ? 'CNIC' : 'National ID'}
-                        licenseLabel="Business License"
+                        licenseLabel={compData.companyType === 'HOTEL' ? 'Hotel License' : 'Business License'}
+                        companyType={compData.companyType as 'CAR_RENTAL' | 'HOTEL'}
                       />
                       <div><label className={labelClass}>Email *</label>
                         <input className={inputClass} type="email" placeholder="company@example.com" value={compData.email} onChange={e => setCompData(p => ({ ...p, email: e.target.value }))} required /></div>

@@ -21,6 +21,7 @@ interface CompanyDocumentUploadsProps {
   onChange: (docType: CompanyDocType, file: File | null) => void
   idLabel?: string
   licenseLabel?: string
+  companyType?: 'CAR_RENTAL' | 'HOTEL'
 }
 
 const labelClass = 'text-xs font-medium text-slate-400 mb-1 block'
@@ -30,6 +31,7 @@ export default function CompanyDocumentUploads({
   onChange,
   idLabel = 'National ID / CNIC',
   licenseLabel = 'Business License',
+  companyType = 'CAR_RENTAL',
 }: CompanyDocumentUploadsProps) {
   const inputRefs = useRef<Partial<Record<CompanyDocType, HTMLInputElement | null>>>({})
 
@@ -61,12 +63,14 @@ export default function CompanyDocumentUploads({
       <div className="glass rounded-xl p-3 border border-primary/20 bg-primary/5">
         <p className="text-xs font-semibold text-white">Verification Documents *</p>
         <p className="text-[10px] text-slate-400 mt-1">
-          Upload clear photos or scans of both sides of your ID and business license (JPG, PNG, WebP, or PDF, max 5 MB each).
+          {companyType === 'HOTEL'
+            ? 'Upload clear photos or scans of both sides of your ID (JPG, PNG, WebP, or PDF, max 5 MB each).'
+            : 'Upload clear photos or scans of both sides of your ID and business license (JPG, PNG, WebP, or PDF, max 5 MB each).'}
         </p>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        {COMPANY_DOC_TYPES.map(docType => {
+        {COMPANY_DOC_TYPES.filter(docType => companyType !== 'HOTEL' || docType.startsWith('CNIC')).map(docType => {
           const file = documents[docType]
           return (
             <div key={docType}>

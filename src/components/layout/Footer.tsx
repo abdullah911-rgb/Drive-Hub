@@ -13,7 +13,7 @@ export default function Footer() {
               <span className="font-heading font-bold text-xl gradient-text">DriveHub</span>
             </div>
             <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
-              Global premier car rental marketplace. Connecting customers with trusted car rental companies and individual car owners worldwide.
+              Global marketplace for car rentals and hotel rooms. Connecting customers with trusted companies and hotel partners worldwide.
             </p>
             <div className="flex items-center gap-3 mt-6 flex-wrap">
               <div className="flex items-center gap-2 glass px-3 py-1.5 rounded-lg">
@@ -30,7 +30,8 @@ export default function Footer() {
               {[
                 { href: '/about', label: 'About Us' },
                 { href: '/marketplace', label: 'Browse Cars' },
-                { href: '/marketplace/companies', label: 'Companies' },
+                { href: '/marketplace/rooms', label: 'Browse Hotels' },
+                { href: '/marketplace/companies', label: 'Partners' },
                 { href: '/auth', label: 'Sign In' },
                 { href: '/auth?tab=signup', label: 'Register' },
               ].map(l => (
@@ -60,7 +61,7 @@ export default function Footer() {
         <div className="border-t border-white/5 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-slate-500 text-sm">© {new Date().getFullYear()} DriveHub Marketplace. All rights reserved.</p>
           <p className="text-slate-600 text-xs">
-            DriveHub is a marketplace platform only. Rental agreements are made directly between customers and companies.
+            DriveHub is a marketplace platform only. Rental and hotel agreements are made directly between customers and companies.
           </p>
         </div>
       </div>

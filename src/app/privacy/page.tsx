@@ -27,7 +27,7 @@ export default function PrivacyPage() {
                 To provide a trusted vehicle rental marketplace globally across our supported countries, we collect:
               </p>
               <ul className="list-disc pl-5 mt-2 flex flex-col gap-1.5">
-                <li>**Personal Identity Details**: Full Name, Father's Name, CNIC, Passport/Resident ID, Date of Birth.</li>
+                <li>**Personal Identity Details**: Full Name, Father&apos;s Name, CNIC, Passport/Resident ID, Date of Birth.</li>
                 <li>**Contact Details**: Email Address, Phone Number, WhatsApp Number, and emergency contacts.</li>
                 <li>**Verification Documents**: Company licenses and vehicle registration/insurance documents.</li>
               </ul>
@@ -43,7 +43,7 @@ export default function PrivacyPage() {
             <section>
               <h2 className="text-white font-bold text-lg mb-3">3. Sharing Information with Partners</h2>
               <p>
-                When you click "Connect on WhatsApp" or request rental information, your customer profile status (e.g. Approved/Verified) may be shared with the rental company to establish trust before releasing vehicles.
+                When you click &quot;Connect on WhatsApp&quot; or request rental information, your customer profile status (e.g. Approved/Verified) may be shared with the rental company to establish trust before releasing vehicles.
               </p>
             </section>
 

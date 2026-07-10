@@ -39,6 +39,7 @@ export default function RegisterCompanyModal({
   const [countries, setCountries] = useState<{ id: string; name: string; code: string }[]>([])
   const [form, setForm] = useState<CompanyFormValues>({ ...EMPTY_FORM, countryId: defaultCountryId })
   const [documents, setDocuments] = useState<CompanyDocumentFiles>({ ...EMPTY_COMPANY_DOCUMENTS })
+  const [companyType, setCompanyType] = useState<'CAR_RENTAL' | 'HOTEL'>('CAR_RENTAL')
 
   useEffect(() => {
     if (!open) return
@@ -52,6 +53,7 @@ export default function RegisterCompanyModal({
             countryId: defaultCountryId || prev.countryId || data.data[0]?.id || '',
           }))
           setDocuments({ ...EMPTY_COMPANY_DOCUMENTS })
+          setCompanyType('CAR_RENTAL')
         }
       })
       .catch(() => toast.error('Failed to load countries'))
@@ -69,13 +71,13 @@ export default function RegisterCompanyModal({
     e.preventDefault()
 
     const country = countries.find(c => c.id === form.countryId)
-    const validation = validateCompanyForm(country?.code || 'PK', form)
+    const validation = validateCompanyForm(country?.code || 'PK', form, companyType === 'HOTEL')
     if (!validation.valid) {
       toast.error(validation.message || 'Please check your form fields')
       return
     }
 
-    const docValidation = validateCompanyDocuments(documents)
+    const docValidation = validateCompanyDocuments(documents, companyType === 'HOTEL')
     if (!docValidation.valid) {
       toast.error(docValidation.error || 'Please upload all required documents')
       return
@@ -85,6 +87,7 @@ export default function RegisterCompanyModal({
     try {
       const formData = new FormData()
       Object.entries(form).forEach(([key, value]) => formData.append(key, value))
+      formData.append('companyType', companyType)
       appendCompanyDocumentsToFormData(formData, documents)
 
       const res = await fetch('/api/auth/register-company', {
@@ -94,7 +97,7 @@ export default function RegisterCompanyModal({
       })
       const data = await res.json()
       if (data.success) {
-        toast.success('Company registration submitted! Awaiting admin approval.')
+        toast.success(`${companyType === 'HOTEL' ? 'Hotel' : 'Company'} registration submitted! Awaiting admin approval.`)
         onClose()
         onSuccess?.()
         if (data.data?.redirectTo) {
@@ -133,9 +136,9 @@ export default function RegisterCompanyModal({
           >
             <div className="flex items-start justify-between mb-6">
               <div>
-                <h2 className="font-heading font-bold text-xl text-white">Register Your Company</h2>
+                <h2 className="font-heading font-bold text-xl text-white">Register Your Business</h2>
                 <p className="text-slate-400 text-sm mt-1">
-                  List your fleet on our marketplace. Your account email will be used for the company profile.
+                  List your fleet or hotel on our marketplace. Select your business type below.
                 </p>
               </div>
               <button
@@ -150,6 +153,29 @@ export default function RegisterCompanyModal({
               </button>
             </div>
 
+            {/* Business Type Selector */}
+            <div className="flex gap-3 mb-5">
+              {[
+                { type: 'CAR_RENTAL' as const, icon: '🚗', label: 'Car Rental', desc: 'List vehicles for rent' },
+                { type: 'HOTEL' as const, icon: '🏨', label: 'Hotel', desc: 'List rooms & accommodation' },
+              ].map(opt => (
+                <button
+                  key={opt.type}
+                  type="button"
+                  onClick={() => setCompanyType(opt.type)}
+                  className={`flex-1 flex flex-col items-center gap-1 py-3 px-2 rounded-xl border text-sm font-medium transition-all ${
+                    companyType === opt.type
+                      ? 'border-primary/50 bg-primary/10 text-primary'
+                      : 'border-white/10 text-slate-400 hover:border-white/20 hover:text-white'
+                  }`}
+                >
+                  <span className="text-2xl">{opt.icon}</span>
+                  <span className="font-bold">{opt.label}</span>
+                  <span className="text-xs opacity-70">{opt.desc}</span>
+                </button>
+              ))}
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-3">
               <CompanyFormFields
                 form={form}
@@ -157,24 +183,26 @@ export default function RegisterCompanyModal({
                 countries={countries}
                 countryPosition="top"
                 showDocumentHint={false}
+                companyType={companyType}
               />
 
               <CompanyDocumentUploads
                 documents={documents}
                 onChange={handleDocumentChange}
                 idLabel={countryConfig?.code === 'PK' ? 'CNIC' : 'National ID'}
-                licenseLabel="Business License"
+                licenseLabel={companyType === 'HOTEL' ? 'Hotel License' : 'Business License'}
+                companyType={companyType}
               />
 
               <div className="glass rounded-xl p-3 text-xs text-amber-400 border border-amber-400/20">
-                After admin approval you will get access to the company panel to manage listings and subscriptions.
+                After admin approval you will get access to the {companyType === 'HOTEL' ? 'hotel' : 'company'} panel to manage listings and subscriptions.
               </div>
 
               <button type="submit" disabled={loading} className="btn-primary w-full py-3 mt-2 font-bold">
                 {loading ? (
                   <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
-                  'Submit Company Registration'
+                  `Submit ${companyType === 'HOTEL' ? 'Hotel' : 'Company'} Registration`
                 )}
               </button>
             </form>

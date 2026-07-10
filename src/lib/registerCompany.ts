@@ -15,7 +15,8 @@ export interface ParsedCompanyRegistration {
   licenseNumber: string
   email?: string
   password?: string
-  documents: Record<CompanyDocType, File>
+  companyType?: string
+  documents: Partial<Record<CompanyDocType, File>>
 }
 
 function getFormString(formData: FormData, key: string): string {
@@ -44,13 +45,15 @@ export async function parseCompanyRegistrationRequest(
   const whatsAppNumber = getFormString(formData, 'whatsAppNumber')
   const businessAddress = getFormString(formData, 'businessAddress')
   const countryId = getFormString(formData, 'countryId')
-  const licenseNumber = getFormString(formData, 'licenseNumber')
+  const companyType = getFormString(formData, 'companyType') || 'CAR_RENTAL'
+  const isHotel = companyType === 'HOTEL'
+  const licenseNumber = isHotel ? (getFormString(formData, 'licenseNumber') || 'N/A') : getFormString(formData, 'licenseNumber')
   const email = getFormString(formData, 'email')
   const password = getFormString(formData, 'password')
 
   if (
     !companyName || !ownerName || !cnicOrId || !contactNumber || !whatsAppNumber
-    || !businessAddress || !countryId || !licenseNumber
+    || !businessAddress || !countryId || (!isHotel && !licenseNumber)
   ) {
     return { ok: false, error: 'All company fields are required', status: 400 }
   }
@@ -63,8 +66,11 @@ export async function parseCompanyRegistrationRequest(
     return { ok: false, error: 'Password is required', status: 400 }
   }
 
-  const documents = {} as Record<CompanyDocType, File>
+  const documents: Partial<Record<CompanyDocType, File>> = {}
   for (const docType of COMPANY_DOC_TYPES) {
+    if (isHotel && (docType === 'LICENSE_FRONT' || docType === 'LICENSE_BACK')) {
+      continue
+    }
     const entry = formData.get(docType)
     if (!(entry instanceof File) || entry.size === 0) {
       return { ok: false, error: `Missing required document: ${docType}`, status: 400 }
@@ -89,6 +95,7 @@ export async function parseCompanyRegistrationRequest(
       licenseNumber,
       email: email || undefined,
       password: password || undefined,
+      companyType,
       documents,
     },
   }
@@ -96,11 +103,13 @@ export async function parseCompanyRegistrationRequest(
 
 export async function saveCompanyRegistrationDocuments(
   companyId: string,
-  documents: Record<CompanyDocType, File>
+  documents: Partial<Record<CompanyDocType, File>>
 ) {
   const records = []
-  for (const docType of COMPANY_DOC_TYPES) {
-    const fileUrl = await saveCompanyDocument(companyId, docType, documents[docType])
+  for (const docType of Object.keys(documents) as CompanyDocType[]) {
+    const file = documents[docType]
+    if (!file) continue
+    const fileUrl = await saveCompanyDocument(companyId, docType, file)
     records.push({
       id: uuidv4(),
       companyId,

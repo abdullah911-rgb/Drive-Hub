@@ -24,10 +24,12 @@ export default function Navbar() {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
-  const isPortalUser = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN' || user?.role === 'COMPANY'
+  const isPortalUser = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN' || user?.role === 'COMPANY' || user?.role === 'HOTEL'
   const dashboardPath = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'
     ? '/dashboard/admin'
-    : '/dashboard/company'
+    : user?.role === 'HOTEL'
+      ? '/dashboard/hotel'
+      : '/dashboard/company'
 
   useEffect(() => {
     setMounted(true)
@@ -115,6 +117,7 @@ export default function Navbar() {
 
             <div className="hidden md:flex items-center gap-6">
               <Link href="/#cars" className="text-slate-400 hover:text-primary transition-colors text-sm font-semibold">Cars</Link>
+              <Link href="/marketplace/rooms" className="text-slate-400 hover:text-primary transition-colors text-sm font-semibold">Hotels</Link>
               <Link href="/#companies" className="text-slate-400 hover:text-primary transition-colors text-sm font-semibold">Companies</Link>
               <Link href="/about" className="text-slate-400 hover:text-primary transition-colors text-sm font-semibold">About</Link>
               <Link href="/contact" className="text-slate-400 hover:text-primary transition-colors text-sm font-semibold">Contact</Link>
@@ -249,6 +252,7 @@ export default function Navbar() {
               >
                 <div className="p-4 flex flex-col gap-3">
                   <Link href="/#cars" className="text-slate-300 hover:text-primary text-sm py-2 font-semibold" onClick={() => setMenuOpen(false)}>Cars</Link>
+                  <Link href="/marketplace/rooms" className="text-slate-300 hover:text-primary text-sm py-2 font-semibold" onClick={() => setMenuOpen(false)}>Hotels</Link>
                   <Link href="/#companies" className="text-slate-300 hover:text-primary text-sm py-2 font-semibold" onClick={() => setMenuOpen(false)}>Companies</Link>
                   <Link href="/about" className="text-slate-300 hover:text-primary text-sm py-2 font-semibold" onClick={() => setMenuOpen(false)}>About</Link>
                   <Link href="/contact" className="text-slate-300 hover:text-primary text-sm py-2 font-semibold" onClick={() => setMenuOpen(false)}>Contact</Link>

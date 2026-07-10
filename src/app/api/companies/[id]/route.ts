@@ -11,7 +11,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
     const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN'
 
     let isOwner = false
-    if (currentUser?.role === 'COMPANY') {
+    if (currentUser?.role === 'COMPANY' || currentUser?.role === 'HOTEL') {
       const ownCompany = await db.getCompanyByUserId(currentUser.userId)
       isOwner = (ownCompany as { id: string } | null)?.id === id
     }
@@ -26,6 +26,13 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
           include: { user: true },
         },
         cars: {
+          where: {
+            deletedAt: null,
+            ...(!isAdmin && !isOwner ? { status: 'APPROVED' as const } : {}),
+          },
+          include: { images: true, city: true, country: true },
+        },
+        rooms: {
           where: {
             deletedAt: null,
             ...(!isAdmin && !isOwner ? { status: 'APPROVED' as const } : {}),
@@ -64,6 +71,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
         averageRating: Math.round(avgRating * 10) / 10,
         totalReviews: reviews.length,
         totalCars: company.cars.length,
+        totalRooms: company.rooms.length,
         reviews: enrichedReviews,
         subscriptions: latestSubscription ? [latestSubscription] : [],
       }),

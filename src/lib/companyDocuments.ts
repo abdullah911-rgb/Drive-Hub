@@ -34,9 +34,13 @@ export function validateCompanyDocumentFile(file: File): { valid: boolean; error
 }
 
 export function validateCompanyDocuments(
-  docs: Partial<Record<CompanyDocType, File | null>>
+  docs: Partial<Record<CompanyDocType, File | null>>,
+  isHotel?: boolean
 ): { valid: boolean; error?: string } {
   for (const docType of COMPANY_DOC_TYPES) {
+    if (isHotel && (docType === 'LICENSE_FRONT' || docType === 'LICENSE_BACK')) {
+      continue
+    }
     const file = docs[docType]
     if (!file) {
       return { valid: false, error: `${COMPANY_DOC_LABELS[docType]} is required.` }

@@ -17,11 +17,12 @@ export async function GET(request: NextRequest) {
     const resource = searchParams.get('resource')
 
     if (resource === 'dashboard') {
-      const [stats, users, companies, cars, payments, reviews, notifications, subscriptions, bankDetails] = await Promise.all([
+      const [stats, users, companies, cars, rooms, payments, reviews, notifications, subscriptions, bankDetails] = await Promise.all([
         db.getStats(),
         db.getUsers(),
         db.getCompanies(),
         db.getCars({}),
+        db.getRooms({}),
         db.getPayments(),
         db.getAllReviews(),
         db.getNotificationsByUserId(currentUser.userId),
@@ -35,6 +36,7 @@ export async function GET(request: NextRequest) {
           users,
           companies,
           cars,
+          rooms,
           payments,
           reviews,
           notifications,
@@ -59,6 +61,10 @@ export async function GET(request: NextRequest) {
     if (resource === 'cars') {
       const cars = await db.getCars({})
       return NextResponse.json({ success: true, data: cars })
+    }
+    if (resource === 'rooms') {
+      const rooms = await db.getRooms({})
+      return NextResponse.json({ success: true, data: rooms })
     }
     if (resource === 'payments') {
       const payments = await db.getPayments()
@@ -230,6 +236,38 @@ export async function PATCH(request: NextRequest) {
         }
       }
       return NextResponse.json({ success: true, data: car, whatsAppUrl })
+    }
+
+    if (resource === 'room') {
+      const statusMap: Record<string, string> = { approve: 'APPROVED', reject: 'REJECTED', suspend: 'SUSPENDED' }
+      const room = await db.updateRoom(id, { status: statusMap[action] })
+      if (!room) return NextResponse.json({ success: false, error: 'Room not found' }, { status: 404 })
+      const r = room as { companyId: string; name: string }
+
+      const company = await db.getCompanyById(r.companyId)
+      if (company) {
+        const co = company as { userId: string; name: string }
+        await db.createNotification({
+          id: uuidv4(), userId: co.userId,
+          type: action === 'approve' ? 'CAR_APPROVED' : 'CAR_REJECTED',
+          title: action === 'approve' ? 'Room Listing Approved' : 'Room Listing Rejected',
+          message: action === 'approve'
+            ? `Your room "${r.name}" is now live on the marketplace!`
+            : `Your room "${r.name}" listing was not approved.`,
+          isRead: false,
+        })
+        const user = await db.getUserById(co.userId) as { email: string; phone: string } | null
+        if (user) {
+          if (action === 'approve') {
+            whatsAppUrl = await notifications.carApproved(user.email, user.phone, r.name)
+          } else if (action === 'reject') {
+            whatsAppUrl = await notifications.carRejected(user.email, user.phone, r.name)
+          } else if (action === 'suspend') {
+            whatsAppUrl = await notifications.carSuspended(user.email, user.phone, r.name)
+          }
+        }
+      }
+      return NextResponse.json({ success: true, data: room, whatsAppUrl })
     }
 
     if (resource === 'payment') {

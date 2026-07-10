@@ -10,8 +10,14 @@ datasource db {
 enum RoleName {
   CUSTOMER
   COMPANY
+  HOTEL
   ADMIN
   SUPER_ADMIN
+}
+
+enum CompanyType {
+  CAR_RENTAL
+  HOTEL
 }
 
 enum ApprovalStatus {
@@ -74,6 +80,7 @@ model Country {
   cities    City[]
   companies Company[]
   cars      Car[]
+  rooms     Room[]
   users     User[]
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
@@ -89,6 +96,7 @@ model City {
   country   Country   @relation(fields: [countryId], references: [id])
   companies Company[]
   cars      Car[]
+  rooms     Room[]
   users     User[]
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
@@ -181,9 +189,11 @@ model Company {
   countryId       String            @db.Uuid @map("country_id")
   country         Country           @relation(fields: [countryId], references: [id])
   status          ApprovalStatus    @default(PENDING)
+  companyType     CompanyType       @default(CAR_RENTAL) @map("company_type")
   documents       CompanyDocument[]
   subscriptions   Subscription[]
   cars            Car[]
+  rooms           Room[]
   reviews         Review[]
   createdAt       DateTime          @default(now()) @map("created_at")
   updatedAt       DateTime          @updatedAt @map("updated_at")
@@ -453,4 +463,47 @@ model SupportTicket {
   deletedAt   DateTime? @map("deleted_at")
 
   @@map("support_tickets")
+}
+
+model Room {
+  id              String           @id @default(uuid()) @db.Uuid
+  companyId       String           @db.Uuid @map("company_id")
+  company         Company          @relation(fields: [companyId], references: [id])
+  countryId       String           @db.Uuid @map("country_id")
+  country         Country          @relation(fields: [countryId], references: [id])
+  cityId          String           @db.Uuid @map("city_id")
+  city            City             @relation(fields: [cityId], references: [id])
+  name            String
+  roomType        String           @default("STANDARD")
+  pricePerNight   Decimal          @db.Decimal(10, 2)
+  capacity        Int              @default(2)
+  floor           String?
+  description     String
+  amenities       String[]
+  status          ApprovalStatus   @default(PENDING)
+  images          RoomImage[]
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+  deletedAt       DateTime?        @map("deleted_at")
+
+  @@index([companyId])
+  @@index([countryId])
+  @@index([cityId])
+  @@index([status])
+  @@index([deletedAt])
+  @@map("rooms")
+}
+
+model RoomImage {
+  id        String    @id @default(uuid()) @db.Uuid
+  roomId    String    @db.Uuid @map("room_id")
+  room      Room      @relation(fields: [roomId], references: [id])
+  imageUrl  String    @map("image_url")
+  imageType String    @map("image_type")
+  isPrimary Boolean   @default(false) @map("is_primary")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@map("room_images")
 }

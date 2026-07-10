@@ -3,10 +3,10 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
-import { CarCard } from '@/components/shared/Cards'
+import { CarCard, RoomCard } from '@/components/shared/Cards'
 import { RatingStars, StatusBadge } from '@/components/ui'
 import { buildWhatsAppUrl, WHATSAPP_DEFAULT_MESSAGE, formatDate } from '@/lib/utils'
-import type { Company, Car } from '@/types'
+import type { Company, Car, Room } from '@/types'
 
 interface CompanyDetailClientProps {
   id: string
@@ -16,7 +16,7 @@ export default function CompanyDetailClient({ id }: CompanyDetailClientProps) {
   const [company, setCompany] = useState<Company | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'listings' | 'reviews'>('listings')
-  const [currentUser, setCurrentUser] = useState<{ role: string; status: string } | null>(null)
+  const [currentUser, setCurrentUser] = useState<{ id?: string; role: string; status: string } | null>(null)
   const [submittingReview, setSubmittingReview] = useState(false)
   const [rating, setRating] = useState(5)
   const [comment, setComment] = useState('')
@@ -96,6 +96,11 @@ export default function CompanyDetailClient({ id }: CompanyDetailClientProps) {
     )
   }
 
+  const isHotelCompany = company.companyType === 'HOTEL'
+  const isOwner = Boolean(
+    currentUser?.id && company.userId && currentUser.id === company.userId && (currentUser.role === 'COMPANY' || currentUser.role === 'HOTEL')
+  )
+
   const enrichedCars: Car[] = (company.cars || []).map((c) => ({
     ...c,
     company: {
@@ -104,6 +109,19 @@ export default function CompanyDetailClient({ id }: CompanyDetailClientProps) {
       reviews: undefined,
     },
   }))
+
+  const enrichedRooms: Room[] = (company.rooms || []).map((room) => ({
+    ...room,
+    company: {
+      ...company,
+      cars: undefined,
+      reviews: undefined,
+    },
+  }))
+
+  const listingLabel = isHotelCompany ? 'Rooms' : 'Listings'
+  const listingCount = isHotelCompany ? company.totalRooms || 0 : company.totalCars || 0
+  const listingItems = isHotelCompany ? enrichedRooms : enrichedCars
 
   const waUrl = buildWhatsAppUrl(company.whatsAppNumber, WHATSAPP_DEFAULT_MESSAGE)
 
@@ -131,14 +149,29 @@ export default function CompanyDetailClient({ id }: CompanyDetailClientProps) {
               <p className="text-slate-400 text-xs flex items-center gap-1 mb-2">
                 <span>🌍</span> {company.businessAddress} • {company.country?.name}
               </p>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center gap-2 mt-2">
                 <RatingStars rating={company.averageRating || 0} count={company.totalReviews || 0} />
-                <span className="text-xs text-slate-500">License: {company.licenseNumber}</span>
+                {company.companyType !== 'HOTEL' && (
+                  <span className="text-xs text-slate-500">License: {company.licenseNumber}</span>
+                )}
+                {isOwner && (
+                  <span className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">
+                    👑 Owner Access
+                  </span>
+                )}
               </div>
             </div>
           </div>
 
           <div className="flex flex-wrap gap-3 w-full md:w-auto">
+            {isOwner && (
+              <Link
+                href={`/dashboard/${isHotelCompany ? 'hotel' : 'company'}`}
+                className="btn-primary text-xs px-4 py-2.5 flex-1 md:flex-none justify-center"
+              >
+                Manage {listingLabel}
+              </Link>
+            )}
             <a
               href={`tel:${company.contactNumber}`}
               className="btn-ghost text-xs px-4 py-2.5 flex-1 md:flex-none justify-center"
@@ -166,7 +199,7 @@ export default function CompanyDetailClient({ id }: CompanyDetailClientProps) {
               : 'border-transparent text-slate-400 hover:text-slate-200'
           }`}
         >
-          Active Listings ({company.totalCars || 0})
+          Active {listingLabel} ({listingCount})
         </button>
         <button
           onClick={() => setActiveTab('reviews')}
@@ -190,13 +223,19 @@ export default function CompanyDetailClient({ id }: CompanyDetailClientProps) {
             transition={{ duration: 0.2 }}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
           >
-            {enrichedCars.length > 0 ? (
-              enrichedCars.map((car) => <CarCard key={car.id} car={car} />)
+            {listingItems.length > 0 ? (
+              isHotelCompany
+                ? listingItems.map((room) => <RoomCard key={room.id} room={room as Room} />)
+                : listingItems.map((car) => <CarCard key={car.id} car={car as Car} />)
             ) : (
               <div className="col-span-full glass-card p-12 text-center border border-white/5">
-                <span className="text-5xl block mb-3">🚗</span>
-                <h4 className="text-white font-bold text-base mb-1">No Active Listings</h4>
-                <p className="text-slate-400 text-xs">This company has no approved rental vehicles listed right now.</p>
+                <span className="text-5xl block mb-3">{isHotelCompany ? '🛏️' : '🚗'}</span>
+                <h4 className="text-white font-bold text-base mb-1">No Active {listingLabel}</h4>
+                <p className="text-slate-400 text-xs">
+                  {isHotelCompany
+                    ? 'This hotel has no approved rooms listed right now.'
+                    : 'This company has no approved rental vehicles listed right now.'}
+                </p>
               </div>
             )}
           </motion.div>

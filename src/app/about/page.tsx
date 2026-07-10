@@ -1,4 +1,5 @@
 'use client'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
@@ -14,23 +15,23 @@ export default function AboutPage() {
   const features = [
     {
       icon: '🚗',
-      title: 'Diverse Fleet',
-      desc: 'From budget-friendly compact cars to premium luxury SUVs, browse through hundreds of vehicles suited for any occasion.'
+      title: 'Cars & Hotel Rooms',
+      desc: 'From budget-friendly cars to premium luxury SUVs and hotel suites — browse hundreds of verified listings suited for every trip.'
     },
     {
       icon: '💬',
       title: 'Direct WhatsApp Contact',
-      desc: 'No middleman, no hidden commission fees. Chat directly with car owners and companies to negotiate terms and lock in deals.'
+      desc: 'No middleman, no hidden fees. Chat directly with car rental companies or hotel partners to negotiate terms and confirm bookings.'
     },
     {
       icon: '🔒',
       title: 'Verified Partners',
-      desc: 'We review and verify company registration documents, licenses, and host identities to maintain a high-trust marketplace.'
+      desc: 'We review and verify registration documents, licenses, and business identities for all car rental companies and hotel partners.'
     },
     {
       icon: '⭐',
       title: 'Transparent Marketplace',
-      desc: 'View ratings, customer reviews, and clear specifications for each car before making your decision.'
+      desc: 'View ratings, customer reviews, and clear details for every car and hotel room before making your decision.'
     }
   ]
 
@@ -58,7 +59,7 @@ export default function AboutPage() {
               About <span className="gradient-text">DriveHub</span>
             </h1>
             <p className="text-slate-400 text-base sm:text-lg leading-relaxed">
-              We are a premier global vehicle rental marketplace, dedicated to redefining the way people connect and rent cars across multiple countries.
+              We are a premier global marketplace connecting travelers with trusted car rental companies and hotel partners across multiple countries — all in one platform.
             </p>
           </motion.div>
         </div>
@@ -72,13 +73,13 @@ export default function AboutPage() {
             variants={fadeInUp}
           >
             <h2 className="font-heading font-black text-2xl sm:text-3xl text-white">
-              Connecting People with <span className="gradient-text">Premium Vehicles</span>
+              Connecting People with <span className="gradient-text">Cars &amp; Hotels</span>
             </h2>
             <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-              DriveHub is a cross-border car rental platform designed to bring transparency, safety, and speed to the rental market. By bridging the gap between customers, trusted car rental companies, and private hosts, we make renting a vehicle simple and secure.
+              DriveHub is a cross-border platform designed to bring transparency, safety, and speed to both car rental and hotel room booking. By bridging the gap between customers, trusted car rental companies, and hotel partners, we make your entire trip seamless.
             </p>
             <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-              Whether you are an international traveler looking to rent a car, or a local resident needing a temporary ride, DriveHub offers verified listings, authentic review systems, and zero-fee direct communication via WhatsApp.
+              Whether you are an international traveler needing a car, a family booking a hotel suite, or a local business listing their fleet or rooms, DriveHub offers verified listings, authentic reviews, and zero-fee direct communication via WhatsApp.
             </p>
           </motion.div>
 
@@ -97,7 +98,7 @@ export default function AboutPage() {
               <div className="space-y-2">
                 <h4 className="text-slate-400 text-xs uppercase tracking-wider font-semibold">Our Mission</h4>
                 <p className="text-white text-base font-semibold leading-relaxed">
-                  "To build a trusted, transparent, and direct car rental ecosystem that empowers local hosts and delivers frictionless travel experiences to renters."
+                  &ldquo;To build a trusted, transparent, and direct marketplace that empowers car rental companies and hotels to reach customers worldwide — and gives travelers a seamless, one-stop booking experience.&rdquo;
                 </p>
               </div>
               <div className="border-t border-white/5 pt-6 space-y-2">
@@ -105,7 +106,7 @@ export default function AboutPage() {
                 <div className="flex flex-wrap gap-2">
                   {COUNTRIES.map(c => (
                     <div key={c.id} className="flex items-center gap-2 glass px-3 py-1.5 rounded-lg border border-white/5">
-                      <img src={c.flagUrl} alt={c.name} className="w-4 h-3 object-cover rounded-sm" />
+                      <Image src={c.flagUrl} alt={c.name} width={16} height={12} className="w-4 h-3 object-cover rounded-sm" />
                       <span className="text-xs font-semibold text-slate-200">{c.name}</span>
                     </div>
                   ))}

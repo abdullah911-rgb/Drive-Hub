@@ -99,6 +99,9 @@ async function registerCompanyWithDocuments(request: NextRequest) {
   }
 
   const data = parsed.data
+  const companyType = data.companyType === 'HOTEL' ? 'HOTEL' : 'CAR_RENTAL'
+  const assignedRole = companyType === 'HOTEL' ? 'HOTEL' : 'COMPANY'
+
   const country = await db.getCountryById(data.countryId) as { code: string } | null
   const validation = validateCompanyForm(country?.code || 'PK', {
     cnicOrId: data.cnicOrId,
@@ -106,18 +109,20 @@ async function registerCompanyWithDocuments(request: NextRequest) {
     contactNumber: data.contactNumber,
     whatsAppNumber: data.whatsAppNumber,
     businessAddress: data.businessAddress,
-  })
+  }, companyType === 'HOTEL')
   if (!validation.valid) {
     return NextResponse.json({ success: false, error: validation.message }, { status: 400 })
   }
 
-  const licenseCheck = validateLicenseNumber(
-    data.licenseNumber,
-    country?.code || 'PK',
-    data.cnicOrId
-  )
-  if (!licenseCheck.valid) {
-    return NextResponse.json({ success: false, error: `Invalid license number: ${licenseCheck.error}` }, { status: 422 })
+  if (companyType !== 'HOTEL') {
+    const licenseCheck = validateLicenseNumber(
+      data.licenseNumber,
+      country?.code || 'PK',
+      data.cnicOrId
+    )
+    if (!licenseCheck.valid) {
+      return NextResponse.json({ success: false, error: `Invalid license number: ${licenseCheck.error}` }, { status: 422 })
+    }
   }
 
   const existing = await db.getUserByEmail(data.email!)
@@ -134,7 +139,7 @@ async function registerCompanyWithDocuments(request: NextRequest) {
     email: data.email!,
     phone: data.contactNumber,
     passwordHash,
-    roleName: 'COMPANY',
+    roleName: assignedRole,
     status: 'PENDING',
     emailVerified: false,
     phoneVerified: false,
@@ -155,6 +160,7 @@ async function registerCompanyWithDocuments(request: NextRequest) {
     cityId,
     countryId: data.countryId,
     status: 'PENDING',
+    companyType,
   })
 
   await saveCompanyRegistrationDocuments(companyId, data.documents)

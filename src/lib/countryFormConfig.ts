@@ -1246,11 +1246,12 @@ export function validateCompanyForm(
     contactNumber: string
     whatsAppNumber: string
     businessAddress: string
-  }
+  },
+  isHotel?: boolean
 ): ValidationResult {
   const checks: ValidationResult[] = [
     validateCountryField(countryCode, 'nationalId', data.cnicOrId),
-    validateCountryField(countryCode, 'businessLicense', data.licenseNumber),
+    ...(!isHotel ? [validateCountryField(countryCode, 'businessLicense', data.licenseNumber)] : []),
     validateCountryField(countryCode, 'phone', data.contactNumber),
     validateCountryField(countryCode, 'phone', data.whatsAppNumber),
     validateCountryField(countryCode, 'address', data.businessAddress),

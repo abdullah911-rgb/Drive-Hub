@@ -17,6 +17,7 @@ function CompaniesContent() {
 
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [activeCategory, setActiveCategory] = useState<'ALL' | 'CAR_RENTAL' | 'HOTEL'>('ALL')
 
   useEffect(() => {
     async function fetchCountries() {
@@ -50,6 +51,15 @@ function CompaniesContent() {
     }
   }, [countries, searchParams])
 
+  useEffect(() => {
+    const categoryParam = searchParams.get('type')
+    if (categoryParam === 'CAR_RENTAL' || categoryParam === 'HOTEL') {
+      setActiveCategory(categoryParam)
+    } else {
+      setActiveCategory('ALL')
+    }
+  }, [searchParams])
+
   const fetchCompanies = useCallback(async () => {
     if (!selectedCountry) return
     setLoading(true)
@@ -62,6 +72,7 @@ function CompaniesContent() {
       params.append('lite', 'true')
 
       if (searchQuery) params.append('search', searchQuery)
+      if (activeCategory !== 'ALL') params.append('companyType', activeCategory)
 
       const res = await fetch(`/api/companies?${params.toString()}`)
       if (res.ok) {
@@ -73,7 +84,7 @@ function CompaniesContent() {
     } finally {
       setLoading(false)
     }
-  }, [selectedCountry, searchQuery])
+  }, [selectedCountry, searchQuery, activeCategory])
 
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
@@ -88,8 +99,23 @@ function CompaniesContent() {
     router.push(`/marketplace/companies?country=${country.code}`)
   }
 
+  const handleCategoryChange = (category: 'ALL' | 'CAR_RENTAL' | 'HOTEL') => {
+    setActiveCategory(category)
+    const params = new URLSearchParams(searchParams.toString())
+    if (category === 'ALL') {
+      params.delete('type')
+    } else {
+      params.set('type', category)
+    }
+    router.push(`/marketplace/companies?${params.toString()}`)
+  }
+
   const handleResetFilters = () => {
     setSearchQuery('')
+    setActiveCategory('ALL')
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete('type')
+    router.push(`/marketplace/companies?${params.toString()}`)
   }
 
   return (
@@ -116,15 +142,19 @@ function CompaniesContent() {
             </div>
           </div>
           <h1 className="font-heading font-black text-3xl md:text-4xl text-white">
-            Car Rental <span className="gradient-text">Companies</span>
+            {activeCategory === 'HOTEL' ? 'Hotel' : activeCategory === 'CAR_RENTAL' ? 'Car Rental' : 'Verified'}{' '}
+            <span className="gradient-text">Partners</span>
           </h1>
           <p className="text-slate-400 text-sm mt-1">
-            Browse and connect with premium, vetted car rental companies across {selectedCountry?.name}.
+            {activeCategory === 'HOTEL'
+              ? `Browse and connect with verified hotels across ${selectedCountry?.name}.`
+              : activeCategory === 'CAR_RENTAL'
+                ? `Browse and connect with premium, vetted car rental companies across ${selectedCountry?.name}.`
+                : `Browse and connect with trusted car rental companies and hotels across ${selectedCountry?.name}.`}
           </p>
         </div>
 
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-
           <div className="relative w-full sm:w-64">
             <input
               type="text"
@@ -136,6 +166,27 @@ function CompaniesContent() {
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500">🔍</span>
           </div>
         </div>
+      </div>
+
+      <div className="flex flex-wrap gap-2 mb-8">
+        {[
+          { value: 'ALL', label: 'All Partners', icon: '🏢' },
+          { value: 'CAR_RENTAL', label: 'Car Rentals', icon: '🚗' },
+          { value: 'HOTEL', label: 'Hotels', icon: '🏨' },
+        ].map((tab) => (
+          <button
+            key={tab.value}
+            onClick={() => handleCategoryChange(tab.value as 'ALL' | 'CAR_RENTAL' | 'HOTEL')}
+            className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition-all ${
+              activeCategory === tab.value
+                ? 'border-primary bg-primary/10 text-primary'
+                : 'border-white/10 bg-white/5 text-slate-400 hover:text-white'
+            }`}
+          >
+            <span>{tab.icon}</span>
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {loading ? (
@@ -159,7 +210,7 @@ function CompaniesContent() {
           <div className="text-6xl mb-4">🏢</div>
           <h3 className="font-heading font-bold text-white text-lg mb-2">No Companies Found</h3>
           <p className="text-slate-400 text-sm max-w-sm">
-            We couldn't find any approved rental companies matching your current filters in {selectedCountry?.name}.
+            We couldn&apos;t find any approved rental companies matching your current filters in {selectedCountry?.name}.
           </p>
           <button
             onClick={handleResetFilters}

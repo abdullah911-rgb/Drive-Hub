@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
@@ -11,6 +12,17 @@ import RegisterCompanyModal from '@/components/shared/RegisterCompanyModal'
 import { CarCard, CompanyCard } from '@/components/shared/Cards'
 import { CarCardSkeleton } from '@/components/ui'
 import type { Car, Company } from '@/types'
+
+interface Room {
+  id: string
+  name: string
+  roomType: string
+  description: string
+  pricePerNight: number
+  capacity: number
+  images?: { id: string; imageUrl: string; isPrimary?: boolean }[]
+  company?: { name: string }
+}
 
 interface LandingPageClientProps {
   initialCars: Car[]
@@ -24,6 +36,7 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
 
   const [cars, setCars] = useState<Car[]>(initialCars)
   const [companies, setCompanies] = useState<Company[]>(initialCompanies)
+  const [rooms, setRooms] = useState<Room[]>([])
   const [stats, setStats] = useState(initialStats)
   const [loading, setLoading] = useState(initialCars.length === 0 && initialCompanies.length === 0)
   const [user, setUser] = useState<{ role: string; status: string; countryId?: string } | null>(null)
@@ -50,9 +63,10 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
 
     async function loadData() {
       try {
-        const [carsRes, companiesRes] = await Promise.all([
+        const [carsRes, companiesRes, roomsRes] = await Promise.all([
           fetch('/api/cars?status=APPROVED&limit=6&lite=true'),
-          fetch('/api/companies?status=APPROVED&limit=4&lite=true'),
+          fetch('/api/companies?status=APPROVED&limit=100&lite=true'),
+          fetch('/api/rooms?status=APPROVED&limit=3'),
         ])
         if (carsRes.ok) {
           const data = await carsRes.json()
@@ -70,6 +84,10 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
             setStats((prev) => ({ ...prev, companyCount: total }))
           }
         }
+        if (roomsRes.ok) {
+          const data = await roomsRes.json()
+          setRooms(data.data || [])
+        }
       } catch {
       } finally {
         setLoading(false)
@@ -80,34 +98,36 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
 
   const brands = [...new Set(cars.map(c => c.brand))].sort()
   const featuredCars = cars.slice(0, 6)
-  const featuredCompanies = companies.slice(0, 4)
+  const carCompanies = companies.filter(c => c.companyType !== 'HOTEL').slice(0, 4)
+  const hotelCompanies = companies.filter(c => c.companyType === 'HOTEL').slice(0, 4)
+  const featuredRooms = rooms.slice(0, 3)
 
   const featuresList = [
     {
       icon: '🌍',
       title: 'Global Coverage',
-      desc: 'Browse verified car listings across multiple countries and major international cities.',
+      desc: 'Browse verified car & hotel listings across multiple countries and international cities.',
       accent: 'text-sky-400 bg-sky-400/10 border-sky-400/20',
     },
     {
       icon: '💬',
       title: 'Direct WhatsApp Contact',
-      desc: 'Connect with rental companies and individual owners directly with no middlemen or extra fees.',
+      desc: 'Connect with rental companies and hotels directly — no middlemen, no extra fees.',
       accent: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20',
     },
     {
-      icon: '🚗',
-      title: 'Diverse Fleet Options',
-      desc: 'From budget econo-cars to premium luxury rides and SUVs, find the perfect ride for any occasion.',
+      icon: '🏨',
+      title: 'Cars & Hotels in One Place',
+      desc: 'From premium rides to luxury suites — book your entire trip through a single platform.',
       accent: 'text-violet-400 bg-violet-400/10 border-violet-400/20',
     },
   ]
 
   const statItems = [
     { value: `${stats.carCount}+`, label: 'Cars Listed' },
-    { value: `${stats.companyCount}+`, label: 'Companies' },
+    { value: `${stats.companyCount}+`, label: 'Partners' },
     { value: `${stats.brandCount}+`, label: 'Car Brands' },
-    { value: 'Multiple', label: 'Countries Supported' },
+    { value: 'Multi', label: 'Countries' },
   ]
 
   const openRegisterCompany = () => {
@@ -140,28 +160,28 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
           >
             <div className="inline-flex items-center gap-2 glass px-4 py-2 rounded-full mb-8 border border-primary/20 shadow-sm">
               <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-              <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Premium Car Rental Marketplace</span>
+              <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Car Rentals &amp; Hotel Rooms Marketplace</span>
             </div>
 
             <h1 className="font-heading font-black text-5xl md:text-7xl lg:text-8xl text-white mb-8 tracking-tight leading-[0.9]">
-              Find Your
+              Drive, Stay,
               <br />
-              <span className="gradient-text-full">Perfect Ride</span>
+              <span className="gradient-text-full">Explore</span>
             </h1>
 
             <p className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-10">
-              Connect directly with trusted car rental companies and independent owners{' '}
+              Connect directly with trusted car rental companies and hotels{' '}
               <span className="text-primary font-semibold underline decoration-2 decoration-accent/50 underline-offset-4">globally</span>.
-              Browse, chat on WhatsApp, and ride with ease.
+              Book your perfect ride and stay — all in one place.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
               <a href="#cars" className="btn-primary px-8 py-4 text-base font-bold shadow-lg rounded-xl w-full sm:w-auto">
-                Browse Cars
+                🚗 Browse Cars
               </a>
-              <a href="#companies" className="btn-secondary px-8 py-4 text-base font-bold rounded-xl w-full sm:w-auto text-white shadow-lg">
-                View Companies
-              </a>
+              <Link href="/marketplace/rooms" className="btn-secondary px-8 py-4 text-base font-bold rounded-xl w-full sm:w-auto text-white shadow-lg">
+                🏨 Browse Hotels
+              </Link>
             </div>
 
             {user?.role === 'CUSTOMER' && user.status === 'APPROVED' && (
@@ -170,7 +190,7 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
                   onClick={openRegisterCompany}
                   className="inline-flex items-center gap-2 glass px-5 py-3 rounded-xl border border-primary/30 text-primary hover:bg-primary/10 transition-all text-sm font-bold"
                 >
-                  <span>🏢</span> Own a fleet? Register your company here
+                  <span>🏢</span> Own a fleet or hotel? Register your business
                 </button>
               </motion.div>
             )}
@@ -184,7 +204,7 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
                   onClick={() => router.push('/auth?tab=signup&role=COMPANY')}
                   className="text-sm text-slate-400 hover:text-primary font-semibold transition-colors"
                 >
-                  List Your Fleet →
+                  List Your Fleet or Hotel →
                 </button>
               </div>
             )}
@@ -232,7 +252,8 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
             {[
               { icon: '🔒', text: 'Verified Companies' },
               { icon: '💬', text: 'Direct WhatsApp Contact' },
-              { icon: '🚗', text: 'Diverse Fleet' },
+              { icon: '🚗', text: 'Car Rentals' },
+              { icon: '🏨', text: 'Hotel Rooms' },
               { icon: '⭐', text: 'Trusted Reviews' },
             ].map(f => (
               <div key={f.text} className="flex items-center gap-2 glass px-4 py-2 rounded-full border border-border shadow-sm">
@@ -297,27 +318,125 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
           <div className="container-app max-w-6xl mx-auto">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
               <div>
-                <h2 className="font-heading font-black text-3xl md:text-4xl text-white mb-3">Registered Companies</h2>
-                <p className="text-slate-400 text-sm">Trusted rental partners across our marketplace</p>
+                <h2 className="font-heading font-black text-3xl md:text-4xl text-white mb-3">Car Rental Partners</h2>
+                <p className="text-slate-400 text-sm">Top car rental fleets across our marketplace</p>
               </div>
-              <Link href="/marketplace/companies" className="btn-ghost text-sm font-semibold self-start sm:self-auto">
-                View All Companies →
+              <Link href="/marketplace/companies?type=CAR_RENTAL" className="btn-ghost text-sm font-semibold self-start sm:self-auto">
+                View All Partners →
               </Link>
             </div>
 
             {loading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {Array.from({ length: 6 }).map((_, i) => (
+                {Array.from({ length: 3 }).map((_, i) => (
                   <div key={i} className="glass-card h-40 animate-pulse rounded-2xl" />
                 ))}
               </div>
-            ) : featuredCompanies.length > 0 ? (
+            ) : carCompanies.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {featuredCompanies.map(company => <CompanyCard key={company.id} company={company} />)}
+                {carCompanies.map(company => <CompanyCard key={company.id} company={company} />)}
               </div>
             ) : (
               <div className="text-center py-16 glass-card rounded-2xl border border-border">
-                <p className="text-slate-400">No companies registered yet.</p>
+                <p className="text-slate-400">No car rental companies registered yet.</p>
+              </div>
+            )}
+          </div>
+        </section>
+
+        <section id="hotel-partners" className="px-6 py-16 border-t border-border/30">
+          <div className="container-app max-w-6xl mx-auto">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+              <div>
+                <h2 className="font-heading font-black text-3xl md:text-4xl text-white mb-3">Hotel Partners</h2>
+                <p className="text-slate-400 text-sm">Verified hotel partners and luxury accommodations</p>
+              </div>
+              <Link href="/marketplace/companies?type=HOTEL" className="btn-ghost text-sm font-semibold self-start sm:self-auto">
+                View All Hotels →
+              </Link>
+            </div>
+
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="glass-card h-40 animate-pulse rounded-2xl" />
+                ))}
+              </div>
+            ) : hotelCompanies.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {hotelCompanies.map(company => <CompanyCard key={company.id} company={company} />)}
+              </div>
+            ) : (
+              <div className="text-center py-16 glass-card rounded-2xl border border-border">
+                <p className="text-slate-400">No hotel partners registered yet.</p>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Hotels Section */}
+        <section id="hotels" className="px-6 py-16 border-t border-border/30">
+          <div className="container-app max-w-6xl mx-auto">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+              <div>
+                <div className="inline-flex items-center gap-2 bg-violet-500/10 border border-violet-500/20 text-violet-400 text-xs font-bold px-3 py-1 rounded-full mb-3">🏨 Hotels</div>
+                <h2 className="font-heading font-black text-3xl md:text-4xl text-white mb-3">Featured Hotel Rooms</h2>
+                <p className="text-slate-400 text-sm">Premium accommodation from verified hotel partners</p>
+              </div>
+              <Link href="/marketplace/rooms" className="btn-ghost text-sm font-semibold self-start sm:self-auto">
+                Browse All Rooms →
+              </Link>
+            </div>
+
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="glass-card h-72 animate-pulse rounded-2xl" />
+                ))}
+              </div>
+            ) : featuredRooms.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {featuredRooms.map((room, i) => (
+                  <motion.div
+                    key={room.id}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.08 }}
+                  >
+                    <Link href={`/marketplace/rooms/${room.id}`} className="block group">
+                      <div className="glass-card overflow-hidden h-full">
+                        <div className="relative h-48 bg-white/5 overflow-hidden">
+                          {room.images?.[0] ? (
+                            <Image src={room.images[0].imageUrl} alt={room.name} fill className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-5xl">🛏️</div>
+                          )}
+                          <div className="absolute top-3 left-3">
+                            <span className="text-xs bg-primary/90 text-white px-2 py-1 rounded-lg font-bold">${room.pricePerNight}/night</span>
+                          </div>
+                          <div className="absolute top-3 right-3">
+                            <span className="text-xs bg-black/60 backdrop-blur-sm text-white px-2 py-1 rounded-lg">{room.roomType}</span>
+                          </div>
+                        </div>
+                        <div className="p-4">
+                          <h3 className="font-bold text-white text-sm">{room.name}</h3>
+                          {room.company && <p className="text-xs text-primary mt-0.5">{room.company.name}</p>}
+                          <p className="text-xs text-slate-400 mt-1 line-clamp-2">{room.description}</p>
+                          <div className="flex justify-between items-center mt-3 pt-3 border-t border-white/5">
+                            <span className="text-xs text-slate-500">👥 {room.capacity} guests</span>
+                            <span className="text-xs text-primary font-bold">View Details →</span>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16 glass-card rounded-2xl border border-border">
+                <div className="text-4xl mb-3">🏨</div>
+                <p className="text-slate-400">Hotel listings coming soon. Register your hotel today!</p>
+                <button onClick={openRegisterCompany} className="btn-primary px-5 py-2 mt-4 text-sm">Register a Hotel</button>
               </div>
             )}
           </div>
@@ -326,17 +445,20 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
         {(!user || (user.role === 'CUSTOMER' && user.status === 'APPROVED')) && (
           <section className="px-6 py-16 border-t border-border/30">
             <div className="container-app max-w-3xl mx-auto text-center glass-card p-10 border border-primary/20">
+              <div className="flex justify-center gap-4 text-3xl mb-4">🚗 🏨</div>
               <h2 className="font-heading font-black text-2xl md:text-3xl text-white mb-4">
-                {user ? 'Ready to list your own cars?' : 'Are you a car rental company?'}
+                {user ? 'List your cars or hotel rooms' : 'Are you a car rental company or hotel?'}
               </h2>
               <p className="text-slate-400 text-sm mb-6 max-w-lg mx-auto">
                 {user
-                  ? 'Register your company on our platform and get access to the company panel to manage your fleet and subscriptions.'
-                  : 'Join our marketplace, reach customers worldwide, and manage your fleet from a dedicated company panel.'}
+                  ? 'Register your business and get access to a dedicated dashboard to manage listings and subscriptions.'
+                  : 'Join our marketplace, reach thousands of customers worldwide, and manage your fleet or hotel from a dedicated panel.'}
               </p>
-              <button onClick={openRegisterCompany} className="btn-primary px-8 py-3 font-bold rounded-xl">
-                {user ? 'Register Your Company' : 'Get Started as a Company'}
-              </button>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <button onClick={openRegisterCompany} className="btn-primary px-8 py-3 font-bold rounded-xl">
+                  {user ? 'Register Your Business' : 'Get Started'}
+                </button>
+              </div>
             </div>
           </section>
         )}

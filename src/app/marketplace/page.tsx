@@ -386,7 +386,7 @@ function MarketplaceContent() {
               <div className="text-6xl mb-4">🚗</div>
               <h3 className="font-heading font-bold text-white text-lg mb-2">No Vehicles Found</h3>
               <p className="text-slate-400 text-sm max-w-sm">
-                We couldn't find any approved rental cars matching your current filters in {selectedCountry?.name}. Try relaxing your filter choices.
+                We couldn&apos;t find any approved rental cars matching your current filters in {selectedCountry?.name}. Try relaxing your filter choices.
               </p>
               <button
                 onClick={handleResetFilters}

@@ -1,5 +1,6 @@
 
-export type RoleName = 'CUSTOMER' | 'COMPANY' | 'ADMIN' | 'SUPER_ADMIN'
+export type RoleName = 'CUSTOMER' | 'COMPANY' | 'HOTEL' | 'ADMIN' | 'SUPER_ADMIN'
+export type CompanyType = 'CAR_RENTAL' | 'HOTEL'
 export type ApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED' | 'BANNED'
 export type SubscriptionStatus = 'ACTIVE' | 'EXPIRED' | 'PENDING' | 'CANCELLED'
 export type PaymentStatus = 'PENDING' | 'REQUIRES_ACTION' | 'PAID' | 'FAILED' | 'CANCELLED' | 'EXPIRED'
@@ -79,13 +80,16 @@ export interface Company {
   countryId: string
   country?: Country
   status: ApprovalStatus
+  companyType?: CompanyType
   documents?: CompanyDocument[]
   subscriptions?: Subscription[]
   cars?: Car[]
+  rooms?: Room[]
   reviews?: Review[]
   averageRating?: number
   totalReviews?: number
   totalCars?: number
+  totalRooms?: number
   createdAt: string
   updatedAt: string
 }
@@ -201,6 +205,7 @@ export interface AdminStats {
   totalCustomers: number
   totalCompanies: number
   totalCars: number
+  totalRooms: number
   pendingApprovals: number
   activeSubscriptions: number
   totalRevenuePKR: number
@@ -266,5 +271,43 @@ export interface CarFilters {
   fuelType?: string
   transmission?: string
   seatingCapacity?: number
+  search?: string
+}
+
+export interface RoomImage {
+  id: string
+  roomId: string
+  imageUrl: string
+  imageType: string
+  isPrimary: boolean
+}
+
+export interface Room {
+  id: string
+  companyId: string
+  company?: Company
+  countryId: string
+  country?: Country
+  cityId: string
+  city?: City
+  name: string
+  hotelName: string
+  roomType: string
+  pricePerNight: number
+  capacity: number
+  bedType: string
+  description: string
+  features: string[]
+  status: ApprovalStatus
+  images: RoomImage[]
+  createdAt: string
+  updatedAt: string
+}
+
+export interface RoomFilters {
+  countryId?: string
+  cityId?: string
+  roomType?: string
+  capacity?: number
   search?: string
 }

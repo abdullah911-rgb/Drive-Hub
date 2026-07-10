@@ -44,7 +44,7 @@ export default function ContactPage() {
             Contact <span className="gradient-text">DriveHub</span>
           </h1>
           <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
-            Have questions about our marketplace, list verification, or subscription plans? Our global team is here to help. Reach out directly or send us a message below.
+            Have questions about our car rental or hotel marketplace, listing verification, or subscription plans? Our global team is here to help. Reach out directly or send us a message below.
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-6 text-sm text-slate-300">
             <span className="flex items-center gap-2 glass px-4 py-2 rounded-xl border border-white/5">

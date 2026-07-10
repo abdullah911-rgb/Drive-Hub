@@ -75,6 +75,8 @@ function getRedirectPath(role: string, status: string): string {
       return status === 'PENDING' ? '/auth?status=pending' : '/dashboard/admin'
     case 'COMPANY':
       return '/dashboard/company'
+    case 'HOTEL':
+      return '/dashboard/hotel'
     case 'CUSTOMER':
       return status === 'PENDING' ? '/?status=pending' : '/'
     default:

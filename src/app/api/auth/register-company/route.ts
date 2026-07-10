@@ -8,6 +8,7 @@ import {
   saveCompanyRegistrationDocuments,
 } from '@/lib/registerCompany'
 import { v4 as uuidv4 } from 'uuid'
+import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,20 +42,25 @@ export async function POST(request: NextRequest) {
 
     const {
       companyName, ownerName, cnicOrId, contactNumber, whatsAppNumber,
-      businessAddress, countryId, licenseNumber, documents,
+      businessAddress, countryId, licenseNumber, documents, companyType: rawType,
     } = parsed.data
+
+    const companyType = rawType === 'HOTEL' ? 'HOTEL' : 'CAR_RENTAL'
+    const assignedRole = companyType === 'HOTEL' ? 'HOTEL' : 'COMPANY'
 
     const country = await db.getCountryById(countryId)
     const validation = validateCompanyForm(country?.code || 'PK', {
       cnicOrId, licenseNumber, contactNumber, whatsAppNumber, businessAddress,
-    })
+    }, companyType === 'HOTEL')
     if (!validation.valid) {
       return NextResponse.json({ success: false, error: validation.message }, { status: 400 })
     }
 
-    const licenseCheck = validateLicenseNumber(licenseNumber, country?.code || 'PK', cnicOrId)
-    if (!licenseCheck.valid) {
-      return NextResponse.json({ success: false, error: `Invalid license number: ${licenseCheck.error}` }, { status: 422 })
+    if (companyType !== 'HOTEL') {
+      const licenseCheck = validateLicenseNumber(licenseNumber, country?.code || 'PK', cnicOrId)
+      if (!licenseCheck.valid) {
+        return NextResponse.json({ success: false, error: `Invalid license number: ${licenseCheck.error}` }, { status: 422 })
+      }
     }
 
     const companies = await db.getCompanies()
@@ -66,26 +72,29 @@ export async function POST(request: NextRequest) {
     const cityId = countryCities[0]?.id || ''
 
     const companyId = uuidv4()
-    await db.createCompany({
-      id: companyId,
-      userId: user.id,
-      name: companyName,
-      ownerName,
-      cnicOrId,
-      contactNumber,
-      whatsAppNumber: whatsAppNumber.replace(/\D/g, ''),
-      email: user.email,
-      businessAddress,
-      licenseNumber,
-      cityId,
-      countryId,
-      status: 'PENDING',
+    await prisma.company.create({
+      data: {
+        id: companyId,
+        userId: user.id,
+        name: companyName,
+        ownerName,
+        cnicOrId,
+        contactNumber,
+        whatsAppNumber: whatsAppNumber.replace(/\D/g, ''),
+        email: user.email,
+        businessAddress,
+        licenseNumber,
+        cityId,
+        countryId,
+        status: 'PENDING',
+        companyType: companyType as 'CAR_RENTAL' | 'HOTEL',
+      },
     })
 
     await saveCompanyRegistrationDocuments(companyId, documents)
 
     await db.updateUser(user.id, {
-      roleName: 'COMPANY',
+      roleName: assignedRole,
       fullName: ownerName,
     })
 
@@ -95,8 +104,8 @@ export async function POST(request: NextRequest) {
         id: uuidv4(),
         userId: adminUser.id,
         type: 'GENERAL',
-        title: 'Customer Registered a Company',
-        message: `${user.fullName || user.email} registered "${companyName}" with verification documents. Awaiting approval.`,
+        title: `Customer Registered a ${companyType === 'HOTEL' ? 'Hotel' : 'Company'}`,
+        message: `${user.fullName || user.email} registered "${companyName}" (${companyType === 'HOTEL' ? 'Hotel' : 'Car Rental'}) with verification documents. Awaiting approval.`,
         isRead: false,
       })
     }
@@ -104,7 +113,7 @@ export async function POST(request: NextRequest) {
     const token = await signToken({
       userId: user.id,
       email: user.email,
-      role: 'COMPANY',
+      role: assignedRole,
       status: user.status,
     })
     await setAuthCookie(token)
@@ -112,9 +121,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
-        message: 'Company registration submitted. Awaiting admin approval.',
+        message: `${companyType === 'HOTEL' ? 'Hotel' : 'Company'} registration submitted. Awaiting admin approval.`,
         companyId,
-        redirectTo: '/dashboard/company',
+        redirectTo: companyType === 'HOTEL' ? '/dashboard/hotel' : '/dashboard/company',
       },
     })
   } catch (error) {
@@ -122,3 +131,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'Company registration failed' }, { status: 500 })
   }
 }
+

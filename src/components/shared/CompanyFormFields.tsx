@@ -29,6 +29,7 @@ interface CompanyFormFieldsProps {
   countryPosition?: 'top' | 'bottom'
   showCountryBanner?: boolean
   showDocumentHint?: boolean
+  companyType?: 'CAR_RENTAL' | 'HOTEL'
 }
 
 const labelClass = 'text-xs font-medium text-slate-400 mb-1 block'
@@ -41,6 +42,7 @@ export default function CompanyFormFields({
   countryPosition = 'bottom',
   showCountryBanner = true,
   showDocumentHint = true,
+  companyType = 'CAR_RENTAL',
 }: CompanyFormFieldsProps) {
   const prevCountryId = useRef(form.countryId)
   const config = getCountryFormConfigById(form.countryId, countries)
@@ -141,12 +143,12 @@ export default function CompanyFormFields({
 
       <AnimatePresence mode="wait">
         <motion.div
-          key={`id-license-${countryCode}`}
+          key={`id-license-${countryCode}-${companyType}`}
           initial={{ opacity: 0, x: -12 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: 12 }}
           transition={{ duration: 0.3 }}
-          className="grid grid-cols-2 gap-3"
+          className={companyType === 'HOTEL' ? 'grid grid-cols-1' : 'grid grid-cols-2 gap-3'}
         >
           <ValidatedInput
             key={`${countryCode}-nationalId`}
@@ -159,17 +161,19 @@ export default function CompanyFormFields({
             placeholder={config.nationalId.placeholder}
             maxLength={config.nationalId.maxLength}
           />
-          <ValidatedInput
-            key={`${countryCode}-license`}
-            label={config.businessLicense.label}
-            value={form.licenseNumber}
-            onChange={v => onChange({ licenseNumber: v.toUpperCase() })}
-            validate={validateLicense}
-            hint={config.businessLicense.hint}
-            example={config.businessLicense.example}
-            placeholder={config.businessLicense.placeholder}
-            maxLength={config.businessLicense.maxLength}
-          />
+          {companyType !== 'HOTEL' && (
+            <ValidatedInput
+              key={`${countryCode}-license`}
+              label={config.businessLicense.label}
+              value={form.licenseNumber}
+              onChange={v => onChange({ licenseNumber: v.toUpperCase() })}
+              validate={validateLicense}
+              hint={config.businessLicense.hint}
+              example={config.businessLicense.example}
+              placeholder={config.businessLicense.placeholder}
+              maxLength={config.businessLicense.maxLength}
+            />
+          )}
         </motion.div>
       </AnimatePresence>
 

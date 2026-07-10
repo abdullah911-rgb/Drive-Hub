@@ -1,5 +1,6 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
@@ -22,26 +23,33 @@ export default function CompanyDashboard() {
   const [showAddCarModal, setShowAddCarModal] = useState(false)
   const [submittingCar, setSubmittingCar] = useState(false)
   const [editingCarId, setEditingCarId] = useState<string | null>(null)
+  const [uploadedImages, setUploadedImages] = useState<{ dataUrl: string; name: string }[]>([])
   const [carForm, setCarForm] = useState({
     brand: '', model: '', year: new Date().getFullYear().toString(),
     color: '', regNumber: '', engineNumber: '', mileage: '',
     fuelType: 'PETROL', seatingCapacity: '5', transmission: 'AUTOMATIC',
-    description: '', featuresInput: '', imageInput: '',
+    description: '', featuresInput: '',
   })
 
   const handleOpenAddModal = () => {
     setEditingCarId(null)
+    setUploadedImages([])
     setCarForm({
       brand: '', model: '', year: new Date().getFullYear().toString(),
       color: '', regNumber: '', engineNumber: '', mileage: '',
       fuelType: 'PETROL', seatingCapacity: '5', transmission: 'AUTOMATIC',
-      description: '', featuresInput: '', imageInput: '',
+      description: '', featuresInput: '',
     })
     setShowAddCarModal(true)
   }
 
   const handleOpenEditModal = (car: Car) => {
     setEditingCarId(car.id)
+    // Prefill existing images as preview entries from stored URLs
+    const existingImgs = car.images
+      ? car.images.map(img => ({ dataUrl: img.imageUrl, name: 'existing' }))
+      : []
+    setUploadedImages(existingImgs)
     setCarForm({
       brand: car.brand,
       model: car.model,
@@ -55,7 +63,6 @@ export default function CompanyDashboard() {
       transmission: car.transmission,
       description: car.description,
       featuresInput: car.features ? car.features.join(', ') : '',
-      imageInput: car.images ? car.images.map(img => img.imageUrl).join(', ') : '',
     })
     setShowAddCarModal(true)
   }
@@ -66,9 +73,8 @@ export default function CompanyDashboard() {
   const [accountDetails, setAccountDetails] = useState('')
 
   const [planPrice, setPlanPrice] = useState(formatSubscriptionPrice(SUBSCRIPTION_BASE_PKR, 'PKR'))
-  const [planCurrency, setPlanCurrency] = useState('PKR')
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       const res = await fetch('/api/auth/me', { credentials: 'include' })
       if (!res.ok) {
@@ -107,7 +113,7 @@ export default function CompanyDashboard() {
 
   useEffect(() => {
     fetchDashboardData()
-  }, [])
+  }, [fetchDashboardData])
 
   useEffect(() => {
     if (!company) return
@@ -115,10 +121,9 @@ export default function CompanyDashboard() {
       const currCode = (company as Company & { country?: { currency: string } }).country?.currency || 'PKR'
       const { amount } = await convertPKR(SUBSCRIPTION_BASE_PKR, currCode)
       setPlanPrice(formatSubscriptionPrice(amount, currCode))
-      setPlanCurrency(currCode)
     }
     resolvePrice()
-  }, [company?.countryId])
+  }, [company])
 
   const handleAddCar = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -133,11 +138,10 @@ export default function CompanyDashboard() {
     try {
 
       const features = carForm.featuresInput.split(',').map(f => f.trim()).filter(Boolean)
-      const imageUrls = carForm.imageInput.split(',').map(i => i.trim()).filter(Boolean)
 
-      const imagesPayload = imageUrls.map((url, idx) => ({
+      const imagesPayload = uploadedImages.map((img, idx) => ({
         id: `img-${idx}-${Date.now()}`,
-        imageUrl: url || 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=800',
+        imageUrl: img.dataUrl,
         imageType: idx === 0 ? 'FRONT' : 'INTERIOR',
         isPrimary: idx === 0,
       }))
@@ -174,11 +178,12 @@ export default function CompanyDashboard() {
         toast.success(editingCarId ? 'Vehicle details updated successfully!' : 'Vehicle listing submitted for admin approval!')
         setShowAddCarModal(false)
         setEditingCarId(null)
+        setUploadedImages([])
         setCarForm({
           brand: '', model: '', year: new Date().getFullYear().toString(),
           color: '', regNumber: '', engineNumber: '', mileage: '',
           fuelType: 'PETROL', seatingCapacity: '5', transmission: 'AUTOMATIC',
-          description: '', featuresInput: '', imageInput: '',
+          description: '', featuresInput: '',
         })
         fetchDashboardData()
       } else {
@@ -348,7 +353,7 @@ export default function CompanyDashboard() {
                       >
                         <div className="relative h-40 bg-dark-800">
                           {primaryImage ? (
-                            <img src={primaryImage.imageUrl} alt={car.name} className="w-full h-full object-cover" />
+                            <Image src={primaryImage.imageUrl} alt={car.name} fill className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-4xl opacity-20">🚗</div>
                           )}
@@ -516,7 +521,7 @@ export default function CompanyDashboard() {
                             >
                               <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center p-1 overflow-hidden shrink-0">
                                 {g.logoUrl ? (
-                                  <img src={g.logoUrl} alt={g.name} className="w-full h-full object-contain" />
+                                  <Image src={g.logoUrl} alt={g.name} fill className="w-full h-full object-contain" />
                                 ) : (
                                   <span className="text-sm">{g.icon}</span>
                                 )}
@@ -753,14 +758,81 @@ export default function CompanyDashboard() {
                 </div>
 
                 <div>
-                  <label className="text-slate-400 text-xs font-semibold mb-1 block">Image URLs (comma-separated)</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. https://domain.com/car1.jpg, https://domain.com/car2.jpg"
-                    value={carForm.imageInput}
-                    onChange={(e) => setCarForm({ ...carForm, imageInput: e.target.value })}
-                    className="input w-full"
-                  />
+                  <label className="text-slate-400 text-xs font-semibold mb-2 block">Vehicle Photos (max 5)</label>
+                  <div
+                    className="border-2 border-dashed border-white/10 rounded-xl p-4 bg-dark-900/40 hover:border-primary/40 transition-all cursor-pointer"
+                    onClick={() => document.getElementById('car-image-upload')?.click()}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      e.preventDefault()
+                      const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'))
+                      const remaining = 5 - uploadedImages.length
+                      if (remaining <= 0) { toast.error('Maximum 5 images allowed'); return }
+                      const toAdd = files.slice(0, remaining)
+                      toAdd.forEach(file => {
+                        if (file.size > 5 * 1024 * 1024) { toast.error(`${file.name} exceeds 5MB limit`); return }
+                        const reader = new FileReader()
+                        reader.onload = (ev) => {
+                          setUploadedImages(prev => prev.length < 5 ? [...prev, { dataUrl: ev.target?.result as string, name: file.name }] : prev)
+                        }
+                        reader.readAsDataURL(file)
+                      })
+                    }}
+                  >
+                    <input
+                      id="car-image-upload"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      multiple
+                      className="hidden"
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files || [])
+                        const remaining = 5 - uploadedImages.length
+                        if (remaining <= 0) { toast.error('Maximum 5 images allowed'); return }
+                        const toAdd = files.slice(0, remaining)
+                        toAdd.forEach(file => {
+                          if (file.size > 5 * 1024 * 1024) { toast.error(`${file.name} exceeds 5MB limit`); return }
+                          const reader = new FileReader()
+                          reader.onload = (ev) => {
+                            setUploadedImages(prev => prev.length < 5 ? [...prev, { dataUrl: ev.target?.result as string, name: file.name }] : prev)
+                          }
+                          reader.readAsDataURL(file)
+                        })
+                        e.target.value = ''
+                      }}
+                    />
+                    {uploadedImages.length === 0 ? (
+                      <div className="flex flex-col items-center gap-2 py-4 text-center">
+                        <span className="text-3xl">📸</span>
+                        <p className="text-slate-400 text-xs font-semibold">Click or drag & drop images here</p>
+                        <p className="text-slate-600 text-2xs">JPG, PNG, WebP • Max 5MB each • Up to 5 images</p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {uploadedImages.map((img, idx) => (
+                          <div key={idx} className="relative group w-20 h-20 rounded-lg overflow-hidden border border-white/10">
+                            <Image src={img.dataUrl} alt={img.name} fill className="w-full h-full object-cover" />
+                            {idx === 0 && (
+                              <span className="absolute bottom-0 left-0 right-0 bg-primary/80 text-white text-3xs text-center py-0.5 font-bold">COVER</span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); setUploadedImages(prev => prev.filter((_, i) => i !== idx)) }}
+                              className="absolute top-1 right-1 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full text-xs font-bold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                        {uploadedImages.length < 5 && (
+                          <div className="w-20 h-20 rounded-lg border-2 border-dashed border-white/10 flex items-center justify-center text-slate-500 text-xl hover:border-primary/40 transition-all">
+                            +
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-slate-600 text-2xs mt-1.5">First image will be used as the cover photo.</p>
                 </div>
 
                 <div className="flex gap-3 justify-end mt-4 border-t border-white/5 pt-4">
