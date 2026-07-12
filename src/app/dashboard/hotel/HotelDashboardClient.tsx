@@ -23,7 +23,7 @@ interface Room {
   images?: { id: string; imageUrl: string; isPrimary?: boolean }[]
 }
 
-const ROOM_TYPES = ['STANDARD', 'DELUXE', 'SUITE', 'PENTHOUSE', 'STUDIO', 'FAMILY', 'EXECUTIVE']
+const ROOM_TYPES = ['STANDARD', 'DELUXE', 'STUDIO', 'FAMILY']
 const AMENITIES_LIST = ['WiFi', 'AC', 'TV', 'Minibar', 'Balcony', 'Ocean View', 'Jacuzzi', 'Kitchen', 'Gym Access', 'Breakfast Included']
 
 const EMPTY_ROOM = {

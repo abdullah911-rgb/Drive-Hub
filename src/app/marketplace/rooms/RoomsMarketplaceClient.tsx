@@ -18,7 +18,7 @@ interface Room {
   company?: { name: string; countryId?: string; country?: { name: string } }
 }
 
-const ROOM_TYPES = ['ALL', 'STANDARD', 'DELUXE', 'SUITE', 'PENTHOUSE', 'STUDIO', 'FAMILY', 'EXECUTIVE']
+const ROOM_TYPES = ['ALL', 'STANDARD', 'DELUXE', 'STUDIO', 'FAMILY']
 
 export default function RoomsMarketplaceClient() {
   const [rooms, setRooms] = useState<Room[]>([])

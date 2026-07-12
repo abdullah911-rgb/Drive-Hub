@@ -62,7 +62,7 @@ export function usePwaInstall() {
   }, [])
 
   const canNativeInstall = Boolean(deferredPrompt)
-  const showInstallOption = !isInstalled && (canNativeInstall || isIOS || isAndroid || isDesktop)
+  const showInstallOption = !isInstalled
 
   const install = useCallback(async () => {
     if (!deferredPrompt) return { outcome: 'unavailable' as const }
