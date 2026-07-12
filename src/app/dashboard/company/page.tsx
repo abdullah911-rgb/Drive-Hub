@@ -109,7 +109,7 @@ export default function CompanyDashboard() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [router])
 
   useEffect(() => {
     fetchDashboardData()

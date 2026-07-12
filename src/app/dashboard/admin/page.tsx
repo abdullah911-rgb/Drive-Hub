@@ -35,6 +35,7 @@ export default function AdminDashboard() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
   const [updatingBank, setUpdatingBank] = useState(false)
+  const [bankDetails, setBankDetails] = useState<{ bankName: string; accountNumber: string; accountName: string } | null>(null)
   const [bankForm, setBankForm] = useState({ bankName: '', accountNumber: '', accountName: '' })
 
   const loadData = async () => {
