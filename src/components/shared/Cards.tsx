@@ -13,7 +13,7 @@ export function CarCard({ car, showStatus = false, priority = false }: CarCardPr
   const waUrl = company ? buildWhatsAppUrl(company.whatsAppNumber, WHATSAPP_DEFAULT_MESSAGE) : '#'
 
   return (
-    <div className="glass-card overflow-hidden flex flex-col group hover:shadow-xl animate-fade-in">
+    <div className="glass-card glass-card-interactive overflow-hidden flex flex-col group animate-fade-in">
       <div className="relative h-36 overflow-hidden bg-slate-100 dark:bg-dark-700">
         {primaryImage ? (
           <SafeImage
@@ -22,7 +22,7 @@ export function CarCard({ car, showStatus = false, priority = false }: CarCardPr
             fill
             priority={priority}
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-            className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+            className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-4xl opacity-20">🚗</div>
@@ -48,16 +48,12 @@ export function CarCard({ car, showStatus = false, priority = false }: CarCardPr
           <p className="text-slate-400 text-2xs mt-0.5 font-medium">{car.year} • {car.color}</p>
         </div>
 
-        <div className="flex flex-wrap gap-1">
-          <span className="text-2xs glass px-2 py-0.5 rounded-full text-slate-300 font-semibold border border-border">
-            ⛽ {car.fuelType}
-          </span>
-          <span className="text-2xs glass px-2 py-0.5 rounded-full text-slate-300 font-semibold border border-border">
-            👥 {car.seatingCapacity}
-          </span>
-          <span className="text-2xs glass px-2 py-0.5 rounded-full text-slate-300 font-semibold border border-border">
-            🔧 {car.mileage.toLocaleString()} km
-          </span>
+        <div className="flex flex-wrap gap-1.5">
+          <span className="text-2xs text-slate-500">{car.fuelType}</span>
+          <span className="text-2xs text-slate-600">·</span>
+          <span className="text-2xs text-slate-500">{car.seatingCapacity} seats</span>
+          <span className="text-2xs text-slate-600">·</span>
+          <span className="text-2xs text-slate-500">{car.mileage.toLocaleString()} km</span>
         </div>
 
         <p className="text-slate-500 text-2xs leading-relaxed line-clamp-2">{car.description}</p>
@@ -86,9 +82,9 @@ export function CompanyCard({ company }: CompanyCardProps) {
   const waUrl = buildWhatsAppUrl(company.whatsAppNumber, WHATSAPP_DEFAULT_MESSAGE)
 
   return (
-    <div className="glass-card p-4 flex flex-col gap-3 group hover:shadow-xl animate-fade-in">
+    <div className="glass-card glass-card-interactive p-4 flex flex-col gap-3 group animate-fade-in">
       <div className="flex items-start gap-2.5">
-        <div className="w-10 h-10 rounded-lg gradient-primary flex items-center justify-center text-white font-black text-base flex-shrink-0 shadow-sm transition-transform duration-300 group-hover:rotate-6">
+        <div className="w-10 h-10 rounded-md bg-primary flex items-center justify-center text-white font-semibold text-base flex-shrink-0">
           {company.name[0].toUpperCase()}
         </div>
         <div className="flex-1 min-w-0">
@@ -107,12 +103,13 @@ export function CompanyCard({ company }: CompanyCardProps) {
       )}
 
       <div className="flex items-center gap-2 text-2xs text-slate-400">
-        <span className="glass px-2 py-0.5 rounded-md border border-border font-semibold">
+        <span className="text-slate-500">
           {company.companyType === 'HOTEL'
-            ? `🏨 ${company.totalRooms || 0} Rooms`
-            : `🚗 ${company.totalCars || 0} Cars`}
+            ? `${company.totalRooms || 0} rooms`
+            : `${company.totalCars || 0} cars`}
         </span>
-        <span className="text-slate-500 font-medium truncate">{company.businessAddress}</span>
+        <span className="text-slate-600">·</span>
+        <span className="truncate">{company.businessAddress}</span>
       </div>
 
       <div className="flex gap-2 mt-auto pt-2 border-t border-border/10">
@@ -135,7 +132,7 @@ export function RoomCard({ room, showStatus = false }: RoomCardProps) {
   const waUrl = company ? buildWhatsAppUrl(company.whatsAppNumber, WHATSAPP_DEFAULT_MESSAGE) : '#'
 
   return (
-    <div className="glass-card overflow-hidden flex flex-col group hover:shadow-xl animate-fade-in">
+    <div className="glass-card glass-card-interactive overflow-hidden flex flex-col group animate-fade-in">
       <div className="relative h-36 overflow-hidden bg-slate-100 dark:bg-dark-700">
         {primaryImage ? (
           <SafeImage
@@ -143,7 +140,7 @@ export function RoomCard({ room, showStatus = false }: RoomCardProps) {
             alt={`${room.name} room`}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-            className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+            className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-4xl opacity-20">🛏️</div>
@@ -176,13 +173,10 @@ export function RoomCard({ room, showStatus = false }: RoomCardProps) {
           )}
         </div>
 
-        <div className="flex flex-wrap gap-1">
-          <span className="text-2xs glass px-2 py-0.5 rounded-full text-slate-300 font-semibold border border-border">
-            👥 {room.capacity} guests
-          </span>
-          <span className="text-2xs glass px-2 py-0.5 rounded-full text-slate-300 font-semibold border border-border">
-            🛏️ {room.bedType}
-          </span>
+        <div className="flex flex-wrap gap-1.5 text-2xs text-slate-500">
+          <span>{room.capacity} guests</span>
+          <span className="text-slate-600">·</span>
+          <span>{room.bedType}</span>
         </div>
 
         <p className="text-slate-500 text-2xs leading-relaxed line-clamp-2">{room.description}</p>

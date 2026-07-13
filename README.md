@@ -1,162 +1,354 @@
-# 🚗 DriveHub — Premium Car Rental Marketplace
+# DriveHub — Car & Hotel Rental Marketplace
 
-[![Next.js Version](https://img.shields.io/badge/Next.js-15.5-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Prisma ORM](https://img.shields.io/badge/Prisma-5.22-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16.0-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+[![Next.js](https://img.shields.io/badge/Next.js-15.5-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-5.22-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 
-DriveHub is a fully-featured, production-ready, global peer-to-peer and agency-level vehicle rental marketplace. Built with a modern, high-performance tech stack, it features secure user authentication, interactive search directories, direct WhatsApp integrations for bookings, premium company subscription setups, global localization, and an interactive admin portal with real-time SMTP and WhatsApp notification workflows.
+DriveHub is a full-stack marketplace for **car rentals** and **hotel rooms**. Customers browse verified listings, compare options, and contact providers directly on WhatsApp. Rental companies and hotels manage fleets, rooms, subscriptions, and approvals through role-based dashboards.
 
----
-
-## ✨ Key Features
-
-* **🌐 Global Localization:** Multi-country structure (Pakistan, Saudi Arabia, UAE, etc.) with automated country-specific business license formats, currency conversion, dial codes, and flag matching.
-* **🛡️ Secure User Authentication:** Role-based access control (`SUPER_ADMIN`, `ADMIN`, `COMPANY`, `CUSTOMER`) using secure, signed JWT tokens stored in HTTP-only cookies.
-* **💼 Company Fleet Management:** Dedicated dashboard for companies to upload vehicles, manage active listings, and check customer feedback scores.
-* **💳 Subscription System:** Automated 8500pkr/month subscription flow with admin-controlled bank wire transfers, Pakistani Safepay integrations, and Saudi Arabian Tap Payment APIs.
-* **📋 Business License Verification:** Client-side and server-side format verification (FBR NTN validation for PK, 10-digit Commercial Registration verification for SA) with manual validation indicators.
-* **✉️ Notification Dispatcher:** Real-time Gmail SMTP notifications and automated pre-formatted `wa.me` WhatsApp message generators triggering on all admin approval changes.
-* **⚡ High Performance:** Next.js 15 routing, static generation optimization, fully optimized Prisma indexes, and query optimizations targeting N+1 loads.
+> **Note:** DriveHub is a listing and discovery platform. Bookings, payments, and agreements happen directly between customers and providers.
 
 ---
 
-## 🛠️ Tech Stack
+## Table of Contents
 
-* **Frontend Framework:** Next.js 15 (App Router with Server Actions & Client-side hydration)
-* **Styling:** Tailwind CSS + Vanilla CSS & Framer Motion
-* **Database & ORM:** PostgreSQL + Prisma Client
-* **Authentication:** JWT (jose) + bcryptjs password hashing
-* **Notification Engines:** Nodemailer (Gmail SMTP integration) + WhatsApp Direct Deep-Link Protocol
-* **UI/UX Foundations:** Radix UI primitives + Sonner Toast Engine + Lucide React Icons
+- [Key Features](#-key-features)
+- [User Roles](#-user-roles)
+- [Tech Stack](#-tech-stack)
+- [Getting Started](#-getting-started)
+- [Environment Variables](#-environment-variables)
+- [Database Scripts](#-database-scripts)
+- [API Overview](#-api-overview)
+- [Project Structure](#-project-structure)
+- [Deployment](#-deployment)
+- [Security](#-security)
 
 ---
 
-## 🚀 Local Development Setup
+## Key Features
 
-To run DriveHub locally, follow these steps:
+### Marketplace (Public)
+- Browse **cars** and **hotel rooms** with filters (country, city, brand, fuel type, transmission, capacity)
+- Company directory with profiles, ratings, and reviews
+- Direct **WhatsApp** contact links for every listing
+- Landing page with featured cars, partners, and room listings
+- Light / dark theme toggle
+- **PWA** support — installable on mobile and desktop
+- SEO: sitemap, robots.txt, Open Graph images, JSON-LD structured data
 
-### 1. Clone the repository
+### Authentication & Authorization
+- JWT authentication via **HTTP-only cookies** (`jose` + `bcryptjs`)
+- Role-based access enforced in middleware and API routes
+- Customer, company, hotel, admin, and super-admin flows
+- Account approval workflow (`PENDING` → `APPROVED` / `REJECTED`)
+
+### Company & Hotel Management
+- Company registration with document uploads and license validation
+- **Car rental** fleet management (images, documents, specs)
+- **Hotel** room listings (type, price per night, amenities, images)
+- Company types: `CAR_RENTAL` and `HOTEL`
+- Customer-to-company upgrade (register a business from customer account)
+
+### Admin Portal
+- Approve / reject / suspend users, companies, cars, and rooms
+- Subscription and payment verification
+- Platform bank details management
+- Admin action logs and audit trails
+- In-app notifications + email alerts (SMTP)
+- Dashboard stats (users, listings, revenue by currency)
+
+### Subscriptions & Payments
+- Monthly company subscription (base price: **PKR 8,500** / month)
+- Multi-currency display via live conversion API
+- Bank transfer submission with admin verification
+- Payment provider hooks: `mock`, `rapid_gateway`, `moyasar`
+- Payment methods: JazzCash, EasyPaisa, card, Apple Pay, Mada (region-dependent)
+
+### Global Localization
+- **25+ countries** with cities, dial codes, flags, and currencies
+- Country-specific form validation (e.g. FBR NTN for Pakistan, CR for Saudi Arabia)
+- Currency conversion endpoint for subscription pricing
+
+### Notifications
+- In-app notification system (approvals, reviews, payments, subscriptions)
+- Gmail SMTP email notifications via Nodemailer
+- Pre-formatted WhatsApp deep links for admin outreach
+
+---
+
+## User Roles
+
+| Role | Access |
+|------|--------|
+| `CUSTOMER` | Browse marketplace, leave reviews, register a company |
+| `COMPANY` | Car rental dashboard — manage cars, subscriptions, profile |
+| `HOTEL` | Hotel dashboard — manage rooms, subscriptions, profile |
+| `ADMIN` | Admin portal — approvals, payments, platform settings |
+| `SUPER_ADMIN` | Full admin access (seeded on first deploy) |
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Framework | Next.js 15 (App Router), React 19 |
+| Language | TypeScript 5 |
+| Styling | Tailwind CSS 3, custom CSS variables, Framer Motion |
+| Database | PostgreSQL |
+| ORM | Prisma 5 |
+| Auth | JWT (`jose`), bcrypt password hashing, cookie sessions |
+| Email | Nodemailer (Gmail SMTP) |
+| UI Feedback | Sonner toasts |
+| Theming | next-themes (light / dark) |
+| Images | Next.js Image + Sharp |
+| PWA | Web manifest + service worker |
+| Deployment | Vercel (with Prisma generate in build) |
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- PostgreSQL 14+ (local or cloud)
+- npm
+
+### 1. Clone and install
+
 ```bash
 git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git
-cd DriveHub
-```
-
-### 2. Install dependencies
-```bash
+cd "Car Rental"
 npm install
 ```
 
-### 3. Setup Environment Variables
-Copy `.env.example` to `.env` (or `.env.local` for local Next.js overrides):
+### 2. Configure environment
+
 ```bash
 cp .env.example .env
 ```
-Fill in your database URL and configurations:
-```env
-DATABASE_URL="postgresql://postgres:password@localhost:5432/drivehub_db?schema=public"
-JWT_SECRET="generate-a-32-character-random-secret"
 
-# SMTP (Gmail Example)
-SMTP_HOST="smtp.gmail.com"
-SMTP_PORT="587"
-SMTP_USER="your-email@gmail.com"
-SMTP_PASS="your-gmail-16-char-app-password"
-SMTP_FROM='"DriveHub Marketplace" <your-email@gmail.com>'
+Edit `.env` with your database URL, JWT secret, SMTP credentials, and admin seed values. See [Environment Variables](#-environment-variables) below.
 
-# Admin Account Credentials to seed
-ADMIN_EMAIL="admin@drivehub.com"
-ADMIN_PASSWORD="YourSecurePassword123!"
-ADMIN_PHONE="+923001234567"
+### 3. Set up the database
+
+```bash
+# Push schema + seed roles, countries, cities, and admin user
+npm run db:setup
 ```
 
-### 4. Push Database Schema & Seed Data
-```bash
-# Push database schemas to your local postgres instance
-npm run db:push
+Or step by step:
 
-# Run seed command to register Roles, Countries, Cities, and create your Admin user
+```bash
+npm run db:push
 npm run db:seed
 ```
 
-### 5. Launch the Development Server
+### 4. Run the dev server
+
 ```bash
 npm run dev
 ```
-Open **[http://localhost:3000](http://localhost:3000)** in your browser.
+
+Open [http://localhost:3000](http://localhost:3000).
 
 ---
 
-## 🚢 Deploying to Vercel
+## Environment Variables
 
-### 1. Provision a Cloud Database
-Create a cloud-hosted PostgreSQL instance using providers like [Neon](https://neon.tech), [Supabase](https://supabase.com), or [Railway](https://railway.app). Copy the connection URI.
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `JWT_SECRET` | Yes | Secret for signing JWT tokens (32+ chars) |
+| `NEXT_PUBLIC_APP_URL` | Yes | Public site URL (e.g. `http://localhost:3000`) |
+| `NEXT_PUBLIC_APP_NAME` | No | Display name (default: `DriveHub Marketplace`) |
+| `ADMIN_EMAIL` | Seed | Email for the first super-admin account |
+| `ADMIN_PASSWORD` | Seed | Password for the first super-admin account |
+| `ADMIN_PHONE` | Seed | Phone number for the admin user |
+| `SMTP_HOST` | Email | SMTP host (e.g. `smtp.gmail.com`) |
+| `SMTP_PORT` | Email | SMTP port (e.g. `587`) |
+| `SMTP_USER` | Email | SMTP username |
+| `SMTP_PASS` | Email | SMTP password / app password |
+| `SMTP_FROM` | Email | From address for outgoing mail |
 
-### 2. Import project to Vercel
-1. Go to [vercel.com/new](https://vercel.com/new) and link your GitHub repository.
-2. In **Environment Variables**, define the values from your `.env`:
-   - `DATABASE_URL`
-   - `JWT_SECRET`
-   - `NEXT_PUBLIC_APP_URL` (Set to your custom domain or `https://YOUR-APP.vercel.app`)
-   - `NEXT_PUBLIC_APP_NAME` (`DriveHub Marketplace`)
-   - `ADMIN_EMAIL`
-   - `ADMIN_PASSWORD`
-   - `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, etc.
-3. Click **Deploy**.
+Example `.env`:
 
-### 3. Initialize Production Database (Once)
-After your cloud database and Vercel build is deployed, seed your database schemas remotely using your terminal:
-```bash
-# Run from your local terminal with DATABASE_URL set to your cloud DB
-npx prisma db push
-npx prisma db seed
+```env
+DATABASE_URL="postgresql://postgres:password@localhost:5432/car_rental_db?schema=public"
+JWT_SECRET="your-long-random-secret-here"
+
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+NEXT_PUBLIC_APP_NAME="DriveHub Marketplace"
+
+ADMIN_EMAIL="admin@drivehub.com"
+ADMIN_PASSWORD="YourSecurePassword123!"
+ADMIN_PHONE="+923001234567"
+
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT="587"
+SMTP_USER="your-email@gmail.com"
+SMTP_PASS="your-gmail-app-password"
+SMTP_FROM='"DriveHub Marketplace" <your-email@gmail.com>'
 ```
 
 ---
 
-## 📁 Repository Structure
+## Database Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Production build |
+| `npm run start` | Run production server |
+| `npm run lint` | Run ESLint |
+| `npm run db:generate` | Generate Prisma client |
+| `npm run db:push` | Push schema to database (no migration files) |
+| `npm run db:migrate` | Create and apply Prisma migrations |
+| `npm run db:seed` | Seed roles, countries, cities, admin user |
+| `npm run db:setup` | `db:push` + `db:seed` in one step |
+| `npm run db:purge-demo` | Remove demo / test data |
+| `npm run db:studio` | Open Prisma Studio GUI |
+
+---
+
+## API Overview
+
+### Auth
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register a customer |
+| POST | `/api/auth/register-company` | Register a company / hotel |
+| POST | `/api/auth/login` | Login |
+| POST | `/api/auth/logout` | Logout |
+| GET | `/api/auth/me` | Current session user |
+
+### Marketplace (Public)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/cars` | List cars (filters, pagination) |
+| GET | `/api/cars/[id]` | Car details |
+| POST | `/api/cars` | Create car (company) |
+| PATCH | `/api/cars/[id]` | Update car |
+| GET | `/api/rooms` | List hotel rooms |
+| GET | `/api/rooms/[id]` | Room details |
+| POST | `/api/rooms` | Create room (hotel) |
+| PATCH | `/api/rooms/[id]` | Update room |
+| DELETE | `/api/rooms/[id]` | Delete room |
+| GET | `/api/companies` | List companies |
+| GET | `/api/companies/[id]` | Company profile |
+| GET | `/api/reviews` | List reviews |
+| POST | `/api/reviews` | Submit a review |
+| GET | `/api/countries` | List countries |
+| GET | `/api/cities` | List cities |
+| GET | `/api/currency` | Currency conversion |
+
+### Authenticated
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/notifications` | User notifications |
+| PATCH | `/api/notifications` | Mark notifications read |
+| GET | `/api/subscriptions` | List subscriptions (admin) |
+| POST | `/api/subscriptions` | Create subscription (company) |
+| GET | `/api/bank-details` | Platform bank details |
+| PATCH | `/api/bank-details` | Update bank details (admin) |
+| GET | `/api/admin` | Admin stats and data |
+| PATCH | `/api/admin` | Admin actions (approve, reject, etc.) |
+
+---
+
+## Project Structure
 
 ```
 ├── prisma/
-│   ├── schema.prisma   # Main Database schema definition
-│   └── seed.ts         # Initial system roles, countries, cities & admin seed script
+│   ├── schema.prisma      # Database models and enums
+│   ├── seed.ts            # Roles, countries, cities, admin user
+│   └── purge-demo.ts      # Demo data cleanup script
+├── public/
+│   └── sw.js              # Service worker for PWA
 ├── src/
 │   ├── app/
-│   │   ├── api/        # REST Endpoints (admin, auth, cars, reviews, etc.)
-│   │   ├── dashboard/  # Admin, Company, and Customer role dashboards
-│   │   └── marketplace/# Public listings, vehicles details, and directories
-│   ├── components/     # UI Elements (layout components, shared forms, design systems)
-│   ├── lib/            # Utility functions, core database connectors, and auth checks
-│   └── types/          # Shared TypeScript type interfaces
-├── public/             # System media files and brand logos
-└── package.json        # Manifest file and automation scripts
+│   │   ├── api/           # REST API route handlers
+│   │   ├── auth/          # Login & registration pages
+│   │   ├── dashboard/
+│   │   │   ├── admin/     # Admin portal
+│   │   │   ├── company/   # Car rental company dashboard
+│   │   │   └── hotel/     # Hotel dashboard
+│   │   ├── marketplace/
+│   │   │   ├── cars/      # Car listings & detail pages
+│   │   │   ├── rooms/     # Hotel room listings
+│   │   │   └── companies/ # Company directory
+│   │   ├── about/         # About page
+│   │   ├── contact/       # Contact page
+│   │   ├── privacy/       # Privacy policy
+│   │   ├── terms/         # Terms & conditions
+│   │   ├── globals.css    # Global styles & design tokens
+│   │   ├── layout.tsx     # Root layout (theme, toasts, PWA)
+│   │   ├── page.tsx       # Landing page (server)
+│   │   └── LandingPageClient.tsx
+│   ├── components/
+│   │   ├── layout/        # Navbar, Footer
+│   │   ├── shared/        # Cards, forms, modals, uploads
+│   │   ├── seo/           # JSON-LD helpers
+│   │   └── ui/            # Reusable UI primitives
+│   ├── hooks/             # Custom React hooks (PWA install, etc.)
+│   ├── lib/               # Auth, DB, email, currency, validation
+│   ├── types/             # Shared TypeScript interfaces
+│   └── middleware.ts      # JWT route protection
+├── .env.example           # Environment variable template
+├── next.config.ts
+├── tailwind.config.ts
+├── vercel.json
+└── package.json
 ```
 
 ---
 
-## 📜 Available Command Scripts
+## Deployment
 
-| Script Command | Purpose |
-|:---|:---|
-| `npm run dev` | Starts the Next.js development server with hot-reloading |
-| `npm run build` | Builds the optimized production build |
-| `npm run start` | Runs the production build web-server |
-| `npm run lint` | Runs ESLint codebase analysis |
-| `npm run db:push` | Directly synchronizes the Prisma schema with the target database |
-| `npm run db:seed` | Runs the database seed scripts (`prisma/seed.ts`) |
-| `npm run db:studio` | Launches visual Prisma client inspector inside your browser |
+### Vercel (recommended)
+
+1. **Create a PostgreSQL database** on [Neon](https://neon.tech), [Supabase](https://supabase.com), or [Railway](https://railway.app).
+2. **Import the repo** at [vercel.com/new](https://vercel.com/new).
+3. **Set environment variables** from `.env.example` in the Vercel dashboard.
+4. **Deploy** — `vercel.json` runs `prisma generate` before build.
+5. **Seed production database once:**
+
+```bash
+DATABASE_URL="your-production-url" npx prisma db push
+DATABASE_URL="your-production-url" npx prisma db seed
+```
+
+### Post-deploy checklist
+
+- [ ] `JWT_SECRET` is a strong random value
+- [ ] `NEXT_PUBLIC_APP_URL` matches your live domain
+- [ ] Admin credentials are set and seed has run
+- [ ] SMTP is configured for email notifications
+- [ ] Database is reachable from Vercel (use connection pooling if on Neon)
 
 ---
 
-## 🔒 Security Principles
+## Security
 
-* **Secrets:** Never commit `.env` or configuration secrets. Always use secret vaults in your cloud deployment settings.
-* **Cookies:** Authentication uses secure `HttpOnly` and `SameSite` cookies to mitigate XSS and CSRF risks.
-* **Passwords:** Passwords are fully hashed with 12-round `bcrypt` salting before database insertion.
+- Passwords hashed with **bcrypt** (12 rounds)
+- JWT stored in **HttpOnly**, **SameSite** cookies
+- Role and account-status checks in middleware and API handlers
+- Banned / suspended accounts blocked at the middleware layer
+- Never commit `.env` files or secrets to version control
+- Use Vercel environment variables or a secrets manager in production
 
 ---
 
-## 📄 License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## Supported Countries (seed data)
+
+Pakistan, India, Bangladesh, Saudi Arabia, UAE, Qatar, Kuwait, Bahrain, Oman, Egypt, Turkey, United States, Canada, Brazil, Mexico, United Kingdom, Germany, France, Italy, Spain, Netherlands, Australia, Malaysia, Singapore, Japan, South Africa — each with major cities.
+
+---
+
+## License
+
+Private project — all rights reserved unless otherwise specified by the repository owner.

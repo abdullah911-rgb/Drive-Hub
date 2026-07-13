@@ -3,23 +3,19 @@ import InstallAppButton from '@/components/shared/InstallAppButton'
 
 export default function Footer() {
   return (
-    <footer className="border-t border-white/5 bg-dark-900/80 mt-20">
-      <div className="container-app py-16">
+    <footer className="border-t border-border bg-card mt-12">
+      <div className="container-app py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
 
           <div className="md:col-span-2">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center text-white font-bold text-base shadow-neon-violet">D</div>
-              <span className="font-heading font-bold text-xl gradient-text">DriveHub</span>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center text-white font-bold text-sm">D</div>
+              <span className="font-heading font-bold text-lg text-white">DriveHub</span>
             </div>
             <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
-              Global marketplace for car rentals and hotel rooms. Connecting customers with trusted companies and hotel partners worldwide.
+              A friendly marketplace for car rentals and hotel rooms. We help you find great options — you book directly with the provider.
             </p>
-            <div className="flex items-center gap-3 mt-6 flex-wrap">
-              <div className="flex items-center gap-2 glass px-3 py-1.5 rounded-lg">
-                <span className="text-sm">🌍</span>
-                <span className="text-xs text-slate-400">Global Coverage</span>
-              </div>
+            <div className="mt-5">
               <InstallAppButton variant="footer" />
             </div>
           </div>
