@@ -21,6 +21,7 @@ function MarketplaceContent() {
   const [selectedFuelType, setSelectedFuelType] = useState('')
   const [selectedTransmission, setSelectedTransmission] = useState('')
   const [selectedSeating, setSelectedSeating] = useState('')
+  const [locationSearch, setLocationSearch] = useState('')
   const [showMobileFilters, setShowMobileFilters] = useState(false)
 
   useEffect(() => {
@@ -71,6 +72,7 @@ function MarketplaceContent() {
       if (selectedTransmission) params.append('transmission', selectedTransmission)
       if (selectedSeating) params.append('seatingCapacity', selectedSeating)
       if (searchQuery) params.append('search', searchQuery)
+      if (locationSearch) params.append('nearCity', locationSearch)
 
       const res = await fetch(`/api/cars?${params.toString()}`)
       if (res.ok) {
@@ -82,7 +84,7 @@ function MarketplaceContent() {
     } finally {
       setLoading(false)
     }
-  }, [selectedCountry, selectedBrand, selectedFuelType, selectedTransmission, selectedSeating, searchQuery])
+  }, [selectedCountry, selectedBrand, selectedFuelType, selectedTransmission, selectedSeating, searchQuery, locationSearch])
 
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
@@ -98,6 +100,7 @@ function MarketplaceContent() {
     setSelectedFuelType('')
     setSelectedTransmission('')
     setSelectedSeating('')
+    setLocationSearch('')
   }
 
   const handleCountrySwitch = (country: Country) => {
@@ -137,15 +140,28 @@ function MarketplaceContent() {
           </p>
         </div>
 
-        <div className="relative w-full md:w-80">
-          <input
-            type="text"
-            placeholder="Search make, model, brand..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="input w-full pr-10 focus:border-primary/50 focus:shadow-neon-violet/20"
-          />
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500">🔍</span>
+        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+          <div className="relative w-full sm:w-64">
+            <input
+              type="text"
+              placeholder="Search make, model, brand..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="input w-full pr-10 focus:border-primary/50 focus:shadow-neon-violet/20"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500">🔍</span>
+          </div>
+
+          <div className="relative w-full sm:w-48">
+            <input
+              type="text"
+              placeholder="Location / City..."
+              value={locationSearch}
+              onChange={(e) => setLocationSearch(e.target.value)}
+              className="input w-full pr-10 focus:border-primary/50 focus:shadow-neon-violet/20"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500">📍</span>
+          </div>
         </div>
       </div>
 
@@ -163,6 +179,16 @@ function MarketplaceContent() {
           </div>
 
           <div className="flex flex-col gap-5">
+            <div>
+              <label className="text-slate-400 text-xs font-semibold mb-2 block">Location / City</label>
+              <input
+                type="text"
+                placeholder="e.g. Lahore, Karachi"
+                value={locationSearch}
+                onChange={(e) => setLocationSearch(e.target.value)}
+                className="input w-full bg-dark-900/60"
+              />
+            </div>
 
             <div>
               <label className="text-slate-400 text-xs font-semibold mb-2 block">Brand</label>
@@ -277,6 +303,17 @@ function MarketplaceContent() {
                 </div>
 
                 <div className="flex flex-col gap-4 overflow-y-auto flex-1 pr-1">
+                  <div>
+                    <label className="text-slate-400 text-xs font-semibold mb-2 block">Location / City</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Lahore, Karachi"
+                      value={locationSearch}
+                      onChange={(e) => setLocationSearch(e.target.value)}
+                      className="input w-full"
+                    />
+                  </div>
+
                   <div>
                     <label className="text-slate-400 text-xs font-semibold mb-2 block">Brand</label>
                     <select

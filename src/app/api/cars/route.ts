@@ -49,6 +49,7 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(parseInt(searchParams.get('limit') || '100'), isAdmin ? 500 : 100)
     const offset = parseInt(searchParams.get('offset') || '0')
     const lite = searchParams.get('lite') !== 'false'
+    const nearCity = searchParams.get('nearCity') || undefined
 
     const where: Record<string, unknown> = { deletedAt: null }
     if (countryId) where.countryId = countryId
@@ -87,9 +88,19 @@ export async function GET(request: NextRequest) {
       prisma.car.count({ where }),
     ])
 
+    let sortedCars = cars
+    if (nearCity) {
+      const normalizedNear = nearCity.toLowerCase().trim()
+      sortedCars = [...cars].sort((a, b) => {
+        const aMatch = a.city?.name?.toLowerCase().includes(normalizedNear) ? 1 : 0
+        const bMatch = b.city?.name?.toLowerCase().includes(normalizedNear) ? 1 : 0
+        return bMatch - aMatch
+      })
+    }
+
     return NextResponse.json({
       success: true,
-      data: serializePrisma(cars),
+      data: serializePrisma(sortedCars),
       pagination: { total, limit, offset, hasMore: offset + cars.length < total },
     })
   } catch (error) {

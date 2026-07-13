@@ -45,6 +45,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search') || undefined
     const isHotel = currentUser?.role === 'HOTEL'
     const requestedStatus = searchParams.get('status') || undefined
+    const nearCity = searchParams.get('nearCity') || undefined
 
     // Determine effective status filter:
     // - admins can filter freely or see all
@@ -104,9 +105,19 @@ export async function GET(request: NextRequest) {
       prisma.room.count({ where }),
     ])
 
+    let sortedRooms = rooms
+    if (nearCity) {
+      const normalizedNear = nearCity.toLowerCase().trim()
+      sortedRooms = [...rooms].sort((a, b) => {
+        const aMatch = a.city?.name?.toLowerCase().includes(normalizedNear) ? 1 : 0
+        const bMatch = b.city?.name?.toLowerCase().includes(normalizedNear) ? 1 : 0
+        return bMatch - aMatch
+      })
+    }
+
     return NextResponse.json({
       success: true,
-      data: serializePrisma(rooms),
+      data: serializePrisma(sortedRooms),
       pagination: { total, limit, offset, hasMore: offset + rooms.length < total },
     })
   } catch (error) {

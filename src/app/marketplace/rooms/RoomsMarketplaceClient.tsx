@@ -27,6 +27,7 @@ export default function RoomsMarketplaceClient() {
   const [selectedType, setSelectedType] = useState('ALL')
   const [maxPrice, setMaxPrice] = useState('')
   const [minCapacity, setMinCapacity] = useState('')
+  const [locationSearch, setLocationSearch] = useState('')
 
   useEffect(() => {
     const loadRooms = async () => {
@@ -35,6 +36,7 @@ export default function RoomsMarketplaceClient() {
         if (selectedType !== 'ALL') params.set('roomType', selectedType)
         if (maxPrice) params.set('maxPrice', maxPrice)
         if (minCapacity) params.set('minCapacity', minCapacity)
+        if (locationSearch) params.set('nearCity', locationSearch)
         const res = await fetch(`/api/rooms?${params}`)
         const data = await res.json()
         if (data.success) setRooms(data.data || [])
@@ -45,7 +47,7 @@ export default function RoomsMarketplaceClient() {
       }
     }
     loadRooms()
-  }, [selectedType, maxPrice, minCapacity])
+  }, [selectedType, maxPrice, minCapacity, locationSearch])
 
   const filtered = rooms.filter(r =>
     !search || r.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -69,7 +71,7 @@ export default function RoomsMarketplaceClient() {
           Find Your Perfect <span className="gradient-text">Stay</span>
         </h1>
         <p className="text-slate-400 text-base max-w-xl mx-auto">
-          Discover handpicked, verified hotel rooms from trusted partners. From cozy studios to lavish penthouse suites.
+          Discover handpicked, verified hotel rooms from trusted partners. From cozy studios to spacious family rooms.
         </p>
       </motion.div>
 
@@ -81,12 +83,20 @@ export default function RoomsMarketplaceClient() {
         className="glass-card no-card-hover p-4 mb-8"
       >
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <div className="md:col-span-2">
+          <div>
             <input
               className="input-field text-sm"
               placeholder="🔍 Search rooms, hotels..."
               value={search}
               onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+          <div>
+            <input
+              className="input-field text-sm"
+              placeholder="📍 Location / City..."
+              value={locationSearch}
+              onChange={e => setLocationSearch(e.target.value)}
             />
           </div>
           <div>
