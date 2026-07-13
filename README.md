@@ -184,9 +184,6 @@ JWT_SECRET="your-long-random-secret-here"
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 NEXT_PUBLIC_APP_NAME="DriveHub Marketplace"
 
-ADMIN_EMAIL="admin@drivehub.com"
-ADMIN_PASSWORD="YourSecurePassword123!"
-ADMIN_PHONE="+923001234567"
 
 SMTP_HOST="smtp.gmail.com"
 SMTP_PORT="587"
