@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import InstallAppButton from '@/components/shared/InstallAppButton'
 
 export default function Footer() {
@@ -9,8 +10,8 @@ export default function Footer() {
 
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center text-white font-bold text-sm">D</div>
-              <span className="font-heading font-bold text-lg text-white">DriveHub</span>
+              <Image src="/logo.png" alt="NextTripy Logo" width={36} height={36} className="rounded-md" />
+              <span className="font-heading font-bold text-lg text-white">NextTripy</span>
             </div>
             <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
               A friendly marketplace for car rentals and hotel rooms. We help you find great options — you book directly with the provider.
@@ -55,9 +56,9 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-white/5 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-slate-500 text-sm">© {new Date().getFullYear()} DriveHub Marketplace. All rights reserved.</p>
+          <p className="text-slate-500 text-sm">© {new Date().getFullYear()} NextTripy Marketplace. All rights reserved.</p>
           <p className="text-slate-600 text-xs">
-            DriveHub is a marketplace platform only. Rental and hotel agreements are made directly between customers and companies.
+            NextTripy is a marketplace platform only. Rental and hotel agreements are made directly between customers and companies.
           </p>
         </div>
       </div>

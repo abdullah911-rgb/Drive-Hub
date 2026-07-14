@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import ParticleBackground from '@/components/shared/ParticleBackground'
@@ -24,14 +24,14 @@ export default function TermsPage() {
             <section>
               <h2 className="text-white font-bold text-lg mb-3">1. Platform Nature</h2>
               <p>
-                DriveHub is an intermediary vehicle marketplace. We connect registered car rental companies and individual owners with prospective customers. DriveHub **does not own, operate, or maintain** the vehicles listed on this marketplace, and we do not act as an escrow agent for rental payments.
+                NextTripy is an intermediary vehicle marketplace. We connect registered car rental companies and individual owners with prospective customers. NextTripy **does not own, operate, or maintain** the vehicles listed on this marketplace, and we do not act as an escrow agent for rental payments.
               </p>
             </section>
 
             <section>
               <h2 className="text-white font-bold text-lg mb-3">2. Direct Dealing & WhatsApp Chats</h2>
               <p>
-                All rental bookings, pricing deals, vehicle handovers, security deposits, and insurance claims are negotiated **directly** between the customer and the listing company via WhatsApp or call. DriveHub is not liable for vehicle defects, mechanical issues, cancellation of rentals, or loss of deposits.
+                All rental bookings, pricing deals, vehicle handovers, security deposits, and insurance claims are negotiated **directly** between the customer and the listing company via WhatsApp or call. NextTripy is not liable for vehicle defects, mechanical issues, cancellation of rentals, or loss of deposits.
               </p>
             </section>
 

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import SafeImage from '@/components/shared/SafeImage'
@@ -57,7 +57,7 @@ export default function CarDetailClient({ id }: CarDetailClientProps) {
   }
 
   const company = car.company as Company | undefined
-  const customWAMessage = `Hello, I saw your vehicle listing for the "${car.brand} ${car.model} (${car.year})" on DriveHub. I would like to inquire about its rental availability and rates.`
+  const customWAMessage = `Hello, I saw your vehicle listing for the "${car.brand} ${car.model} (${car.year})" on NextTripy. I would like to inquire about its rental availability and rates.`
   const waUrl = company ? buildWhatsAppUrl(company.whatsAppNumber, customWAMessage) : '#'
 
   return (

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
@@ -174,7 +174,7 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
             </h1>
 
             <p className="text-slate-400 text-base md:text-lg max-w-2xl mx-auto leading-relaxed mb-10">
-              Welcome to DriveHub — discover rental cars and hotel rooms from trusted local partners.
+              Welcome to NextTripy — discover rental cars and hotel rooms from trusted local partners.
               Browse at your own pace, then get in touch directly when you&apos;re ready to book.
             </p>
 
@@ -448,7 +448,7 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
               <p className="text-slate-400 text-sm mb-6 leading-relaxed">
                 {user
                   ? 'We\'d be happy to help you list your cars or rooms. You\'ll get a dashboard to manage everything in one place.'
-                  : 'Join DriveHub and reach customers looking for cars and rooms in your area. Getting started only takes a few minutes.'}
+                  : 'Join NextTripy and reach customers looking for cars and rooms in your area. Getting started only takes a few minutes.'}
               </p>
               <button onClick={openRegisterCompany} className="btn-primary px-8 py-3 text-sm font-semibold">
                 {user ? 'Register your business' : 'Get started — it\'s free to list'}

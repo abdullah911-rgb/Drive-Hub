@@ -1,10 +1,10 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import { buildPageMetadata } from '@/lib/seo'
 import DashboardShell from './DashboardShell'
 
 export const metadata: Metadata = buildPageMetadata({
   title: 'Dashboard',
-  description: 'Manage your DriveHub account, fleet, and subscriptions.',
+  description: 'Manage your NextTripy account, fleet, and subscriptions.',
   path: '/dashboard',
   noIndex: true,
 })

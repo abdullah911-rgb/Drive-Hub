@@ -23,18 +23,18 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   metadataBase,
   title: {
-    default: 'DriveHub Marketplace — Find Car Rentals Worldwide',
-    template: '%s | DriveHub Marketplace',
+    default: 'NextTripy Marketplace — Rent · Stay · Explore',
+    template: '%s | NextTripy',
   },
   description: siteConfig.description,
   keywords: siteConfig.keywords,
-  authors: [{ name: 'DriveHub', url: siteConfig.url }],
-  creator: 'DriveHub',
-  publisher: 'DriveHub',
+  authors: [{ name: 'NextTripy', url: siteConfig.url }],
+  creator: 'NextTripy',
+  publisher: 'NextTripy',
   applicationName: siteConfig.shortName,
   category: 'Automotive',
   openGraph: {
-    title: 'DriveHub Marketplace — Global Car Rentals',
+    title: 'NextTripy — Car Rentals & Hotel Rooms Worldwide',
     description: siteConfig.description,
     type: 'website',
     locale: siteConfig.locale,
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'DriveHub Marketplace — Global Car Rentals',
+    title: 'NextTripy — Car Rentals & Hotel Rooms Worldwide',
     description: siteConfig.description,
     images: ['/opengraph-image'],
     creator: siteConfig.twitterHandle,

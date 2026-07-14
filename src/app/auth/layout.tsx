@@ -1,9 +1,9 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import { buildPageMetadata } from '@/lib/seo'
 
 export const metadata: Metadata = buildPageMetadata({
   title: 'Sign In or Register',
-  description: 'Sign in or create an account on DriveHub Marketplace to browse cars, register your company, or manage your fleet.',
+  description: 'Sign in or create an account on NextTripy Marketplace to browse cars, register your company, or manage your fleet.',
   path: '/auth',
   noIndex: true,
 })

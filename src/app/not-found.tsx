@@ -1,9 +1,9 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 import { buildPageMetadata } from '@/lib/seo'
 
 export const metadata = buildPageMetadata({
   title: 'Page Not Found',
-  description: 'The page you are looking for does not exist on DriveHub Marketplace.',
+  description: 'The page you are looking for does not exist on NextTripy Marketplace.',
   path: '/404',
   noIndex: true,
 })

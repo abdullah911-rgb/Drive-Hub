@@ -1,22 +1,24 @@
 import type { Metadata } from 'next'
 
 export const siteConfig = {
-  name: 'DriveHub Marketplace',
-  shortName: 'DriveHub',
+  name: 'NextTripy Marketplace',
+  shortName: 'NextTripy',
   description:
-    'Connect with trusted car rental companies and individual car owners worldwide. Browse vehicles, view details, and contact owners directly on WhatsApp.',
-  url: process.env.NEXT_PUBLIC_APP_URL || 'https://drivehub.com',
+    'NextTripy is a travel marketplace connecting you with trusted car rental companies and hotel rooms worldwide. Browse, compare, and contact providers directly on WhatsApp.',
+  url: process.env.NEXT_PUBLIC_APP_URL || 'https://nexttripy.com',
   locale: 'en_US',
-  twitterHandle: '@drivehub',
+  twitterHandle: '@nexttripy',
   keywords: [
     'car rental',
-    'global car rental',
-    'vehicle rental',
+    'hotel rooms',
+    'travel marketplace',
     'rent a car',
-    'car marketplace',
-    'DriveHub',
-    'rental cars worldwide',
+    'hotel booking',
+    'NextTripy',
+    'car rental worldwide',
+    'hotel marketplace',
     'WhatsApp car rental',
+    'find hotel rooms',
   ],
 }
 

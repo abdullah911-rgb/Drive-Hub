@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
@@ -41,14 +41,14 @@ export default function ContactPage() {
             Get in Touch
           </span>
           <h1 className="font-heading font-black text-4xl text-white mb-4">
-            Contact <span className="gradient-text">DriveHub</span>
+            Contact <span className="gradient-text">NextTripy</span>
           </h1>
           <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
             Have questions about our car rental or hotel marketplace, listing verification, or subscription plans? Our global team is here to help. Reach out directly or send us a message below.
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-6 text-sm text-slate-300">
             <span className="flex items-center gap-2 glass px-4 py-2 rounded-xl border border-white/5">
-              ✉️ <span className="font-medium">support@drivehub.com</span>
+              ✉️ <span className="font-medium">support@nexttripy.com</span>
             </span>
             <span className="flex items-center gap-2 glass px-4 py-2 rounded-xl border border-white/5">
               💬 <span className="font-medium">Direct Help Chat Available</span>

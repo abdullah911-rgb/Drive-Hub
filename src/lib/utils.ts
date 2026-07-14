@@ -1,4 +1,4 @@
-import { clsx, type ClassValue } from 'clsx'
+﻿import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
 export function cn(...inputs: ClassValue[]) {
@@ -52,7 +52,7 @@ export function buildWhatsAppUrl(phone: string, message: string): string {
 }
 
 export const WHATSAPP_DEFAULT_MESSAGE =
-  "Hello, I found your vehicle listing on DriveHub Marketplace and would like to know about its availability and rental details."
+  "Hello, I found your vehicle listing on NextTripy Marketplace and would like to know about its availability and rental details."
 
 export function getStatusColor(status: string): string {
   const map: Record<string, string> = {

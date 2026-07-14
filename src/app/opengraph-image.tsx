@@ -29,7 +29,7 @@ export default function OpenGraphImage() {
             letterSpacing: -2,
           }}
         >
-          DriveHub
+          NextTripy
         </div>
         <div
           style={{
@@ -39,7 +39,7 @@ export default function OpenGraphImage() {
             maxWidth: 800,
           }}
         >
-          Global Car Rental Marketplace
+          Car Rentals & Hotel Rooms Worldwide
         </div>
         <div
           style={{
@@ -48,7 +48,7 @@ export default function OpenGraphImage() {
             color: '#94A3B8',
           }}
         >
-          Browse • Compare • Rent via WhatsApp
+          Rent · Stay · Explore
         </div>
       </div>
     ),

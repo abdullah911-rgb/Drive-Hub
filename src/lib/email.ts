@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer'
+﻿import nodemailer from 'nodemailer'
 
 function createTransporter() {
   return nodemailer.createTransport({
@@ -35,7 +35,7 @@ function buildHtml(title: string, bodyHtml: string, ctaLabel?: string, ctaUrl?: 
                   <div style="width:40px;height:40px;background:rgba(255,255,255,0.25);border-radius:10px;text-align:center;line-height:40px;font-size:20px;font-weight:900;color:#fff;display:inline-block;">D</div>
                 </td>
                 <td style="vertical-align:middle;">
-                  <span style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.5px;">DriveHub</span>
+                  <span style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.5px;">NextTripy</span>
                 </td>
               </tr>
             </table>
@@ -60,8 +60,8 @@ function buildHtml(title: string, bodyHtml: string, ctaLabel?: string, ctaUrl?: 
 
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:40px;">
               <tr><td style="border-top:1px solid rgba(255,255,255,0.07);padding-top:24px;">
-                <p style="color:#475569;font-size:12px;margin:0;">DriveHub Marketplace &bull; Global Car Rental Platform</p>
-                <p style="color:#334155;font-size:11px;margin:6px 0 0;">This is an automated message, please do not reply directly. For support: <a href="mailto:support@drivehub.com" style="color:#6366f1;">support@drivehub.com</a></p>
+                <p style="color:#475569;font-size:12px;margin:0;">NextTripy Marketplace &bull; Global Car Rental Platform</p>
+                <p style="color:#334155;font-size:11px;margin:6px 0 0;">This is an automated message, please do not reply directly. For support: <a href="mailto:support@nexttripy.com" style="color:#6366f1;">support@nexttripy.com</a></p>
                 <p style="color:#1e293b;font-size:11px;margin:6px 0 0;"><a href="${appUrl}" style="color:#334155;">${appUrl}</a></p>
               </td></tr>
             </table>
@@ -90,7 +90,7 @@ export async function sendEmail(opts: {
 
   try {
     const transporter = createTransporter()
-    const fromAddress = process.env.SMTP_FROM || `"DriveHub Marketplace" <${process.env.SMTP_USER}>`
+    const fromAddress = process.env.SMTP_FROM || `"NextTripy Marketplace" <${process.env.SMTP_USER}>`
     await transporter.sendMail({
       from: fromAddress,
       to: opts.to,
@@ -113,11 +113,11 @@ const APP_URL = () => process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 export const notifications = {
 
   async userApproved(to: string, phone: string, fullName?: string) {
-    const msg = `Hello ${fullName || 'there'} 👋\n\nYour DriveHub account has been approved! You can now browse and contact car rental companies directly.\n\nLogin at: ${APP_URL()}/auth`
+    const msg = `Hello ${fullName || 'there'} 👋\n\nYour NextTripy account has been approved! You can now browse and contact car rental companies directly.\n\nLogin at: ${APP_URL()}/auth`
     await sendEmail({
       to,
-      subject: '🎉 Your DriveHub Account Is Approved!',
-      title: `Welcome to DriveHub, ${fullName || 'there'}!`,
+      subject: '🎉 Your NextTripy Account Is Approved!',
+      title: `Welcome to NextTripy, ${fullName || 'there'}!`,
       bodyHtml: `Your account has been reviewed and <strong style="color:#34d399;">approved</strong> by our team. You can now browse car listings, contact companies via WhatsApp, and enjoy a seamless rental experience.`,
       ctaLabel: 'Start Browsing Cars',
       ctaUrl: `${APP_URL()}/marketplace`,
@@ -126,32 +126,32 @@ export const notifications = {
   },
 
   async userRejected(to: string, phone: string) {
-    const msg = `Hello,\n\nYour DriveHub account application was not approved at this time. For assistance please contact support@drivehub.com`
+    const msg = `Hello,\n\nYour NextTripy account application was not approved at this time. For assistance please contact support@nexttripy.com`
     await sendEmail({
       to,
-      subject: 'DriveHub Account Application Update',
+      subject: 'NextTripy Account Application Update',
       title: 'Account Application — Update',
-      bodyHtml: `After reviewing your application, we were unable to approve your account at this time. If you believe this is an error or would like to provide additional information, please reach out to <strong>support@drivehub.com</strong>.`,
+      bodyHtml: `After reviewing your application, we were unable to approve your account at this time. If you believe this is an error or would like to provide additional information, please reach out to <strong>support@nexttripy.com</strong>.`,
     })
     return buildWhatsAppNotificationUrl(phone, msg)
   },
 
   async userSuspended(to: string, phone: string) {
-    const msg = `Hello,\n\nYour DriveHub account has been suspended. For assistance please contact support@drivehub.com`
+    const msg = `Hello,\n\nYour NextTripy account has been suspended. For assistance please contact support@nexttripy.com`
     await sendEmail({
       to,
-      subject: 'DriveHub Account Suspended',
+      subject: 'NextTripy Account Suspended',
       title: 'Account Suspended',
-      bodyHtml: `Your DriveHub account has been temporarily suspended by an administrator. Please contact <strong>support@drivehub.com</strong> to resolve this.`,
+      bodyHtml: `Your NextTripy account has been temporarily suspended by an administrator. Please contact <strong>support@nexttripy.com</strong> to resolve this.`,
     })
     return buildWhatsAppNotificationUrl(phone, msg)
   },
 
   async companyApproved(to: string, phone: string, companyName: string) {
-    const msg = `Hello ${companyName} 🎉\n\nYour company profile on DriveHub has been APPROVED! Log in to your dashboard to subscribe and start listing your vehicles.\n\nDashboard: ${APP_URL()}/dashboard/company`
+    const msg = `Hello ${companyName} 🎉\n\nYour company profile on NextTripy has been APPROVED! Log in to your dashboard to subscribe and start listing your vehicles.\n\nDashboard: ${APP_URL()}/dashboard/company`
     await sendEmail({
       to,
-      subject: `🎉 ${companyName} — DriveHub Profile Approved!`,
+      subject: `🎉 ${companyName} — NextTripy Profile Approved!`,
       title: `${companyName} — Approved!`,
       bodyHtml: `Congratulations! Your company profile has been <strong style="color:#34d399;">approved</strong> by our admin team.<br><br>
         You can now:<br>
@@ -166,34 +166,34 @@ export const notifications = {
   },
 
   async companyRejected(to: string, phone: string, companyName: string) {
-    const msg = `Hello ${companyName},\n\nYour DriveHub company application was not approved at this time. Please contact support@drivehub.com for details.`
+    const msg = `Hello ${companyName},\n\nYour NextTripy company application was not approved at this time. Please contact support@nexttripy.com for details.`
     await sendEmail({
       to,
-      subject: `${companyName} — DriveHub Application Update`,
+      subject: `${companyName} — NextTripy Application Update`,
       title: 'Company Application Not Approved',
-      bodyHtml: `Unfortunately, your company application for <strong>${companyName}</strong> was not approved at this time. This may be due to incomplete information or documentation issues.<br><br>Please contact <strong>support@drivehub.com</strong> with your business license and CNIC/ID for assistance.`,
+      bodyHtml: `Unfortunately, your company application for <strong>${companyName}</strong> was not approved at this time. This may be due to incomplete information or documentation issues.<br><br>Please contact <strong>support@nexttripy.com</strong> with your business license and CNIC/ID for assistance.`,
     })
     return buildWhatsAppNotificationUrl(phone, msg)
   },
 
   async companySuspended(to: string, phone: string, companyName: string) {
-    const msg = `Hello ${companyName},\n\nYour DriveHub company account has been suspended. Contact support@drivehub.com for assistance.`
+    const msg = `Hello ${companyName},\n\nYour NextTripy company account has been suspended. Contact support@nexttripy.com for assistance.`
     await sendEmail({
       to,
-      subject: `${companyName} — DriveHub Account Suspended`,
+      subject: `${companyName} — NextTripy Account Suspended`,
       title: 'Company Account Suspended',
-      bodyHtml: `Your company account for <strong>${companyName}</strong> has been temporarily suspended by an administrator. Your car listings are hidden until the suspension is lifted.<br><br>Contact <strong>support@drivehub.com</strong> to resolve this.`,
+      bodyHtml: `Your company account for <strong>${companyName}</strong> has been temporarily suspended by an administrator. Your car listings are hidden until the suspension is lifted.<br><br>Contact <strong>support@nexttripy.com</strong> to resolve this.`,
     })
     return buildWhatsAppNotificationUrl(phone, msg)
   },
 
   async carApproved(to: string, phone: string, carName: string) {
-    const msg = `Great news! ✅\n\nYour vehicle listing for "${carName}" on DriveHub has been APPROVED and is now live on the marketplace!\n\nView it at: ${APP_URL()}/marketplace`
+    const msg = `Great news! ✅\n\nYour vehicle listing for "${carName}" on NextTripy has been APPROVED and is now live on the marketplace!\n\nView it at: ${APP_URL()}/marketplace`
     await sendEmail({
       to,
-      subject: `✅ "${carName}" is now live on DriveHub!`,
+      subject: `✅ "${carName}" is now live on NextTripy!`,
       title: 'Car Listing Approved',
-      bodyHtml: `Your vehicle listing for <strong>${carName}</strong> has been approved and is now <strong style="color:#34d399;">live on the DriveHub marketplace</strong>. Customers can now find and contact you directly.`,
+      bodyHtml: `Your vehicle listing for <strong>${carName}</strong> has been approved and is now <strong style="color:#34d399;">live on the NextTripy Marketplace</strong>. Customers can now find and contact you directly.`,
       ctaLabel: 'View Marketplace',
       ctaUrl: `${APP_URL()}/marketplace`,
     })
@@ -201,10 +201,10 @@ export const notifications = {
   },
 
   async carRejected(to: string, phone: string, carName: string) {
-    const msg = `Hello,\n\nYour vehicle listing for "${carName}" on DriveHub was not approved. Please review the listing details and resubmit. Contact support@drivehub.com for help.`
+    const msg = `Hello,\n\nYour vehicle listing for "${carName}" on NextTripy was not approved. Please review the listing details and resubmit. Contact support@nexttripy.com for help.`
     await sendEmail({
       to,
-      subject: `DriveHub — Listing "${carName}" Not Approved`,
+      subject: `NextTripy — Listing "${carName}" Not Approved`,
       title: 'Car Listing Not Approved',
       bodyHtml: `Your vehicle listing for <strong>${carName}</strong> was not approved at this time. This may be due to:<br><br>
         • Incomplete vehicle information<br>
@@ -218,23 +218,23 @@ export const notifications = {
   },
 
   async carSuspended(to: string, phone: string, carName: string) {
-    const msg = `Hello,\n\nYour listing "${carName}" on DriveHub has been suspended. Contact support@drivehub.com for assistance.`
+    const msg = `Hello,\n\nYour listing "${carName}" on NextTripy has been suspended. Contact support@nexttripy.com for assistance.`
     await sendEmail({
       to,
-      subject: `DriveHub — Listing "${carName}" Suspended`,
+      subject: `NextTripy — Listing "${carName}" Suspended`,
       title: 'Car Listing Suspended',
-      bodyHtml: `Your vehicle listing for <strong>${carName}</strong> has been temporarily suspended by an admin. Please contact <strong>support@drivehub.com</strong> for details.`,
+      bodyHtml: `Your vehicle listing for <strong>${carName}</strong> has been temporarily suspended by an admin. Please contact <strong>support@nexttripy.com</strong> for details.`,
     })
     return buildWhatsAppNotificationUrl(phone, msg)
   },
 
   async subscriptionActivated(to: string, phone: string, companyName: string, endDate: string) {
-    const msg = `Hello ${companyName} ✅\n\nYour DriveHub subscription has been activated! Your account is now active until ${endDate}. Start adding your cars now: ${APP_URL()}/dashboard/company`
+    const msg = `Hello ${companyName} ✅\n\nYour NextTripy subscription has been activated! Your account is now active until ${endDate}. Start adding your cars now: ${APP_URL()}/dashboard/company`
     await sendEmail({
       to,
-      subject: '✅ DriveHub Subscription Activated',
+      subject: '✅ NextTripy Subscription Activated',
       title: 'Subscription Activated',
-      bodyHtml: `Your payment has been verified and your DriveHub subscription for <strong>${companyName}</strong> is now <strong style="color:#34d399;">active until ${endDate}</strong>.<br><br>You can now list up to 10 vehicles and start receiving customer inquiries.`,
+      bodyHtml: `Your payment has been verified and your NextTripy subscription for <strong>${companyName}</strong> is now <strong style="color:#34d399;">active until ${endDate}</strong>.<br><br>You can now list up to 10 vehicles and start receiving customer inquiries.`,
       ctaLabel: 'Manage Fleet',
       ctaUrl: `${APP_URL()}/dashboard/company`,
     })
@@ -242,12 +242,12 @@ export const notifications = {
   },
 
   async subscriptionDeactivated(to: string, phone: string, companyName: string) {
-    const msg = `Hello ${companyName},\n\nYour DriveHub subscription has been deactivated. Your listings are currently hidden. Contact support@drivehub.com for help.`
+    const msg = `Hello ${companyName},\n\nYour NextTripy subscription has been deactivated. Your listings are currently hidden. Contact support@nexttripy.com for help.`
     await sendEmail({
       to,
-      subject: 'DriveHub Subscription Deactivated',
+      subject: 'NextTripy Subscription Deactivated',
       title: 'Subscription Deactivated',
-      bodyHtml: `Your DriveHub subscription for <strong>${companyName}</strong> has been deactivated by an administrator. Your vehicle listings are currently hidden from customers.<br><br>Contact <strong>support@drivehub.com</strong> to resolve this or renew your subscription from the dashboard.`,
+      bodyHtml: `Your NextTripy subscription for <strong>${companyName}</strong> has been deactivated by an administrator. Your vehicle listings are currently hidden from customers.<br><br>Contact <strong>support@nexttripy.com</strong> to resolve this or renew your subscription from the dashboard.`,
       ctaLabel: 'Go to Dashboard',
       ctaUrl: `${APP_URL()}/dashboard/company`,
     })
@@ -255,12 +255,12 @@ export const notifications = {
   },
 
   async paymentRejected(to: string, phone: string, companyName: string) {
-    const msg = `Hello ${companyName},\n\nYour DriveHub subscription payment could not be verified. Please contact support@drivehub.com or resubmit your payment from the dashboard.`
+    const msg = `Hello ${companyName},\n\nYour NextTripy subscription payment could not be verified. Please contact support@nexttripy.com or resubmit your payment from the dashboard.`
     await sendEmail({
       to,
-      subject: 'DriveHub — Payment Could Not Be Verified',
+      subject: 'NextTripy — Payment Could Not Be Verified',
       title: 'Payment Verification Failed',
-      bodyHtml: `The subscription payment submitted for <strong>${companyName}</strong> could not be verified. This may be due to an incorrect transaction ID or amount mismatch.<br><br>Please contact <strong>support@drivehub.com</strong> or resubmit your payment from the dashboard.`,
+      bodyHtml: `The subscription payment submitted for <strong>${companyName}</strong> could not be verified. This may be due to an incorrect transaction ID or amount mismatch.<br><br>Please contact <strong>support@nexttripy.com</strong> or resubmit your payment from the dashboard.`,
       ctaLabel: 'Go to Dashboard',
       ctaUrl: `${APP_URL()}/dashboard/company`,
     })

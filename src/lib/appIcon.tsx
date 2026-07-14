@@ -14,7 +14,7 @@ export function AppIcon({ size }: { size: number }) {
         borderRadius,
       }}
     >
-      <div style={{ color: 'white', fontSize, fontWeight: 900 }}>D</div>
+      <div style={{ color: 'white', fontSize, fontWeight: 900 }}>N</div>
     </div>
   )
 }

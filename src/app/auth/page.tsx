@@ -243,10 +243,10 @@ function AuthContent() {
 
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-3">
-            <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center text-white font-bold text-lg shadow-neon-violet">D</div>
-            <span className="font-heading font-bold text-xl gradient-text">DriveHub</span>
+            <img src="/logo.png" alt="NextTripy Logo" className="w-10 h-10 rounded-xl" />
+            <span className="font-heading font-bold text-xl gradient-text">NextTripy</span>
           </Link>
-          <p className="text-slate-400 text-sm">Premium Car Rental Marketplace</p>
+          <p className="text-slate-400 text-sm">Car Rentals · Hotel Rooms · Worldwide</p>
         </div>
 
         <div className="glass-card p-6 md:p-8">

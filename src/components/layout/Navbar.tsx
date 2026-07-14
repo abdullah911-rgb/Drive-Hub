@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -104,12 +105,10 @@ export default function Navbar() {
         <div className="container-app">
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                D
-              </div>
+              <Image src="/logo.png" alt="NextTripy Logo" width={40} height={40} className="rounded-lg" priority />
               <div>
-                <span className="font-heading font-bold text-lg text-white leading-none block">DriveHub</span>
-                <div className="text-[10px] text-slate-500 font-medium">Marketplace</div>
+                <span className="font-heading font-bold text-lg text-white leading-none block">NextTripy</span>
+                <div className="text-[10px] text-slate-500 font-medium">Rent · Stay · Explore</div>
               </div>
             </Link>
 

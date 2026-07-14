@@ -1,4 +1,4 @@
-import { Metadata } from 'next'
+﻿import { Metadata } from 'next'
 import RoomDetailClient from './RoomDetailClient'
 
 interface PageProps {
@@ -6,7 +6,7 @@ interface PageProps {
 }
 
 export const metadata: Metadata = {
-  title: 'Room Details | DriveHub Hotels',
+  title: 'Room Details | NextTripy Hotels',
   description: 'View room details, amenities, and booking information.',
 }
 

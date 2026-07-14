@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+﻿import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
@@ -103,7 +103,7 @@ export async function PATCH(request: NextRequest) {
         type: action === 'approve' ? 'ACCOUNT_APPROVED' : 'ACCOUNT_REJECTED',
         title: action === 'approve' ? 'Account Approved' : `Account ${action}ed`,
         message: action === 'approve'
-          ? 'Your account has been approved! Welcome to DriveHub.'
+          ? 'Your account has been approved! Welcome to NextTripy.'
           : `Your account has been ${action}ed by admin.`,
         isRead: false,
       })

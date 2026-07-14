@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import { getCarForMetadata } from '@/lib/data'
 import { buildPageMetadata, carJsonLd, breadcrumbJsonLd } from '@/lib/seo'
 import JsonLd from '@/components/seo/JsonLd'
@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     if (!car) {
       return buildPageMetadata({
         title: 'Vehicle Details',
-        description: 'View car rental listing details on DriveHub Marketplace.',
+        description: 'View car rental listing details on NextTripy Marketplace.',
         path: `/marketplace/cars/${id}`,
       })
     }
@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   } catch {
     return buildPageMetadata({
       title: 'Vehicle Details',
-      description: 'View car rental listing details on DriveHub Marketplace.',
+      description: 'View car rental listing details on NextTripy Marketplace.',
       path: `/marketplace/cars/${id}`,
     })
   }

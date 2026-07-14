@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import Navbar from '@/components/layout/Navbar'
@@ -40,13 +40,13 @@ export default function AboutPage() {
           transition={{ duration: 0.5 }}
         >
           <span className="inline-block text-xs font-medium text-primary bg-primary/10 border border-primary/20 px-3 py-1 rounded-full mb-5">
-            About DriveHub
+            About NextTripy
           </span>
           <h1 className="font-heading font-bold text-3xl sm:text-4xl text-white mb-4 leading-tight">
             Helping you find the right ride and the right stay
           </h1>
           <p className="text-slate-400 text-base leading-relaxed">
-            DriveHub is a marketplace that brings together car rental companies and hotels in one easy-to-browse place.
+            NextTripy is a marketplace that brings together car rental companies and hotels in one easy-to-browse place.
             We&apos;re not a booking agency — we simply help you discover great options and connect with providers directly.
           </p>
         </motion.div>
@@ -84,7 +84,7 @@ export default function AboutPage() {
 
         <div className="space-y-6">
           <h2 className="font-heading font-semibold text-xl text-white">
-            Why people use DriveHub
+            Why people use NextTripy
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

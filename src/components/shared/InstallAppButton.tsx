@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
@@ -120,7 +120,7 @@ export default function InstallAppButton({ variant = 'navbar', className = '' }:
                       steps={[
                         'Click File in the menu bar',
                         'Select "Add to Dock"',
-                        'Launch DriveHub directly from your Dock',
+                        'Launch NextTripy directly from your Dock',
                       ]}
                     />
                   </>
