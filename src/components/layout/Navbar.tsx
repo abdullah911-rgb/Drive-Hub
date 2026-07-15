@@ -107,17 +107,17 @@ export default function Navbar() {
             <Link href="/" className="flex items-center gap-2.5 group">
               <Image src="/logo.png" alt="NextTripy Logo" width={40} height={40} className="rounded-lg" priority />
               <div>
-                <span className="font-heading font-bold text-lg text-white leading-none block">NextTripy</span>
-                <div className="text-[10px] text-slate-500 font-medium">Rent · Stay · Explore</div>
+                <span className="font-heading font-bold text-lg text-slate-900 dark:text-white leading-none block">NextTripy</span>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Rent · Stay · Explore</div>
               </div>
             </Link>
 
             <div className="hidden md:flex items-center gap-6">
-              <Link href="/#cars" className="text-slate-400 hover:text-primary transition-colors text-sm font-semibold">Cars</Link>
-              <Link href="/marketplace/rooms" className="text-slate-400 hover:text-primary transition-colors text-sm font-semibold">Hotels</Link>
-              <Link href="/#companies" className="text-slate-400 hover:text-primary transition-colors text-sm font-semibold">Companies</Link>
-              <Link href="/about" className="text-slate-400 hover:text-primary transition-colors text-sm font-semibold">About</Link>
-              <Link href="/contact" className="text-slate-400 hover:text-primary transition-colors text-sm font-semibold">Contact</Link>
+              <Link href="/#cars" className="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-white transition-colors text-sm font-semibold">Cars</Link>
+              <Link href="/marketplace/rooms" className="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-white transition-colors text-sm font-semibold">Hotels</Link>
+              <Link href="/#companies" className="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-white transition-colors text-sm font-semibold">Companies</Link>
+              <Link href="/about" className="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-white transition-colors text-sm font-semibold">About</Link>
+              <Link href="/contact" className="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-white transition-colors text-sm font-semibold">Contact</Link>
             </div>
 
             <div className="hidden md:flex items-center gap-3">
@@ -248,11 +248,11 @@ export default function Navbar() {
                 className="md:hidden glass border-t border-border overflow-hidden"
               >
                 <div className="p-4 flex flex-col gap-3">
-                  <Link href="/#cars" className="text-slate-300 hover:text-primary text-sm py-2 font-semibold" onClick={() => setMenuOpen(false)}>Cars</Link>
-                  <Link href="/marketplace/rooms" className="text-slate-300 hover:text-primary text-sm py-2 font-semibold" onClick={() => setMenuOpen(false)}>Hotels</Link>
-                  <Link href="/#companies" className="text-slate-300 hover:text-primary text-sm py-2 font-semibold" onClick={() => setMenuOpen(false)}>Companies</Link>
-                  <Link href="/about" className="text-slate-300 hover:text-primary text-sm py-2 font-semibold" onClick={() => setMenuOpen(false)}>About</Link>
-                  <Link href="/contact" className="text-slate-300 hover:text-primary text-sm py-2 font-semibold" onClick={() => setMenuOpen(false)}>Contact</Link>
+                  <Link href="/#cars" className="text-slate-700 dark:text-slate-300 hover:text-primary dark:hover:text-white text-sm py-2 font-semibold" onClick={() => setMenuOpen(false)}>Cars</Link>
+                  <Link href="/marketplace/rooms" className="text-slate-700 dark:text-slate-300 hover:text-primary dark:hover:text-white text-sm py-2 font-semibold" onClick={() => setMenuOpen(false)}>Hotels</Link>
+                  <Link href="/#companies" className="text-slate-700 dark:text-slate-300 hover:text-primary dark:hover:text-white text-sm py-2 font-semibold" onClick={() => setMenuOpen(false)}>Companies</Link>
+                  <Link href="/about" className="text-slate-700 dark:text-slate-300 hover:text-primary dark:hover:text-white text-sm py-2 font-semibold" onClick={() => setMenuOpen(false)}>About</Link>
+                  <Link href="/contact" className="text-slate-700 dark:text-slate-300 hover:text-primary dark:hover:text-white text-sm py-2 font-semibold" onClick={() => setMenuOpen(false)}>Contact</Link>
                   <InstallAppButton variant="menu" />
                   <div className="border-t border-border pt-3 flex flex-col gap-2">
                     {loading ? (

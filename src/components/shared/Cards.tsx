@@ -42,21 +42,21 @@ export function CarCard({ car, showStatus = false, priority = false }: CarCardPr
 
       <div className="p-3 flex flex-col gap-2 flex-1">
         <div>
-          <h3 className="font-heading font-bold text-white text-sm leading-tight group-hover:text-primary transition-colors">
+          <h3 className="font-heading font-bold text-slate-900 dark:text-white text-sm leading-tight group-hover:text-primary transition-colors">
             {car.brand} {car.model}
           </h3>
-          <p className="text-slate-400 text-2xs mt-0.5 font-medium">{car.year} • {car.color}</p>
+          <p className="text-slate-600 dark:text-slate-400 text-2xs mt-0.5 font-medium">{car.year} • {car.color}</p>
         </div>
 
         <div className="flex flex-wrap gap-1.5">
-          <span className="text-2xs text-slate-500">{car.fuelType}</span>
-          <span className="text-2xs text-slate-600">·</span>
-          <span className="text-2xs text-slate-500">{car.seatingCapacity} seats</span>
-          <span className="text-2xs text-slate-600">·</span>
-          <span className="text-2xs text-slate-500">{car.mileage.toLocaleString()} km</span>
+          <span className="text-2xs text-slate-500 dark:text-slate-400">{car.fuelType}</span>
+          <span className="text-2xs text-slate-400 dark:text-slate-600">·</span>
+          <span className="text-2xs text-slate-500 dark:text-slate-400">{car.seatingCapacity} seats</span>
+          <span className="text-2xs text-slate-400 dark:text-slate-600">·</span>
+          <span className="text-2xs text-slate-500 dark:text-slate-400">{car.mileage.toLocaleString()} km</span>
         </div>
 
-        <p className="text-slate-500 text-2xs leading-relaxed line-clamp-2">{car.description}</p>
+        <p className="text-slate-600 dark:text-slate-400 text-2xs leading-relaxed line-clamp-2">{car.description}</p>
 
         <div className="flex gap-2 mt-auto pt-2 border-t border-border/10">
           <Link href={`/marketplace/cars/${car.id}`} className="btn-primary text-2xs flex-1 py-1.5 font-bold rounded-lg shadow-sm">
@@ -88,10 +88,10 @@ export function CompanyCard({ company }: CompanyCardProps) {
           {company.name[0].toUpperCase()}
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-heading font-bold text-white text-sm leading-tight group-hover:text-primary transition-colors truncate">
+          <h3 className="font-heading font-bold text-slate-900 dark:text-white text-sm leading-tight group-hover:text-primary transition-colors truncate">
             {company.name}
           </h3>
-          <p className="text-slate-400 text-2xs mt-0.5 truncate font-medium">
+          <p className="text-slate-600 dark:text-slate-400 text-2xs mt-0.5 truncate font-medium">
             {(company.country as { name?: string })?.name || ''}
           </p>
         </div>
@@ -102,13 +102,13 @@ export function CompanyCard({ company }: CompanyCardProps) {
         <RatingStars rating={company.averageRating} count={company.totalReviews} size="sm" />
       )}
 
-      <div className="flex items-center gap-2 text-2xs text-slate-400">
-        <span className="text-slate-500">
+      <div className="flex items-center gap-2 text-2xs text-slate-600 dark:text-slate-400">
+        <span className="text-slate-700 dark:text-slate-300">
           {company.companyType === 'HOTEL'
             ? `${company.totalRooms || 0} rooms`
             : `${company.totalCars || 0} cars`}
         </span>
-        <span className="text-slate-600">·</span>
+        <span className="text-slate-400 dark:text-slate-600">·</span>
         <span className="truncate">{company.businessAddress}</span>
       </div>
 
@@ -165,7 +165,7 @@ export function RoomCard({ room, showStatus = false }: RoomCardProps) {
 
       <div className="p-3 flex flex-col gap-2 flex-1">
         <div>
-          <h3 className="font-heading font-bold text-white text-sm leading-tight group-hover:text-primary transition-colors truncate">
+          <h3 className="font-heading font-bold text-slate-900 dark:text-white text-sm leading-tight group-hover:text-primary transition-colors truncate">
             {room.name}
           </h3>
           {company && (
@@ -173,13 +173,13 @@ export function RoomCard({ room, showStatus = false }: RoomCardProps) {
           )}
         </div>
 
-        <div className="flex flex-wrap gap-1.5 text-2xs text-slate-500">
+        <div className="flex flex-wrap gap-1.5 text-2xs text-slate-600 dark:text-slate-400">
           <span>{room.capacity} guests</span>
-          <span className="text-slate-600">·</span>
+          <span className="text-slate-400 dark:text-slate-600">·</span>
           <span>{room.bedType}</span>
         </div>
 
-        <p className="text-slate-500 text-2xs leading-relaxed line-clamp-2">{room.description}</p>
+        <p className="text-slate-600 dark:text-slate-400 text-2xs leading-relaxed line-clamp-2">{room.description}</p>
 
         <div className="flex gap-2 mt-auto pt-2 border-t border-border/10">
           <Link href={`/marketplace/rooms/${room.id}`} className="btn-primary text-2xs flex-1 py-1.5 font-bold rounded-lg shadow-sm text-center">

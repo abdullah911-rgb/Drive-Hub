@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
@@ -158,58 +158,117 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
 
       <div className="relative z-10 flex flex-col min-h-screen pt-16">
         {/* Hero */}
-        <section className="px-6 py-20 md:py-28 text-center">
-          <motion.div
-            className="container-app max-w-4xl mx-auto"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <span className="inline-block text-xs font-medium text-primary bg-primary/10 border border-primary/20 px-3 py-1 rounded-full mb-6">
-              Car rentals &amp; hotel rooms
-            </span>
+        <section className="px-6 py-12 md:py-24">
+          <div className="container-app max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            {/* Left side: Content */}
+            <motion.div
+              className="lg:col-span-7 text-left flex flex-col items-start"
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <span className="inline-block text-xs font-semibold text-primary bg-primary/10 border border-primary/20 px-3 py-1.5 rounded-full mb-6">
+                ✨ Car rentals &amp; hotel rooms
+              </span>
 
-            <h1 className="font-heading font-bold text-4xl md:text-5xl lg:text-6xl text-white mb-6 tracking-tight leading-tight">
-              Find the perfect car or room<br className="hidden sm:block" /> for your next trip
-            </h1>
+              <h1 className="font-heading font-extrabold text-4xl md:text-5xl lg:text-6xl text-slate-900 dark:text-white mb-6 tracking-tight leading-tight">
+                Find the perfect car or room for your next trip
+              </h1>
 
-            <p className="text-slate-400 text-base md:text-lg max-w-2xl mx-auto leading-relaxed mb-10">
-              Welcome to NextTripy — discover rental cars and hotel rooms from trusted local partners.
-              Browse at your own pace, then get in touch directly when you&apos;re ready to book.
-            </p>
+              <p className="text-slate-600 dark:text-slate-300 text-base md:text-lg max-w-xl leading-relaxed mb-8">
+                Welcome to NextTripy — discover rental cars and hotel rooms from trusted local partners.
+                Browse at your own pace, then get in touch directly when you&apos;re ready to book.
+              </p>
 
-            <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
-              <a href="#cars" className="btn-primary px-8 py-3.5 text-sm font-semibold w-full sm:w-auto">
-                Browse cars
-              </a>
-              <Link href="/marketplace/rooms" className="btn-secondary px-8 py-3.5 text-sm font-semibold w-full sm:w-auto text-white">
-                Browse hotel rooms
-              </Link>
-            </div>
-
-            {user?.role === 'CUSTOMER' && user.status === 'APPROVED' && (
-              <button
-                onClick={openRegisterCompany}
-                className="text-sm text-primary hover:text-primary-400 font-medium transition-colors"
-              >
-                Have a rental business? We&apos;d love to list it here →
-              </button>
-            )}
-
-            {!user && (
-              <div className="flex flex-wrap items-center justify-center gap-4 text-sm">
-                <button onClick={() => router.push('/auth')} className="btn-ghost px-5 py-2.5 font-medium">
-                  Sign in
-                </button>
-                <button
-                  onClick={() => router.push('/auth?tab=signup&role=COMPANY')}
-                  className="text-slate-400 hover:text-primary font-medium transition-colors"
-                >
-                  List your company with us
-                </button>
+              <div className="flex flex-col sm:flex-row gap-3.5 w-full sm:w-auto mb-8">
+                <a href="#cars" className="btn-primary px-8 py-3.5 text-sm font-bold w-full sm:w-auto text-center shadow-lg hover:shadow-primary/30 transition-all">
+                  Browse Cars
+                </a>
+                <Link href="/marketplace/rooms" className="btn-secondary px-8 py-3.5 text-sm font-bold w-full sm:w-auto text-center text-slate-800 dark:text-white border border-border bg-card hover:bg-elevated transition-all">
+                  Browse Hotel Rooms
+                </Link>
               </div>
-            )}
-          </motion.div>
+
+              {user?.role === 'CUSTOMER' && user.status === 'APPROVED' && (
+                <button
+                  onClick={openRegisterCompany}
+                  className="text-sm text-primary hover:text-primary-600 font-bold transition-colors mb-6"
+                >
+                  Have a rental business? We&apos;d love to list it here →
+                </button>
+              )}
+
+              {!user && (
+                <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
+                  <button onClick={() => router.push('/auth')} className="btn-ghost px-5 py-2.5 font-bold border border-border rounded-xl">
+                    Sign In
+                  </button>
+                  <button
+                    onClick={() => router.push('/auth?tab=signup&role=COMPANY')}
+                    className="text-slate-600 dark:text-slate-400 hover:text-primary font-bold transition-colors"
+                  >
+                    List your company with us
+                  </button>
+                </div>
+              )}
+            </motion.div>
+
+            {/* Right side: Premium overlapping images of Cars & Hotels */}
+            <motion.div
+              className="lg:col-span-5 relative w-full h-[400px] md:h-[450px] lg:h-[500px] flex items-center justify-center"
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {/* Backglow decoration */}
+              <div className="absolute w-[80%] h-[80%] bg-gradient-to-tr from-primary-500/20 to-secondary-500/20 blur-3xl rounded-full opacity-60 dark:opacity-40 -z-10" />
+
+              {/* Main image: Luxury Car */}
+              <div className="absolute top-4 left-4 w-[75%] h-[60%] rounded-2xl overflow-hidden border-2 border-white/10 shadow-2xl group transition-transform duration-500 hover:scale-[1.02]">
+                <Image
+                  src="https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&q=80&w=800"
+                  alt="Luxury rental car"
+                  fill
+                  className="object-cover"
+                  priority
+                />
+                <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-lg text-white text-xs font-bold flex items-center gap-1.5">
+                  🚗 Premium Fleets
+                </div>
+              </div>
+
+              {/* Overlapping image: Luxury Room */}
+              <div className="absolute bottom-4 right-4 w-[70%] h-[55%] rounded-2xl overflow-hidden border-2 border-white/10 shadow-2xl group transition-transform duration-500 hover:scale-[1.02]">
+                <Image
+                  src="https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&q=80&w=800"
+                  alt="Luxury hotel room stay"
+                  fill
+                  className="object-cover"
+                />
+                <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-lg text-white text-xs font-bold flex items-center gap-1.5">
+                  🏨 Verified Stays
+                </div>
+              </div>
+
+              {/* Floating Badge 1: Ratings */}
+              <div className="absolute top-1/2 -right-2 transform -translate-y-1/2 bg-card/90 backdrop-blur-lg border border-border rounded-2xl p-3 shadow-xl flex items-center gap-2.5 animate-float">
+                <span className="text-xl">⭐</span>
+                <div>
+                  <div className="text-xs font-extrabold text-slate-900 dark:text-white">4.9/5 Rating</div>
+                  <div className="text-[10px] text-slate-500 font-medium">1,200+ Trip Reviews</div>
+                </div>
+              </div>
+
+              {/* Floating Badge 2: Support */}
+              <div className="absolute bottom-1/3 -left-6 bg-card/90 backdrop-blur-lg border border-border rounded-2xl p-3 shadow-xl flex items-center gap-2.5 animate-float" style={{ animationDelay: '2s' }}>
+                <span className="text-xl">💬</span>
+                <div>
+                  <div className="text-xs font-extrabold text-slate-900 dark:text-white">WhatsApp Booking</div>
+                  <div className="text-[10px] text-slate-500 font-medium">Direct with providers</div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
         </section>
 
         {/* Features */}
@@ -227,8 +286,8 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
                   <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4">
                     {f.icon}
                   </div>
-                  <h3 className="font-heading font-semibold text-base text-white mb-2">{f.title}</h3>
-                  <p className="text-slate-400 text-sm leading-relaxed">{f.desc}</p>
+                  <h3 className="font-heading font-semibold text-base text-slate-900 dark:text-white mb-2">{f.title}</h3>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">{f.desc}</p>
                 </motion.div>
               ))}
             </div>
@@ -247,8 +306,8 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
               <div className="flex flex-wrap justify-center gap-x-12 gap-y-6 pt-8 border-t border-border">
                 {statItems.map(stat => (
                   <div key={stat.label} className="text-center min-w-[100px]">
-                    <div className="text-3xl font-heading font-bold text-white">{stat.value}</div>
-                    <div className="text-slate-500 text-sm mt-1">{stat.label}</div>
+                    <div className="text-3xl font-heading font-bold text-slate-900 dark:text-white">{stat.value}</div>
+                    <div className="text-slate-600 dark:text-slate-400 text-sm mt-1">{stat.label}</div>
                   </div>
                 ))}
               </div>
@@ -260,8 +319,8 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
           <section id="brands" className="px-6 py-16 border-t border-border/30">
             <div className="container-app max-w-6xl mx-auto">
               <div className="mb-8">
-                <h2 className="font-heading font-bold text-2xl md:text-3xl text-white mb-2">Popular brands</h2>
-                <p className="text-slate-400 text-sm">Manufacturers currently listed on the site</p>
+                <h2 className="font-heading font-bold text-2xl md:text-3xl text-slate-900 dark:text-white mb-2">Popular brands</h2>
+                <p className="text-slate-600 dark:text-slate-400 text-sm">Manufacturers currently listed on the site</p>
               </div>
               <div className="flex flex-wrap justify-center gap-3">
                 {brands.map(brand => (
@@ -282,8 +341,8 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
           <div className="container-app max-w-6xl mx-auto">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
               <div>
-                <h2 className="font-heading font-bold text-2xl md:text-3xl text-white mb-2">Available cars</h2>
-                <p className="text-slate-400 text-sm">Hand-picked listings from our rental partners — contact them directly when you&apos;re ready</p>
+                <h2 className="font-heading font-bold text-2xl md:text-3xl text-slate-900 dark:text-white mb-2">Available cars</h2>
+                <p className="text-slate-600 dark:text-slate-400 text-sm">Hand-picked listings from our rental partners — contact them directly when you&apos;re ready</p>
               </div>
               <Link href="/marketplace" className="btn-ghost text-sm font-semibold self-start sm:self-auto">
                 View All Cars →
@@ -310,8 +369,8 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
           <div className="container-app max-w-6xl mx-auto">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
               <div>
-                <h2 className="font-heading font-bold text-2xl md:text-3xl text-white mb-2">Our rental partners</h2>
-                <p className="text-slate-400 text-sm">Local companies with vehicles ready for your next journey</p>
+                <h2 className="font-heading font-bold text-2xl md:text-3xl text-slate-900 dark:text-white mb-2">Our rental partners</h2>
+                <p className="text-slate-600 dark:text-slate-400 text-sm">Local companies with vehicles ready for your next journey</p>
               </div>
               <Link href="/marketplace/companies?type=CAR_RENTAL" className="btn-ghost text-sm font-semibold self-start sm:self-auto">
                 View All Partners →
@@ -330,7 +389,7 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
               </div>
             ) : (
               <div className="text-center py-16 glass-card rounded-2xl border border-border">
-                <p className="text-slate-400">No car rental companies registered yet.</p>
+                <p className="text-slate-600 dark:text-slate-400">No car rental companies registered yet.</p>
               </div>
             )}
           </div>
@@ -340,8 +399,8 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
           <div className="container-app max-w-6xl mx-auto">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
               <div>
-                <h2 className="font-heading font-bold text-2xl md:text-3xl text-white mb-2">Hotel partners</h2>
-                <p className="text-slate-400 text-sm">Comfortable stays from hotels we&apos;ve verified and approved</p>
+                <h2 className="font-heading font-bold text-2xl md:text-3xl text-slate-900 dark:text-white mb-2">Hotel partners</h2>
+                <p className="text-slate-600 dark:text-slate-400 text-sm">Comfortable stays from hotels we&apos;ve verified and approved</p>
               </div>
               <Link href="/marketplace/companies?type=HOTEL" className="btn-ghost text-sm font-semibold self-start sm:self-auto">
                 View All Hotels →
@@ -360,7 +419,7 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
               </div>
             ) : (
               <div className="text-center py-16 glass-card rounded-2xl border border-border">
-                <p className="text-slate-400">No hotel partners registered yet.</p>
+                <p className="text-slate-600 dark:text-slate-400">No hotel partners registered yet.</p>
               </div>
             )}
           </div>
@@ -371,8 +430,8 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
           <div className="container-app max-w-6xl mx-auto">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
               <div>
-                <h2 className="font-heading font-bold text-2xl md:text-3xl text-white mb-2">Featured hotel rooms</h2>
-                <p className="text-slate-400 text-sm">A few of our latest room listings — more added every week</p>
+                <h2 className="font-heading font-bold text-2xl md:text-3xl text-slate-900 dark:text-white mb-2">Featured hotel rooms</h2>
+                <p className="text-slate-600 dark:text-slate-400 text-sm">A few of our latest room listings — more added every week</p>
               </div>
               <Link href="/marketplace/rooms" className="btn-ghost text-sm font-semibold self-start sm:self-auto">
                 Browse All Rooms →
@@ -411,12 +470,12 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
                         </div>
                       </div>
                       <div className="p-4">
-                        <h3 className="font-semibold text-white text-sm">{room.name}</h3>
-                        {room.company && <p className="text-xs text-slate-500 mt-0.5">{room.company.name}</p>}
-                        <p className="text-xs text-slate-400 mt-1 line-clamp-2">{room.description}</p>
-                        <div className="flex justify-between items-center mt-3 pt-3 border-t border-border text-xs text-slate-500">
+                        <h3 className="font-semibold text-slate-900 dark:text-white text-sm">{room.name}</h3>
+                        {room.company && <p className="text-xs text-primary mt-0.5">{room.company.name}</p>}
+                        <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 line-clamp-2">{room.description}</p>
+                        <div className="flex justify-between items-center mt-3 pt-3 border-t border-border text-xs text-slate-500 dark:text-slate-400">
                           <span>{room.capacity} guests</span>
-                          <span className="text-primary">View details</span>
+                          <span className="text-primary font-semibold">View details</span>
                         </div>
                       </div>
                     </div>
@@ -426,7 +485,7 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
               </div>
             ) : (
               <div className="text-center py-16 glass-card rounded-xl">
-                <p className="text-slate-400 text-sm">We&apos;re adding new hotel rooms soon. Check back shortly!</p>
+                <p className="text-slate-600 dark:text-slate-400 text-sm">We&apos;re adding new hotel rooms soon. Check back shortly!</p>
                 <button onClick={openRegisterCompany} className="btn-primary px-5 py-2 mt-4 text-sm">List your hotel with us</button>
               </div>
             )}
@@ -442,10 +501,10 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
               viewport={{ once: true }}
               transition={{ duration: 0.45 }}
             >
-              <h2 className="font-heading font-bold text-xl md:text-2xl text-white mb-3">
+              <h2 className="font-heading font-bold text-xl md:text-2xl text-slate-900 dark:text-white mb-3">
                 {user ? 'Ready to grow your business?' : 'Are you a rental company or hotel?'}
               </h2>
-              <p className="text-slate-400 text-sm mb-6 leading-relaxed">
+              <p className="text-slate-600 dark:text-slate-400 text-sm mb-6 leading-relaxed">
                 {user
                   ? 'We\'d be happy to help you list your cars or rooms. You\'ll get a dashboard to manage everything in one place.'
                   : 'Join NextTripy and reach customers looking for cars and rooms in your area. Getting started only takes a few minutes.'}
