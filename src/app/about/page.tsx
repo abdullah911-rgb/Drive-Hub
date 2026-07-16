@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import Navbar from '@/components/layout/Navbar'
@@ -39,13 +39,11 @@ export default function AboutPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <span className="inline-block text-xs font-medium text-primary bg-primary/10 border border-primary/20 px-3 py-1 rounded-full mb-5">
-            About NextTripy
-          </span>
-          <h1 className="font-heading font-bold text-3xl sm:text-4xl text-white mb-4 leading-tight">
+          {/* No badge here — was overlapping navbar */}
+          <h1 className="font-heading font-black text-3xl sm:text-4xl text-slate-900 dark:text-white mb-4 leading-tight">
             Helping you find the right ride and the right stay
           </h1>
-          <p className="text-slate-400 text-base leading-relaxed">
+          <p className="text-slate-600 dark:text-slate-400 text-base leading-relaxed">
             NextTripy is a marketplace that brings together car rental companies and hotels in one easy-to-browse place.
             We&apos;re not a booking agency — we simply help you discover great options and connect with providers directly.
           </p>
@@ -53,14 +51,14 @@ export default function AboutPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 mb-16">
           <div className="lg:col-span-7 space-y-4">
-            <h2 className="font-heading font-semibold text-xl text-white">
+            <h2 className="font-heading font-bold text-xl text-slate-900 dark:text-white">
               How it works
             </h2>
-            <p className="text-slate-400 text-sm leading-relaxed">
+            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
               Rental companies and hotels register with us, upload their listings, and get approved by our team.
               You search by location, compare options, and when you&apos;re ready — reach out on WhatsApp to arrange the details.
             </p>
-            <p className="text-slate-400 text-sm leading-relaxed">
+            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
               Prices, availability, and payment are always agreed between you and the provider. We&apos;re here to make discovery simple, not to get in the way.
             </p>
           </div>
@@ -68,12 +66,12 @@ export default function AboutPage() {
           <div className="lg:col-span-5">
             <div className="glass-card p-6 space-y-5">
               <div>
-                <h4 className="text-slate-500 text-xs font-medium mb-3">Countries we currently serve</h4>
+                <h4 className="text-slate-500 dark:text-slate-500 text-xs font-semibold mb-3 uppercase tracking-wider">Countries we currently serve</h4>
                 <div className="flex flex-wrap gap-2">
                   {COUNTRIES.map(c => (
                     <div key={c.id} className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-border text-sm bg-elevated/50">
                       <Image src={c.flagUrl} alt={c.name} width={16} height={12} className="w-4 h-3 object-cover rounded-sm" />
-                      <span className="text-slate-300">{c.name}</span>
+                      <span className="text-slate-700 dark:text-slate-300 text-xs font-medium">{c.name}</span>
                     </div>
                   ))}
                 </div>
@@ -83,7 +81,7 @@ export default function AboutPage() {
         </div>
 
         <div className="space-y-6">
-          <h2 className="font-heading font-semibold text-xl text-white">
+          <h2 className="font-heading font-bold text-xl text-slate-900 dark:text-white">
             Why people use NextTripy
           </h2>
 
@@ -97,8 +95,8 @@ export default function AboutPage() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: i * 0.06 }}
               >
-                <h3 className="font-heading font-semibold text-white text-base mb-2">{f.title}</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">{f.desc}</p>
+                <h3 className="font-heading font-bold text-slate-900 dark:text-white text-base mb-2">{f.title}</h3>
+                <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">{f.desc}</p>
               </motion.div>
             ))}
           </div>

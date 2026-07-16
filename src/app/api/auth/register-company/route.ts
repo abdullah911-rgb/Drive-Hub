@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getCurrentUser, signToken, setAuthCookie } from '@/lib/auth'
-import { validateCompanyForm } from '@/lib/countryFormConfig'
-import { validateLicenseNumber } from '@/lib/licenseValidation'
 import {
   parseCompanyRegistrationRequest,
   saveCompanyRegistrationDocuments,
@@ -48,28 +46,19 @@ export async function POST(request: NextRequest) {
     const companyType = rawType === 'HOTEL' ? 'HOTEL' : 'CAR_RENTAL'
     const assignedRole = companyType === 'HOTEL' ? 'HOTEL' : 'COMPANY'
 
-    const country = await db.getCountryById(countryId)
-    const validation = validateCompanyForm(country?.code || 'PK', {
-      cnicOrId, licenseNumber, contactNumber, whatsAppNumber, businessAddress,
-    }, companyType === 'HOTEL')
-    if (!validation.valid) {
-      return NextResponse.json({ success: false, error: validation.message }, { status: 400 })
-    }
-
-    if (companyType !== 'HOTEL') {
-      const licenseCheck = validateLicenseNumber(licenseNumber, country?.code || 'PK', cnicOrId)
-      if (!licenseCheck.valid) {
-        return NextResponse.json({ success: false, error: `Invalid license number: ${licenseCheck.error}` }, { status: 422 })
-      }
-    }
-
+    // Check company name uniqueness
     const companies = await db.getCompanies()
     if (companies.some((c: { name: string }) => c.name.toLowerCase() === companyName.toLowerCase())) {
-      return NextResponse.json({ success: false, error: 'Company name already taken' }, { status: 409 })
+      return NextResponse.json({ success: false, error: 'A company with this name already exists. Please choose a different name.' }, { status: 409 })
     }
 
+    // Get cityId — required by schema, must be a valid UUID
     const countryCities = await db.getCities(countryId)
-    const cityId = countryCities[0]?.id || ''
+    const firstCity = (countryCities as { id: string }[])[0]
+    if (!firstCity?.id) {
+      return NextResponse.json({ success: false, error: 'No cities found for the selected country. Please contact support.' }, { status: 400 })
+    }
+    const cityId = firstCity.id
 
     const companyId = uuidv4()
     await prisma.company.create({
@@ -83,7 +72,7 @@ export async function POST(request: NextRequest) {
         whatsAppNumber: whatsAppNumber.replace(/\D/g, ''),
         email: user.email,
         businessAddress,
-        licenseNumber,
+        licenseNumber: licenseNumber || 'N/A',
         cityId,
         countryId,
         status: 'PENDING',
@@ -91,23 +80,33 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    await saveCompanyRegistrationDocuments(companyId, documents)
+    // Save documents (non-blocking)
+    try {
+      await saveCompanyRegistrationDocuments(companyId, documents)
+    } catch (docErr) {
+      console.error('Document save error (non-critical):', docErr)
+    }
 
     await db.updateUser(user.id, {
       roleName: assignedRole,
       fullName: ownerName,
     })
 
-    const adminUser = await db.getAdminUser()
-    if (adminUser) {
-      await db.createNotification({
-        id: uuidv4(),
-        userId: adminUser.id,
-        type: 'GENERAL',
-        title: `Customer Registered a ${companyType === 'HOTEL' ? 'Hotel' : 'Company'}`,
-        message: `${user.fullName || user.email} registered "${companyName}" (${companyType === 'HOTEL' ? 'Hotel' : 'Car Rental'}) with verification documents. Awaiting approval.`,
-        isRead: false,
-      })
+    // Notify admin (non-blocking)
+    try {
+      const adminUser = await db.getAdminUser()
+      if (adminUser) {
+        await db.createNotification({
+          id: uuidv4(),
+          userId: adminUser.id,
+          type: 'GENERAL',
+          title: `Customer Registered a ${companyType === 'HOTEL' ? 'Hotel' : 'Company'}`,
+          message: `${user.fullName || user.email} registered "${companyName}" and is awaiting approval.`,
+          isRead: false,
+        })
+      }
+    } catch (notifErr) {
+      console.warn('Admin notification failed (non-critical):', notifErr)
     }
 
     const token = await signToken({
@@ -126,9 +125,13 @@ export async function POST(request: NextRequest) {
         redirectTo: companyType === 'HOTEL' ? '/dashboard/hotel' : '/dashboard/company',
       },
     })
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Register company error:', error)
-    return NextResponse.json({ success: false, error: 'Company registration failed' }, { status: 500 })
+    const msg = (error as { message?: string })?.message || ''
+    if (msg.includes('Unique constraint') || msg.includes('unique constraint')) {
+      if (msg.includes('name')) return NextResponse.json({ success: false, error: 'A company with this name already exists.' }, { status: 409 })
+      if (msg.includes('email')) return NextResponse.json({ success: false, error: 'This email is already registered.' }, { status: 409 })
+    }
+    return NextResponse.json({ success: false, error: 'Company registration failed. Please try again.' }, { status: 500 })
   }
 }
-

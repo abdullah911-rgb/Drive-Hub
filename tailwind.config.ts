@@ -59,6 +59,18 @@ module.exports = {
         },
         foreground: {
           DEFAULT: 'var(--text-primary)',
+          secondary: 'var(--text-secondary)',
+          muted: 'var(--text-muted)',
+        },
+        // Semantic surface tokens so bg-card / bg-elevated work as utilities
+        card: {
+          DEFAULT: 'var(--card)',
+        },
+        elevated: {
+          DEFAULT: 'var(--elevated)',
+        },
+        border: {
+          DEFAULT: 'var(--border)',
         },
         dark: {
           900: 'var(--bg-dark-900)',

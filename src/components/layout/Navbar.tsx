@@ -203,7 +203,7 @@ export default function Navbar() {
                 </div>
               ) : (
                 <>
-                  <Link href="/auth" className="btn-ghost text-sm px-4 py-2 font-semibold">Sign In</Link>
+                  <Link href="/auth" className="text-sm px-4 py-2 font-semibold rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-white hover:border-primary hover:text-primary dark:hover:border-primary dark:hover:text-primary transition-all">Sign In</Link>
                   <Link href="/auth?tab=signup" className="btn-primary text-sm px-4 py-2 font-semibold">Get Started</Link>
                 </>
               )}
@@ -269,7 +269,7 @@ export default function Navbar() {
                       </>
                     ) : (
                       <>
-                        <Link href="/auth" className="btn-ghost text-sm font-semibold" onClick={() => setMenuOpen(false)}>Sign In</Link>
+                        <Link href="/auth" className="text-sm font-semibold rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-white hover:border-primary hover:text-primary transition-all text-center py-2.5 px-4" onClick={() => setMenuOpen(false)}>Sign In</Link>
                         <Link href="/auth?tab=signup" className="btn-primary text-sm font-semibold" onClick={() => setMenuOpen(false)}>Get Started</Link>
                       </>
                     )}

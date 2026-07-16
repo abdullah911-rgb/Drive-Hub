@@ -27,7 +27,7 @@ interface Room {
 interface LandingPageClientProps {
   initialCars: Car[]
   initialCompanies: Company[]
-  stats: { carCount: number; companyCount: number; brandCount: number }
+  stats: { carCount: number; companyCount: number; brandCount: number; countryCount: number }
 }
 
 function LandingContent({ initialCars, initialCompanies, stats: initialStats }: LandingPageClientProps) {
@@ -41,7 +41,6 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
   const [loading, setLoading] = useState(initialCars.length === 0 && initialCompanies.length === 0)
   const [user, setUser] = useState<{ role: string; status: string; countryId?: string } | null>(null)
   const [registerCompanyOpen, setRegisterCompanyOpen] = useState(false)
-
   useEffect(() => {
     if (searchParams.get('status') === 'pending') {
       toast.info('Your account is pending admin approval.')
@@ -136,7 +135,7 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
     stats.carCount > 0 ? { value: `${stats.carCount}+`, label: 'Cars available' } : null,
     stats.companyCount > 0 ? { value: `${stats.companyCount}+`, label: 'Partners' } : null,
     stats.brandCount > 0 ? { value: `${stats.brandCount}+`, label: 'Car brands' } : null,
-    { value: '4+', label: 'Countries' },
+    stats.countryCount > 0 ? { value: `${stats.countryCount}+`, label: 'Countries' } : null,
   ].filter(Boolean) as { value: string; label: string }[]
 
   const openRegisterCompany = () => {
@@ -167,15 +166,17 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             >
-              <span className="inline-block text-xs font-semibold text-primary bg-primary/10 border border-primary/20 px-3 py-1.5 rounded-full mb-6">
+              <span className="inline-block text-xs font-bold text-primary bg-primary/10 border border-primary/20 px-3 py-1.5 rounded-full mb-6 tracking-wide uppercase">
                 ✨ Car rentals &amp; hotel rooms
               </span>
 
-              <h1 className="font-heading font-extrabold text-4xl md:text-5xl lg:text-6xl text-slate-900 dark:text-white mb-6 tracking-tight leading-tight">
-                Find the perfect car or room for your next trip
+              <h1 className="font-heading font-black text-4xl md:text-5xl lg:text-6xl text-slate-900 dark:text-white mb-6 tracking-tight leading-[1.1]">
+                Find the perfect{' '}
+                <span className="text-primary">car or room</span>{' '}
+                for your next trip
               </h1>
 
-              <p className="text-slate-600 dark:text-slate-300 text-base md:text-lg max-w-xl leading-relaxed mb-8">
+              <p className="text-slate-600 dark:text-slate-300 text-base md:text-lg max-w-xl leading-relaxed mb-8 font-medium">
                 Welcome to NextTripy — discover rental cars and hotel rooms from trusted local partners.
                 Browse at your own pace, then get in touch directly when you&apos;re ready to book.
               </p>
@@ -184,7 +185,7 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
                 <a href="#cars" className="btn-primary px-8 py-3.5 text-sm font-bold w-full sm:w-auto text-center shadow-lg hover:shadow-primary/30 transition-all">
                   Browse Cars
                 </a>
-                <Link href="/marketplace/rooms" className="btn-secondary px-8 py-3.5 text-sm font-bold w-full sm:w-auto text-center text-slate-800 dark:text-white border border-border bg-card hover:bg-elevated transition-all">
+                <Link href="/marketplace/rooms" className="btn-primary px-8 py-3.5 text-sm font-bold w-full sm:w-auto text-center shadow-lg hover:shadow-primary/30 transition-all">
                   Browse Hotel Rooms
                 </Link>
               </div>
@@ -286,8 +287,8 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
                   <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4">
                     {f.icon}
                   </div>
-                  <h3 className="font-heading font-semibold text-base text-slate-900 dark:text-white mb-2">{f.title}</h3>
-                  <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">{f.desc}</p>
+                  <h3 className="font-heading font-bold text-base text-slate-900 dark:text-white mb-2">{f.title}</h3>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed font-medium">{f.desc}</p>
                 </motion.div>
               ))}
             </div>
@@ -306,8 +307,8 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
               <div className="flex flex-wrap justify-center gap-x-12 gap-y-6 pt-8 border-t border-border">
                 {statItems.map(stat => (
                   <div key={stat.label} className="text-center min-w-[100px]">
-                    <div className="text-3xl font-heading font-bold text-slate-900 dark:text-white">{stat.value}</div>
-                    <div className="text-slate-600 dark:text-slate-400 text-sm mt-1">{stat.label}</div>
+                    <div className="text-3xl font-heading font-black text-slate-900 dark:text-white">{stat.value}</div>
+                    <div className="text-slate-600 dark:text-slate-400 text-sm font-semibold mt-1">{stat.label}</div>
                   </div>
                 ))}
               </div>
@@ -319,8 +320,8 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
           <section id="brands" className="px-6 py-16 border-t border-border/30">
             <div className="container-app max-w-6xl mx-auto">
               <div className="mb-8">
-                <h2 className="font-heading font-bold text-2xl md:text-3xl text-slate-900 dark:text-white mb-2">Popular brands</h2>
-                <p className="text-slate-600 dark:text-slate-400 text-sm">Manufacturers currently listed on the site</p>
+                <h2 className="font-heading font-black text-2xl md:text-3xl text-slate-900 dark:text-white mb-2">Popular brands</h2>
+                <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Manufacturers currently listed on the site</p>
               </div>
               <div className="flex flex-wrap justify-center gap-3">
                 {brands.map(brand => (
@@ -341,8 +342,8 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
           <div className="container-app max-w-6xl mx-auto">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
               <div>
-                <h2 className="font-heading font-bold text-2xl md:text-3xl text-slate-900 dark:text-white mb-2">Available cars</h2>
-                <p className="text-slate-600 dark:text-slate-400 text-sm">Hand-picked listings from our rental partners — contact them directly when you&apos;re ready</p>
+                <h2 className="font-heading font-black text-2xl md:text-3xl text-slate-900 dark:text-white mb-2">Available cars</h2>
+                <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Hand-picked listings from our rental partners — contact them directly when you&apos;re ready</p>
               </div>
               <Link href="/marketplace" className="btn-ghost text-sm font-semibold self-start sm:self-auto">
                 View All Cars →
@@ -369,8 +370,8 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
           <div className="container-app max-w-6xl mx-auto">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
               <div>
-                <h2 className="font-heading font-bold text-2xl md:text-3xl text-slate-900 dark:text-white mb-2">Our rental partners</h2>
-                <p className="text-slate-600 dark:text-slate-400 text-sm">Local companies with vehicles ready for your next journey</p>
+                <h2 className="font-heading font-black text-2xl md:text-3xl text-slate-900 dark:text-white mb-2">Our rental partners</h2>
+                <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Local companies with vehicles ready for your next journey</p>
               </div>
               <Link href="/marketplace/companies?type=CAR_RENTAL" className="btn-ghost text-sm font-semibold self-start sm:self-auto">
                 View All Partners →
@@ -399,8 +400,8 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
           <div className="container-app max-w-6xl mx-auto">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
               <div>
-                <h2 className="font-heading font-bold text-2xl md:text-3xl text-slate-900 dark:text-white mb-2">Hotel partners</h2>
-                <p className="text-slate-600 dark:text-slate-400 text-sm">Comfortable stays from hotels we&apos;ve verified and approved</p>
+                <h2 className="font-heading font-black text-2xl md:text-3xl text-slate-900 dark:text-white mb-2">Hotel partners</h2>
+                <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Comfortable stays from hotels we&apos;ve verified and approved</p>
               </div>
               <Link href="/marketplace/companies?type=HOTEL" className="btn-ghost text-sm font-semibold self-start sm:self-auto">
                 View All Hotels →
@@ -430,8 +431,8 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
           <div className="container-app max-w-6xl mx-auto">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
               <div>
-                <h2 className="font-heading font-bold text-2xl md:text-3xl text-slate-900 dark:text-white mb-2">Featured hotel rooms</h2>
-                <p className="text-slate-600 dark:text-slate-400 text-sm">A few of our latest room listings — more added every week</p>
+                <h2 className="font-heading font-black text-2xl md:text-3xl text-slate-900 dark:text-white mb-2">Featured hotel rooms</h2>
+                <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">A few of our latest room listings — more added every week</p>
               </div>
               <Link href="/marketplace/rooms" className="btn-ghost text-sm font-semibold self-start sm:self-auto">
                 Browse All Rooms →

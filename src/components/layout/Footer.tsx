@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import InstallAppButton from '@/components/shared/InstallAppButton'
 
 export default function Footer() {
   return (
@@ -11,18 +10,15 @@ export default function Footer() {
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-3">
               <Image src="/logo.png" alt="NextTripy Logo" width={36} height={36} className="rounded-md" />
-              <span className="font-heading font-bold text-lg text-white">NextTripy</span>
+              <span className="font-heading font-bold text-lg text-slate-900 dark:text-white">NextTripy</span>
             </div>
-            <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
+            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed max-w-sm">
               A friendly marketplace for car rentals and hotel rooms. We help you find great options — you book directly with the provider.
             </p>
-            <div className="mt-5">
-              <InstallAppButton variant="footer" />
-            </div>
           </div>
 
           <div>
-            <h4 className="font-heading font-semibold text-white mb-4">Platform</h4>
+            <h4 className="font-heading font-bold text-slate-900 dark:text-white mb-4">Platform</h4>
             <ul className="space-y-2.5">
               {[
                 { href: '/about', label: 'About Us' },
@@ -33,14 +29,14 @@ export default function Footer() {
                 { href: '/auth?tab=signup', label: 'Register' },
               ].map(l => (
                 <li key={l.href}>
-                  <Link href={l.href} className="text-slate-400 hover:text-primary transition-colors text-sm">{l.label}</Link>
+                  <Link href={l.href} className="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors text-sm font-medium">{l.label}</Link>
                 </li>
               ))}
             </ul>
           </div>
 
           <div>
-            <h4 className="font-heading font-semibold text-white mb-4">Legal</h4>
+            <h4 className="font-heading font-bold text-slate-900 dark:text-white mb-4">Legal</h4>
             <ul className="space-y-2.5">
               {[
                 { href: '/privacy', label: 'Privacy Policy' },
@@ -48,16 +44,16 @@ export default function Footer() {
                 { href: '/contact', label: 'Contact Us' },
               ].map(l => (
                 <li key={l.href}>
-                  <Link href={l.href} className="text-slate-400 hover:text-primary transition-colors text-sm">{l.label}</Link>
+                  <Link href={l.href} className="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors text-sm font-medium">{l.label}</Link>
                 </li>
               ))}
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-white/5 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-slate-500 text-sm">© {new Date().getFullYear()} NextTripy Marketplace. All rights reserved.</p>
-          <p className="text-slate-600 text-xs">
+        <div className="border-t border-border mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-slate-500 dark:text-slate-500 text-sm font-medium">© {new Date().getFullYear()} NextTripy Marketplace. All rights reserved.</p>
+          <p className="text-slate-400 dark:text-slate-600 text-xs">
             NextTripy is a marketplace platform only. Rental and hotel agreements are made directly between customers and companies.
           </p>
         </div>

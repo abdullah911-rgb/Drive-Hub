@@ -92,7 +92,7 @@ export const getFeaturedCompanies = unstable_cache(
 
 export const getMarketplaceStats = unstable_cache(
   async () => {
-    const [carCount, companyCount, brands] = await Promise.all([
+    const [carCount, companyCount, brands, countryCount] = await Promise.all([
       prisma.car.count({ where: approvedCarWhere }),
       prisma.company.count({ where: { deletedAt: null, status: 'APPROVED' } }),
       prisma.car.findMany({
@@ -100,8 +100,13 @@ export const getMarketplaceStats = unstable_cache(
         distinct: ['brand'],
         select: { brand: true },
       }),
+      prisma.company.findMany({
+        where: { deletedAt: null, status: 'APPROVED' },
+        distinct: ['countryId'],
+        select: { countryId: true },
+      }),
     ])
-    return { carCount, companyCount, brandCount: brands.length }
+    return { carCount, companyCount, brandCount: brands.length, countryCount: countryCount.length }
   },
   ['marketplace-stats'],
   { revalidate: 300 }

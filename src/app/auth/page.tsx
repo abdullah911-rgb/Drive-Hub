@@ -4,6 +4,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
+import Navbar from '@/components/layout/Navbar'
+import Footer from '@/components/layout/Footer'
 import ParticleBackground from '@/components/shared/ParticleBackground'
 import CompanyFormFields from '@/components/shared/CompanyFormFields'
 import CompanyDocumentUploads, {
@@ -85,7 +87,8 @@ function AuthContent() {
       })
       const data = await res.json()
       if (data.success) {
-        toast.success('Welcome back!')
+        const name = data.data?.user?.fullName
+        toast.success(name ? `Welcome back, ${name}! 👋` : 'Welcome back!')
         router.push(data.data.redirectTo)
       } else {
         toast.error(data.error)
@@ -229,11 +232,14 @@ function AuthContent() {
   const labelClass = "text-xs font-medium text-slate-400 mb-1 block"
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-background relative overflow-hidden flex flex-col">
       <ParticleBackground />
       <div className="fixed top-0 left-1/3 w-80 h-80 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
       <div className="fixed bottom-1/4 right-1/3 w-64 h-64 bg-secondary/10 rounded-full blur-3xl pointer-events-none" />
 
+      <Navbar />
+
+      <main className="flex-grow flex items-center justify-center px-4 py-16 relative z-10">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -493,6 +499,9 @@ function AuthContent() {
           <a href="/privacy" className="text-primary hover:underline">Privacy Policy</a>
         </p>
       </motion.div>
+      </main>
+
+      <Footer />
     </div>
   )
 }

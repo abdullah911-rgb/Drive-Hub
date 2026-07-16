@@ -61,7 +61,7 @@ function buildHtml(title: string, bodyHtml: string, ctaLabel?: string, ctaUrl?: 
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:40px;">
               <tr><td style="border-top:1px solid rgba(255,255,255,0.07);padding-top:24px;">
                 <p style="color:#475569;font-size:12px;margin:0;">NextTripy Marketplace &bull; Global Car Rental Platform</p>
-                <p style="color:#334155;font-size:11px;margin:6px 0 0;">This is an automated message, please do not reply directly. For support: <a href="mailto:support@nexttripy.com" style="color:#6366f1;">support@nexttripy.com</a></p>
+                <p style="color:#334155;font-size:11px;margin:6px 0 0;">This is an automated message, please do not reply directly. For support: <a href="mailto:nexttripy@nexttripy.com" style="color:#6366f1;">nexttripy@nexttripy.com</a></p>
                 <p style="color:#1e293b;font-size:11px;margin:6px 0 0;"><a href="${appUrl}" style="color:#334155;">${appUrl}</a></p>
               </td></tr>
             </table>

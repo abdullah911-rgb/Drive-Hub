@@ -4,7 +4,7 @@ import type { Car, Company } from '@/types'
 
 export const revalidate = 60
 
-const emptyStats = { carCount: 0, companyCount: 0, brandCount: 0 }
+const emptyStats = { carCount: 0, companyCount: 0, brandCount: 0, countryCount: 0 }
 
 export default async function LandingPage() {
   let cars: Car[] = []
