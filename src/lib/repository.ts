@@ -129,7 +129,7 @@ export const db = {
     if (!roleId || !isValidUuid(roleId)) {
       roleId = undefined
       if (roleName) {
-        const role = await prisma.role.findUnique({ where: { name: roleName as 'CUSTOMER' | 'COMPANY' | 'ADMIN' | 'SUPER_ADMIN' } })
+        const role = await prisma.role.findUnique({ where: { name: roleName as 'CUSTOMER' | 'COMPANY' | 'HOTEL' | 'ADMIN' | 'SUPER_ADMIN' } })
         roleId = role?.id
       }
     }

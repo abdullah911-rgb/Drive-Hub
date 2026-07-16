@@ -31,7 +31,7 @@ export default function AboutPage() {
       <ParticleBackground />
       <Navbar />
 
-      <main className="relative z-10 flex-grow pt-24 pb-16 container-app max-w-4xl mx-auto px-4">
+      <main className="relative z-10 flex-grow pt-28 pb-16 container-app max-w-4xl mx-auto px-6">
 
         <motion.div
           className="mb-14 max-w-2xl"
@@ -43,7 +43,7 @@ export default function AboutPage() {
             Helping you find the right ride and the right stay
           </h1>
           <p className="text-slate-600 dark:text-slate-400 text-base leading-relaxed">
-            DriveHub is a marketplace that brings together car rental companies and hotels in one easy-to-browse place.
+            NextTripy is a marketplace that brings together car rental companies and hotels in one easy-to-browse place.
             We&apos;re not a booking agency — we simply help you discover great options and connect with providers directly.
           </p>
         </motion.div>
@@ -81,7 +81,7 @@ export default function AboutPage() {
 
         <div className="space-y-6">
           <h2 className="font-heading font-bold text-xl text-slate-900 dark:text-white">
-            Why people use DriveHub
+            Why people use NextTripy
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
