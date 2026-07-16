@@ -35,7 +35,7 @@ function buildHtml(title: string, bodyHtml: string, ctaLabel?: string, ctaUrl?: 
                   <div style="width:40px;height:40px;background:rgba(255,255,255,0.25);border-radius:10px;text-align:center;line-height:40px;font-size:20px;font-weight:900;color:#fff;display:inline-block;">D</div>
                 </td>
                 <td style="vertical-align:middle;">
-                  <span style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.5px;">NextTripy</span>
+                  <span style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.5px;">DriveHub</span>
                 </td>
               </tr>
             </table>
@@ -60,8 +60,8 @@ function buildHtml(title: string, bodyHtml: string, ctaLabel?: string, ctaUrl?: 
 
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:40px;">
               <tr><td style="border-top:1px solid rgba(255,255,255,0.07);padding-top:24px;">
-                <p style="color:#475569;font-size:12px;margin:0;">NextTripy Marketplace &bull; Global Car Rental Platform</p>
-                <p style="color:#334155;font-size:11px;margin:6px 0 0;">This is an automated message, please do not reply directly. For support: <a href="mailto:nexttripy@nexttripy.com" style="color:#6366f1;">nexttripy@nexttripy.com</a></p>
+                <p style="color:#475569;font-size:12px;margin:0;">DriveHub Marketplace &bull; Global Car Rental Platform</p>
+                <p style="color:#334155;font-size:11px;margin:6px 0 0;">This is an automated message, please do not reply directly. For support: <a href="mailto:drivehub@drivehub.com" style="color:#6366f1;">drivehub@drivehub.com</a></p>
                 <p style="color:#1e293b;font-size:11px;margin:6px 0 0;"><a href="${appUrl}" style="color:#334155;">${appUrl}</a></p>
               </td></tr>
             </table>
@@ -90,7 +90,7 @@ export async function sendEmail(opts: {
 
   try {
     const transporter = createTransporter()
-    const fromAddress = process.env.SMTP_FROM || `"NextTripy Marketplace" <${process.env.SMTP_USER}>`
+    const fromAddress = process.env.SMTP_FROM || `"DriveHub Marketplace" <${process.env.SMTP_USER}>`
     await transporter.sendMail({
       from: fromAddress,
       to: opts.to,

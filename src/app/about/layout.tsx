@@ -1,12 +1,12 @@
-﻿import type { Metadata } from 'next'
+import type { Metadata } from 'next'
 import { buildPageMetadata } from '@/lib/seo'
 
 export const metadata: Metadata = buildPageMetadata({
   title: 'About Us',
   description:
-    'Learn about NextTripy Marketplace — a global car rental platform connecting travelers with verified rental companies and independent car owners.',
+    'Learn about DriveHub Marketplace — a global platform connecting travelers with verified car rental companies and hotels.',
   path: '/about',
-  keywords: ['about NextTripy', 'car rental platform', 'verified car rental companies'],
+  keywords: ['about DriveHub', 'car rental platform', 'verified car rental companies', 'hotel listings'],
 })
 
 export default function AboutLayout({ children }: { children: React.ReactNode }) {
