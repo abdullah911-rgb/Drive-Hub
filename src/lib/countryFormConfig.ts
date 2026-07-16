@@ -88,8 +88,13 @@ function formatUSPhone(value: string): string {
 }
 
 function formatGBPhone(value: string): string {
-  const d = digitsOnly(value)
-  const n = d.startsWith('44') ? d.slice(2) : d
+  let d = digitsOnly(value)
+  if (d.startsWith('44')) {
+    d = d.slice(2)
+  } else if (d.startsWith('0')) {
+    d = d.slice(1)
+  }
+  const n = d.slice(0, 10)
   if (n.length <= 4) return n.length ? `+44 ${n}` : ''
   if (n.length <= 7) return `+44 ${n.slice(0, 4)} ${n.slice(4)}`
   return `+44 ${n.slice(0, 4)} ${n.slice(4, 10)}`
@@ -105,47 +110,80 @@ function formatGBNi(value: string): string {
 }
 
 function formatINPhone(value: string): string {
-  const d = digitsOnly(value)
-  const n = d.startsWith('91') ? d.slice(2, 12) : d.slice(0, 10)
+  let d = digitsOnly(value)
+  if (d.startsWith('91')) {
+    d = d.slice(2)
+  } else if (d.startsWith('0')) {
+    d = d.slice(1)
+  }
+  const n = d.slice(0, 10)
   if (n.length <= 5) return n.length ? `+91 ${n}` : ''
   return `+91 ${n.slice(0, 5)} ${n.slice(5)}`
 }
 
+// Saudi Arabia mobile formatting
 function formatSAPhone(value: string): string {
-  const d = digitsOnly(value)
-  const n = d.startsWith('966') ? d.slice(3, 12) : d.slice(0, 9)
+  let d = digitsOnly(value)
+  if (d.startsWith('966')) {
+    d = d.slice(3)
+  } else if (d.startsWith('0')) {
+    d = d.slice(1)
+  }
+  const n = d.slice(0, 9)
   if (n.length <= 2) return n.length ? `+966 ${n}` : ''
   if (n.length <= 5) return `+966 ${n.slice(0, 2)} ${n.slice(2)}`
   return `+966 ${n.slice(0, 2)} ${n.slice(2, 5)} ${n.slice(5)}`
 }
 
+// UAE mobile formatting
 function formatAEPhone(value: string): string {
-  const d = digitsOnly(value)
-  const n = d.startsWith('971') ? d.slice(3, 12) : d.slice(0, 9)
+  let d = digitsOnly(value)
+  if (d.startsWith('971')) {
+    d = d.slice(3)
+  } else if (d.startsWith('0')) {
+    d = d.slice(1)
+  }
+  const n = d.slice(0, 9)
   if (n.length <= 2) return n.length ? `+971 ${n}` : ''
   if (n.length <= 5) return `+971 ${n.slice(0, 2)} ${n.slice(2)}`
   return `+971 ${n.slice(0, 2)} ${n.slice(2, 5)} ${n.slice(5)}`
 }
 
+// Pakistani mobile formatting
 function formatPKPhone(value: string): string {
-  const d = digitsOnly(value)
-  const n = d.startsWith('92') ? d.slice(2, 12) : d.slice(0, 10)
+  let d = digitsOnly(value)
+  if (d.startsWith('92')) {
+    d = d.slice(2)
+  } else if (d.startsWith('0')) {
+    d = d.slice(1)
+  }
+  const n = d.slice(0, 10)
   if (n.length <= 3) return n.length ? `+92 ${n}` : ''
   if (n.length <= 6) return `+92 ${n.slice(0, 3)} ${n.slice(3)}`
   return `+92 ${n.slice(0, 3)} ${n.slice(3, 6)} ${n.slice(6)}`
 }
 
 function formatAUPhone(value: string): string {
-  const d = digitsOnly(value)
-  const n = d.startsWith('61') ? d.slice(2, 11) : d.slice(0, 9)
+  let d = digitsOnly(value)
+  if (d.startsWith('61')) {
+    d = d.slice(2)
+  } else if (d.startsWith('0')) {
+    d = d.slice(1)
+  }
+  const n = d.slice(0, 9)
   if (n.length <= 3) return n.length ? `+61 ${n}` : ''
   if (n.length <= 6) return `+61 ${n.slice(0, 3)} ${n.slice(3)}`
   return `+61 ${n.slice(0, 3)} ${n.slice(3, 6)} ${n.slice(6)}`
 }
 
 function formatDEPhone(value: string): string {
-  const d = digitsOnly(value)
-  const n = d.startsWith('49') ? d.slice(2, 13) : d.slice(0, 11)
+  let d = digitsOnly(value)
+  if (d.startsWith('49')) {
+    d = d.slice(2)
+  } else if (d.startsWith('0')) {
+    d = d.slice(1)
+  }
+  const n = d.slice(0, 11)
   if (n.length <= 3) return n.length ? `+49 ${n}` : ''
   if (n.length <= 7) return `+49 ${n.slice(0, 3)} ${n.slice(3)}`
   return `+49 ${n.slice(0, 3)} ${n.slice(3, 7)} ${n.slice(7)}`
@@ -154,31 +192,128 @@ function formatDEPhone(value: string): string {
 function formatDialPhone(value: string, dialCode: string, nationalMax: number): string {
   const dialDigits = dialCode.replace(/\D/g, '')
   let d = digitsOnly(value)
-  if (d.startsWith(dialDigits)) d = d.slice(dialDigits.length)
+  if (d.startsWith(dialDigits)) {
+    d = d.slice(dialDigits.length)
+  }
+  if (d.startsWith('0')) {
+    d = d.slice(1)
+  }
   d = d.slice(0, nationalMax)
   if (!d.length) return ''
+
   const groups: string[] = []
-  if (d.length <= 4) return `${dialCode} ${d}`
-  groups.push(d.slice(0, d.length > 8 ? 2 : 4))
-  let i = d.length > 8 ? 2 : 4
-  while (i < d.length) {
-    groups.push(d.slice(i, i + 3))
-    i += 3
+
+  // BD (+880): 4, then 6
+  if (dialCode === '+880') {
+    if (d.length <= 4) {
+      groups.push(d)
+    } else {
+      groups.push(d.slice(0, 4), d.slice(4))
+    }
   }
-  return `${dialCode} ${groups.join(' ')}`
+  // QA (+974), KW (+965), BH (+973), OM (+968), SG (+65): 4, then 4
+  else if (nationalMax === 8) {
+    if (d.length <= 4) {
+      groups.push(d)
+    } else {
+      groups.push(d.slice(0, 4), d.slice(4))
+    }
+  }
+  // FR (+33): 1, then groups of 2
+  else if (dialCode === '+33') {
+    groups.push(d.slice(0, 1))
+    let i = 1
+    while (i < d.length) {
+      groups.push(d.slice(i, i + 2))
+      i += 2
+    }
+  }
+  // ES (+34): 3, then 3, then 3
+  else if (dialCode === '+34') {
+    if (d.length <= 3) {
+      groups.push(d)
+    } else if (d.length <= 6) {
+      groups.push(d.slice(0, 3), d.slice(3))
+    } else {
+      groups.push(d.slice(0, 3), d.slice(3, 6), d.slice(6))
+    }
+  }
+  // NL (+31): 1, then 8
+  else if (dialCode === '+31') {
+    if (d.length <= 1) {
+      groups.push(d)
+    } else {
+      groups.push(d.slice(0, 1), d.slice(1))
+    }
+  }
+  // ZA (+27), MY (+60): 2, then 3, then 4
+  else if (dialCode === '+27' || dialCode === '+60') {
+    if (d.length <= 2) {
+      groups.push(d)
+    } else if (d.length <= 5) {
+      groups.push(d.slice(0, 2), d.slice(2))
+    } else {
+      groups.push(d.slice(0, 2), d.slice(2, 5), d.slice(5))
+    }
+  }
+  // EG (+20), TR (+90), IT (+39): 3, then 3, then 4
+  else if (dialCode === '+20' || dialCode === '+90' || dialCode === '+39') {
+    if (d.length <= 3) {
+      groups.push(d)
+    } else if (d.length <= 6) {
+      groups.push(d.slice(0, 3), d.slice(3))
+    } else {
+      groups.push(d.slice(0, 3), d.slice(3, 6), d.slice(6))
+    }
+  }
+  // JP (+81): 2, then 4, then 4
+  else if (dialCode === '+81') {
+    if (d.length <= 2) {
+      groups.push(d)
+    } else if (d.length <= 6) {
+      groups.push(d.slice(0, 2), d.slice(2))
+    } else {
+      groups.push(d.slice(0, 2), d.slice(2, 6), d.slice(6))
+    }
+  }
+  // Fallback default grouping
+  else {
+    if (d.length <= 4) {
+      groups.push(d)
+    } else {
+      groups.push(d.slice(0, d.length > 8 ? 2 : 4))
+      let i = d.length > 8 ? 2 : 4
+      while (i < d.length) {
+        groups.push(d.slice(i, i + 3))
+        i += 3
+      }
+    }
+  }
+
+  return `${dialCode} ${groups.filter(Boolean).join(' ')}`
 }
 
 function formatBRPhone(value: string): string {
-  const d = digitsOnly(value)
-  const n = d.startsWith('55') ? d.slice(2, 13) : d.slice(0, 11)
+  let d = digitsOnly(value)
+  if (d.startsWith('55')) {
+    d = d.slice(2)
+  } else if (d.startsWith('0')) {
+    d = d.slice(1)
+  }
+  const n = d.slice(0, 11)
   if (n.length <= 2) return n.length ? `+55 (${n}` : ''
   if (n.length <= 7) return `+55 (${n.slice(0, 2)}) ${n.slice(2)}`
   return `+55 (${n.slice(0, 2)}) ${n.slice(2, 7)}-${n.slice(7)}`
 }
 
 function formatMXPhone(value: string): string {
-  const d = digitsOnly(value)
-  const n = d.startsWith('52') ? d.slice(2, 12) : d.slice(0, 10)
+  let d = digitsOnly(value)
+  if (d.startsWith('52')) {
+    d = d.slice(2)
+  } else if (d.startsWith('0')) {
+    d = d.slice(1)
+  }
+  const n = d.slice(0, 10)
   if (n.length <= 3) return n.length ? `+52 ${n}` : ''
   if (n.length <= 6) return `+52 ${n.slice(0, 3)} ${n.slice(3)}`
   return `+52 ${n.slice(0, 3)} ${n.slice(3, 6)} ${n.slice(6)}`
