@@ -134,13 +134,12 @@ async function registerCompanyWithDocuments(request: NextRequest) {
 
     // cityId is required by schema — get first city for the country
     // If no cities seeded for that country, this will fail with a clear FK error
-    let cityId: string
     const countryCities = await db.getCities(data.countryId)
     const firstCity = (countryCities as { id: string }[])[0]
     if (!firstCity?.id) {
       return NextResponse.json({ success: false, error: 'No cities found for the selected country. Please contact support.' }, { status: 400 })
     }
-    cityId = firstCity.id
+    const cityId = firstCity.id
 
     const passwordHash = await hashPassword(data.password!)
     const userId = uuidv4()
