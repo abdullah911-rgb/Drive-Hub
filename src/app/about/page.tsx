@@ -27,11 +27,15 @@ export default function AboutPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-background flex flex-col relative">
+    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
       <ParticleBackground />
+      <div className="fixed top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="fixed bottom-1/4 right-1/4 w-80 h-80 bg-secondary/5 rounded-full blur-3xl pointer-events-none" />
+
       <Navbar />
 
-      <main className="relative z-10 flex-grow pt-28 pb-16 container-app max-w-4xl mx-auto px-6">
+      <main className="flex-grow pt-20 pb-16 relative z-10">
+        <div className="container-app max-w-4xl mx-auto px-6">
 
         <motion.div
           className="mb-14 max-w-2xl"
@@ -99,6 +103,7 @@ export default function AboutPage() {
               </motion.div>
             ))}
           </div>
+        </div>
         </div>
       </main>
 
