@@ -55,12 +55,9 @@ async function registerCustomer(data: {
     const passwordHash = await hashPassword(data.password)
 
     // cityId is optional on User — pass undefined if not found (never empty string)
-    let cityId: string | undefined
-    if (data.countryId) {
-      const countryCities = await db.getCities(data.countryId)
-      const firstCity = (countryCities as { id: string }[])[0]
-      cityId = firstCity?.id || undefined
-    }
+    const cityId: string | undefined = data.countryId
+      ? ((await db.getCities(data.countryId)) as { id: string }[])[0]?.id || undefined
+      : undefined
 
     await db.createUser({
       id: uuidv4(),
