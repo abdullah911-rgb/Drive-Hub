@@ -299,7 +299,7 @@ export default function HotelDashboardClient() {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
-          <h1 className="font-heading font-black text-3xl text-white">
+          <h1 className="font-heading font-black text-3xl text-slate-900 dark:text-white">
             Hotel <span className="gradient-text">Dashboard</span>
           </h1>
           <p className="text-slate-400 text-sm mt-1">{company.name} • Manage rooms and subscriptions.</p>
@@ -345,8 +345,8 @@ export default function HotelDashboardClient() {
             onClick={() => setActiveTab('listings')}
             className={`w-full text-left px-4 py-3 rounded-xl font-semibold text-sm transition-all flex items-center justify-between ${
               activeTab === 'listings'
-                ? 'bg-primary/10 border border-primary/30 text-white shadow-neon-violet/10'
-                : 'glass border border-transparent text-slate-400 hover:text-white'
+                ? 'bg-primary/10 border border-primary/30 text-primary dark:text-white shadow-neon-violet/10'
+                : 'glass border border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
             }`}
           >
             <span>🏨 My Rooms ({rooms.length})</span>
@@ -356,8 +356,8 @@ export default function HotelDashboardClient() {
             onClick={() => setActiveTab('subscription')}
             className={`w-full text-left px-4 py-3 rounded-xl font-semibold text-sm transition-all flex items-center justify-between ${
               activeTab === 'subscription'
-                ? 'bg-primary/10 border border-primary/30 text-white shadow-neon-violet/10'
-                : 'glass border border-transparent text-slate-400 hover:text-white'
+                ? 'bg-primary/10 border border-primary/30 text-primary dark:text-white shadow-neon-violet/10'
+                : 'glass border border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
             }`}
           >
             <span>💳 Subscription</span>
@@ -366,15 +366,15 @@ export default function HotelDashboardClient() {
 
           {/* Hotel Info Card */}
           <div className="glass-card no-card-hover p-4 mt-4">
-            <h3 className="font-bold text-sm text-white mb-3">Hotel Info</h3>
-            <div className="space-y-2 text-xs text-slate-400">
-              <div><span className="text-white font-medium">Name:</span> {company.name}</div>
-              <div><span className="text-white font-medium">Owner:</span> {company.ownerName}</div>
-              <div><span className="text-white font-medium">Contact:</span> {company.contactNumber}</div>
-              <div><span className="text-white font-medium">Address:</span> {company.businessAddress}</div>
+            <h3 className="font-bold text-sm text-slate-900 dark:text-white mb-3">Hotel Info</h3>
+            <div className="space-y-2 text-xs text-slate-500 dark:text-slate-400">
+              <div><span className="text-slate-700 dark:text-slate-300 font-medium">Name:</span> {company.name}</div>
+              <div><span className="text-slate-700 dark:text-slate-300 font-medium">Owner:</span> {company.ownerName}</div>
+              <div><span className="text-slate-700 dark:text-slate-300 font-medium">Contact:</span> {company.contactNumber}</div>
+              <div><span className="text-slate-700 dark:text-slate-300 font-medium">Address:</span> {company.businessAddress}</div>
               <div>
-                <span className="text-white font-medium">Status: </span>
-                <span className={company.status === 'APPROVED' ? 'text-emerald-400' : 'text-amber-400'}>{company.status}</span>
+                <span className="text-slate-700 dark:text-slate-300 font-medium">Status: </span>
+                <span className={company.status === 'APPROVED' ? 'text-emerald-500 dark:text-emerald-400' : 'text-amber-500 dark:text-amber-400'}>{company.status}</span>
               </div>
             </div>
           </div>
@@ -394,7 +394,7 @@ export default function HotelDashboardClient() {
                 transition={{ duration: 0.22 }}
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-                  <h2 className="font-bold text-lg text-white">Room Listings</h2>
+                  <h2 className="font-bold text-lg text-slate-900 dark:text-white">Room Listings</h2>
                   <button
                     onClick={handleOpenAddModal}
                     disabled={!hasActiveSub}
@@ -415,7 +415,7 @@ export default function HotelDashboardClient() {
                 {rooms.length === 0 ? (
                   <div className="glass-card no-card-hover p-12 text-center">
                     <div className="text-5xl mb-4">🛏️</div>
-                    <h3 className="font-bold text-white mb-2">No rooms listed yet</h3>
+                    <h3 className="font-bold text-slate-900 dark:text-white mb-2">No rooms listed yet</h3>
                     <p className="text-slate-400 text-sm mb-4">Add your first room listing to get started</p>
                     {hasActiveSub && (
                       <button onClick={handleOpenAddModal} className="btn-primary px-5 py-2">Add First Room</button>
@@ -437,7 +437,7 @@ export default function HotelDashboardClient() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
                             <div>
-                              <h4 className="font-bold text-white text-sm">{room.name}</h4>
+                              <h4 className="font-bold text-slate-900 dark:text-white text-sm">{room.name}</h4>
                               <p className="text-xs text-slate-400">{room.roomType} • Capacity: {room.capacity}</p>
                             </div>
                             <span className={`text-2xs px-2 py-0.5 rounded font-bold border ${
@@ -461,7 +461,7 @@ export default function HotelDashboardClient() {
                         {/* Price & Actions */}
                         <div className="flex flex-col items-end gap-2 flex-shrink-0">
                           <div className="text-right">
-                            <div className="font-bold text-white text-sm">${room.pricePerNight}</div>
+                            <div className="font-bold text-slate-900 dark:text-white text-sm">${room.pricePerNight}</div>
                             <div className="text-xs text-slate-400">per night</div>
                           </div>
                           <div className="flex gap-2">
@@ -495,18 +495,18 @@ export default function HotelDashboardClient() {
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.22 }}
               >
-                <h2 className="font-bold text-lg text-white mb-5">Subscription Management</h2>
+                <h2 className="font-bold text-lg text-slate-900 dark:text-white mb-5">Subscription Management</h2>
 
                 {/* Plan Card */}
                 <div className="glass-card no-card-hover p-6 border border-primary/20 mb-6">
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="text-primary text-2xl mb-2">💎</div>
-                      <h3 className="font-bold text-white text-lg">Hotel Partner Plan</h3>
+                      <h3 className="font-bold text-slate-900 dark:text-white text-lg">Hotel Partner Plan</h3>
                       <p className="text-slate-400 text-sm mt-1">Monthly subscription to list rooms on the marketplace</p>
                     </div>
                     <div className="text-right">
-                      <div className="font-black text-2xl text-white">{planPrice}</div>
+                      <div className="font-black text-2xl text-slate-900 dark:text-white">{planPrice}</div>
                       <div className="text-xs text-slate-400">per month</div>
                     </div>
                   </div>
@@ -528,15 +528,15 @@ export default function HotelDashboardClient() {
                 {/* Bank Details */}
                 {bankDetails && (
                   <div className="glass-card no-card-hover p-5 border border-white/5 mb-6">
-                    <h3 className="font-bold text-white text-sm mb-3">💳 Payment Instructions</h3>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-3">💳 Payment Instructions</h3>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-slate-400">Bank</span>
-                        <span className="text-white font-medium">{bankDetails.bankName}</span>
+                        <span className="text-slate-900 dark:text-white font-medium">{bankDetails.bankName}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-400">Account Name</span>
-                        <span className="text-white font-medium">{bankDetails.accountName}</span>
+                        <span className="text-slate-900 dark:text-white font-medium">{bankDetails.accountName}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-400">Account Number</span>
@@ -550,7 +550,7 @@ export default function HotelDashboardClient() {
                 {/* Payment Form */}
                 {(!subscription || subscription.status === 'EXPIRED' || subscription.status === 'CANCELLED') && (
                   <form onSubmit={handlePayment} className="glass-card no-card-hover p-5 space-y-4">
-                    <h3 className="font-bold text-white text-sm mb-1">Submit Subscription Payment</h3>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-1">Submit Subscription Payment</h3>
 
                     <div>
                       <label className="text-xs text-slate-400 mb-1 block">Payment Gateway</label>
@@ -627,7 +627,7 @@ export default function HotelDashboardClient() {
             >
               <div className="flex items-start justify-between mb-5">
                 <div>
-                  <h2 className="font-heading font-bold text-lg text-white">
+                  <h2 className="font-heading font-bold text-lg text-slate-900 dark:text-white">
                     {editingRoomId ? 'Edit Room' : 'Add New Room'}
                   </h2>
                   <p className="text-xs text-slate-400 mt-0.5">Maximum 2 photos per room</p>

@@ -249,7 +249,7 @@ export default function AdminDashboard() {
     <div className="container-app py-8">
 
       <div className="mb-8">
-        <h1 className="font-heading font-black text-3xl text-white">
+        <h1 className="font-heading font-black text-3xl text-slate-900 dark:text-white">
           Admin <span className="gradient-text">Console</span>
         </h1>
         <p className="text-slate-400 text-sm mt-1">Platform management, approvals, moderation and financial records.</p>
@@ -273,8 +273,8 @@ export default function AdminDashboard() {
               onClick={() => setActiveTab(tab.id as AdminTab)}
               className={`w-full text-left px-4 py-3 rounded-xl font-semibold text-sm transition-all flex items-center justify-between ${
                 activeTab === tab.id
-                  ? 'bg-primary/10 border border-primary/30 text-white shadow-neon-violet/10'
-                  : 'glass border border-transparent text-slate-400 hover:text-white'
+                  ? 'bg-primary/10 border border-primary/30 text-primary dark:text-white shadow-neon-violet/10'
+                  : 'glass border border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
               }`}
             >
               <span>{tab.label}</span>
@@ -318,46 +318,46 @@ export default function AdminDashboard() {
                 exit={{ opacity: 0, y: -10 }}
                 className="flex flex-col gap-4"
               >
-                <h3 className="font-heading font-bold text-white text-lg mb-2">Unread Notifications</h3>
+                <h3 className="font-heading font-bold text-slate-900 dark:text-white text-lg mb-2">Unread Notifications</h3>
                 {unreadNotifications.length > 0 ? (
                   unreadNotifications.map(notif => (
                     <div key={notif.id} className="glass-card p-5 border border-white/5 flex flex-col gap-2">
-                      <div className="flex items-center justify-between gap-4">
-                        <span className="text-white font-semibold">{notif.title}</span>
-                        <span className="text-2xs uppercase text-slate-400">{new Date(notif.createdAt).toLocaleString()}</span>
-                      </div>
-                      <p className="text-slate-400 text-sm">{notif.message}</p>
-                      <span className="text-2xs text-slate-500">Type: {notif.type}</span>
-                    </div>
-                  ))
-                ) : (
-                  <div className="glass-card p-12 text-center border border-white/5 text-slate-400 text-sm">
-                    No unread notifications at the moment.
-                  </div>
-                )}
-              </motion.div>
-            )}
-
-            {activeTab === 'companies' && (
-              <motion.div
-                key="companies"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="flex flex-col gap-4"
-              >
-                <h3 className="font-heading font-bold text-white text-lg mb-2">Company Management</h3>
-
-                {companies.length > 0 ? (
-                  companies.map(comp => {
-                    const companySub = subscriptions.find(s => s.companyId === comp.id)
-                    const subStatus = companySub?.status || 'UNSUBSCRIBED'
-
-                    return (
-                      <div key={comp.id} className="glass-card p-5 border border-white/5 flex flex-col md:flex-row justify-between gap-4">
-                        <div>
-                          <div className="flex items-center gap-2 mb-1.5 flex-wrap text-white">
-                            <h4 className="font-bold text-sm">{comp.name}</h4>
+                       <div className="flex items-center justify-between gap-4">
+                        <span className="text-slate-900 dark:text-white font-semibold">{notif.title}</span>
+                         <span className="text-2xs uppercase text-slate-400">{new Date(notif.createdAt).toLocaleString()}</span>
+                       </div>
+                       <p className="text-slate-400 text-sm">{notif.message}</p>
+                       <span className="text-2xs text-slate-500">Type: {notif.type}</span>
+                     </div>
+                   ))
+                 ) : (
+                   <div className="glass-card p-12 text-center border border-white/5 text-slate-400 text-sm">
+                     No unread notifications at the moment.
+                   </div>
+                 )}
+               </motion.div>
+             )}
+ 
+             {activeTab === 'companies' && (
+               <motion.div
+                 key="companies"
+                 initial={{ opacity: 0, y: 10 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 exit={{ opacity: 0, y: -10 }}
+                 className="flex flex-col gap-4"
+               >
+                <h3 className="font-heading font-bold text-slate-900 dark:text-white text-lg mb-2">Company Management</h3>
+ 
+                 {companies.length > 0 ? (
+                   companies.map(comp => {
+                     const companySub = subscriptions.find(s => s.companyId === comp.id)
+                     const subStatus = companySub?.status || 'UNSUBSCRIBED'
+ 
+                     return (
+                       <div key={comp.id} className="glass-card p-5 border border-white/5 flex flex-col md:flex-row justify-between gap-4">
+                         <div>
+                          <div className="flex items-center gap-2 mb-1.5 flex-wrap text-slate-900 dark:text-white">
+                             <h4 className="font-bold text-sm">{comp.name}</h4>
                             <span className={`text-3xs px-2 py-0.5 rounded border font-semibold ${
                               comp.status === 'APPROVED' 
                                 ? 'text-emerald-400 border-emerald-400/20 bg-emerald-400/5' 
@@ -493,13 +493,13 @@ export default function AdminDashboard() {
                 exit={{ opacity: 0, y: -10 }}
                 className="flex flex-col gap-4"
               >
-                <h3 className="font-heading font-bold text-white text-lg mb-2">Pending Vehicle Listings</h3>
+                <h3 className="font-heading font-bold text-slate-900 dark:text-white text-lg mb-2">Pending Vehicle Listings</h3>
 
                 {pendingCars.length > 0 ? (
                   pendingCars.map(car => (
                     <div key={car.id} className="glass-card p-5 border border-white/5 flex flex-col md:flex-row justify-between gap-4">
                       <div>
-                        <h4 className="font-bold text-white text-sm mb-1">{car.brand} {car.model} ({car.year})</h4>
+                        <h4 className="font-bold text-slate-900 dark:text-white text-sm mb-1">{car.brand} {car.model} ({car.year})</h4>
                         <p className="text-slate-400 text-xs">Transmission: {car.transmission} • Fuel: {car.fuelType} • Seating: {car.seatingCapacity}</p>
                         <p className="text-slate-400 text-xs">Reg #: {car.regNumber} • Engine: {car.engineNumber} • Mileage: {car.mileage.toLocaleString()} km</p>
                         <p className="text-slate-500 text-xs mt-1">{car.description}</p>
@@ -536,7 +536,7 @@ export default function AdminDashboard() {
                 exit={{ opacity: 0, y: -10 }}
                 className="flex flex-col gap-4"
               >
-                <h3 className="font-heading font-bold text-white text-lg mb-2">Hotel Room Listings</h3>
+                <h3 className="font-heading font-bold text-slate-900 dark:text-white text-lg mb-2">Hotel Room Listings</h3>
 
                 {pendingRooms.length > 0 ? (
                   <>
@@ -544,7 +544,7 @@ export default function AdminDashboard() {
                     {pendingRooms.map(room => (
                       <div key={room.id} className="glass-card p-5 border border-white/5 flex flex-col md:flex-row justify-between gap-4">
                         <div>
-                          <h4 className="font-bold text-white text-sm mb-1">{room.name}</h4>
+                          <h4 className="font-bold text-slate-900 dark:text-white text-sm mb-1">{room.name}</h4>
                           <p className="text-slate-400 text-xs">Type: {room.roomType} • Capacity: {room.capacity} • ${room.pricePerNight}/night</p>
                           {room.company && <p className="text-primary text-xs">Hotel: {room.company.name}</p>}
                           <p className="text-slate-500 text-xs mt-1 line-clamp-2">{room.description}</p>
@@ -568,13 +568,13 @@ export default function AdminDashboard() {
                   </>
                 ) : null}
 
-                <h4 className="font-bold text-white text-sm mt-2">All Rooms ({rooms.length})</h4>
+                <h4 className="font-bold text-slate-900 dark:text-white text-sm mt-2">All Rooms ({rooms.length})</h4>
                 {rooms.filter(r => r.status !== 'PENDING').length > 0 ? (
                   rooms.filter(r => r.status !== 'PENDING').map(room => (
                     <div key={room.id} className="glass-card p-4 border border-white/5 flex flex-col md:flex-row justify-between gap-3">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-bold text-white text-sm">{room.name}</h4>
+                          <h4 className="font-bold text-slate-900 dark:text-white text-sm">{room.name}</h4>
                           <span className={`text-3xs px-2 py-0.5 rounded border font-semibold ${
                             room.status === 'APPROVED' ? 'text-emerald-400 border-emerald-400/20 bg-emerald-400/5'
                             : room.status === 'REJECTED' ? 'text-red-400 border-red-400/20 bg-red-400/5'
@@ -662,14 +662,14 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="flex flex-col gap-4">
-                  <h3 className="font-heading font-bold text-white text-lg">Pending Subscriptions Verification</h3>
+                  <h3 className="font-heading font-bold text-slate-900 dark:text-white text-lg">Pending Subscriptions Verification</h3>
 
                   {pendingPayments.length > 0 ? (
                     pendingPayments.map(pay => (
                       <div key={pay.id} className="glass-card p-5 border border-white/5 flex flex-col md:flex-row justify-between gap-4">
                         <div>
                           <span className="text-2xs text-slate-500 uppercase tracking-wider block mb-1">Transaction ID: {pay.transactionId}</span>
-                          <h4 className="font-bold text-white text-sm mb-1">{pay.amount.toLocaleString()} {pay.currency}</h4>
+                          <h4 className="font-bold text-slate-900 dark:text-white text-sm mb-1">{pay.amount.toLocaleString()} {pay.currency}</h4>
                           <p className="text-slate-400 text-xs">Gateway: {pay.gateway} • Submitter info: {pay.accountDetails || '—'}</p>
                           <span className="text-slate-500 text-2xs block mt-1">Submitted on: {formatDate(pay.createdAt)}</span>
                         </div>
@@ -706,12 +706,12 @@ export default function AdminDashboard() {
                 exit={{ opacity: 0, y: -10 }}
                 className="flex flex-col gap-4"
               >
-                <h3 className="font-heading font-bold text-white text-lg mb-2">Registered Accounts</h3>
+                <h3 className="font-heading font-bold text-slate-900 dark:text-white text-lg mb-2">Registered Accounts</h3>
 
                 {users.map(u => (
                   <div key={u.id} className="glass-card p-5 border border-white/5 flex flex-col md:flex-row justify-between gap-4">
                     <div>
-                      <h4 className="font-bold text-white text-sm mb-1">{u.fullName || 'No Name'}</h4>
+                      <h4 className="font-bold text-slate-900 dark:text-white text-sm mb-1">{u.fullName || 'No Name'}</h4>
                       <p className="text-slate-400 text-xs">{u.email} • Role: {u.roleName} • Status: {u.status}</p>
                       <p className="text-slate-500 text-xs">Phone: {u.phone}</p>
                     </div>
@@ -760,12 +760,12 @@ export default function AdminDashboard() {
                 exit={{ opacity: 0, y: -10 }}
                 className="flex flex-col gap-4"
               >
-                <h3 className="font-heading font-bold text-white text-lg mb-2">Reviews Moderation</h3>
+                <h3 className="font-heading font-bold text-slate-900 dark:text-white text-lg mb-2">Reviews Moderation</h3>
 
                 {reviews.map(rev => (
                   <div key={rev.id} className="glass-card p-5 border border-white/5 flex flex-col md:flex-row justify-between gap-4">
                     <div>
-                      <h4 className="font-bold text-white text-sm mb-1">Company ID: {rev.companyId}</h4>
+                      <h4 className="font-bold text-slate-900 dark:text-white text-sm mb-1">Company ID: {rev.companyId}</h4>
                       <p className="text-slate-400 text-xs">Rating: {rev.rating} ★ • Comment: &quot;{rev.comment}&quot;</p>
                       <p className="text-slate-500 text-xs">Visible on profile: {rev.isVisible ? 'Yes' : 'No'}</p>
                     </div>
@@ -799,12 +799,12 @@ export default function AdminDashboard() {
                 exit={{ opacity: 0, y: -10 }}
                 className="flex flex-col gap-6"
               >
-                <h3 className="font-heading font-bold text-white text-lg mb-2">👤 Profile Management</h3>
+                <h3 className="font-heading font-bold text-slate-900 dark:text-white text-lg mb-2">👤 Profile Management</h3>
 
                 <form onSubmit={handleSaveProfile} className="flex flex-col gap-6">
                   {/* Update Info */}
                   <div className="glass-card p-6 border border-white/5">
-                    <h4 className="font-semibold text-white text-sm mb-4 flex items-center gap-2">
+                    <h4 className="font-semibold text-slate-900 dark:text-white text-sm mb-4 flex items-center gap-2">
                       <span className="w-6 h-6 rounded-md bg-primary/20 text-primary flex items-center justify-center text-xs">✏️</span>
                       Update Profile Info
                     </h4>
@@ -815,7 +815,7 @@ export default function AdminDashboard() {
                           type="text"
                           value={profileForm.fullName}
                           onChange={e => setProfileForm(prev => ({ ...prev, fullName: e.target.value }))}
-                          className="w-full bg-elevated border border-border rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-primary/50 transition-colors"
+                          className="w-full bg-elevated border border-border rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-primary/50 transition-colors"
                           placeholder="Your full name"
                         />
                       </div>
@@ -825,7 +825,7 @@ export default function AdminDashboard() {
                           type="email"
                           value={profileForm.email}
                           onChange={e => setProfileForm(prev => ({ ...prev, email: e.target.value }))}
-                          className="w-full bg-elevated border border-border rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-primary/50 transition-colors"
+                          className="w-full bg-elevated border border-border rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-primary/50 transition-colors"
                           placeholder="admin@email.com"
                         />
                       </div>
@@ -834,7 +834,7 @@ export default function AdminDashboard() {
 
                   {/* Change Password */}
                   <div className="glass-card p-6 border border-white/5">
-                    <h4 className="font-semibold text-white text-sm mb-4 flex items-center gap-2">
+                    <h4 className="font-semibold text-slate-900 dark:text-white text-sm mb-4 flex items-center gap-2">
                       <span className="w-6 h-6 rounded-md bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs">🔒</span>
                       Change Password
                     </h4>
@@ -846,7 +846,7 @@ export default function AdminDashboard() {
                           type="password"
                           value={profileForm.currentPassword}
                           onChange={e => setProfileForm(prev => ({ ...prev, currentPassword: e.target.value }))}
-                          className="w-full bg-elevated border border-border rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-primary/50 transition-colors"
+                          className="w-full bg-elevated border border-border rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-primary/50 transition-colors"
                           placeholder="••••••••"
                         />
                       </div>
@@ -856,7 +856,7 @@ export default function AdminDashboard() {
                           type="password"
                           value={profileForm.newPassword}
                           onChange={e => setProfileForm(prev => ({ ...prev, newPassword: e.target.value }))}
-                          className="w-full bg-elevated border border-border rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-primary/50 transition-colors"
+                          className="w-full bg-elevated border border-border rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-primary/50 transition-colors"
                           placeholder="Min 8 characters"
                         />
                       </div>
@@ -866,7 +866,7 @@ export default function AdminDashboard() {
                           type="password"
                           value={profileForm.confirmPassword}
                           onChange={e => setProfileForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                          className="w-full bg-elevated border border-border rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-primary/50 transition-colors"
+                          className="w-full bg-elevated border border-border rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-primary/50 transition-colors"
                           placeholder="Repeat new password"
                         />
                       </div>

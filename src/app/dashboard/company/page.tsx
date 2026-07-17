@@ -254,7 +254,7 @@ export default function CompanyDashboard() {
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
-          <h1 className="font-heading font-black text-3xl text-white">
+          <h1 className="font-heading font-black text-3xl text-slate-900 dark:text-white">
             Company <span className="gradient-text">Dashboard</span>
           </h1>
           <p className="text-slate-400 text-sm mt-1">{company.name} • Manage fleet and listing subscriptions.</p>
@@ -291,8 +291,8 @@ export default function CompanyDashboard() {
             onClick={() => setActiveTab('listings')}
             className={`w-full text-left px-4 py-3 rounded-xl font-semibold text-sm transition-all flex items-center justify-between ${
               activeTab === 'listings'
-                ? 'bg-primary/10 border border-primary/30 text-white shadow-neon-violet/10'
-                : 'glass border border-transparent text-slate-400 hover:text-white'
+                ? 'bg-primary/10 border border-primary/30 text-primary dark:text-white shadow-neon-violet/10'
+                : 'glass border border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
             }`}
           >
             <span>🚗 My Vehicles List ({cars.length})</span>
@@ -302,8 +302,8 @@ export default function CompanyDashboard() {
             onClick={() => setActiveTab('subscription')}
             className={`w-full text-left px-4 py-3 rounded-xl font-semibold text-sm transition-all flex items-center justify-between ${
               activeTab === 'subscription'
-                ? 'bg-primary/10 border border-primary/30 text-white shadow-neon-violet/10'
-                : 'glass border border-transparent text-slate-400 hover:text-white'
+                ? 'bg-primary/10 border border-primary/30 text-primary dark:text-white shadow-neon-violet/10'
+                : 'glass border border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
             }`}
           >
             <span>💳 Subscription Plan</span>
@@ -320,7 +320,7 @@ export default function CompanyDashboard() {
             >
 
               <div className="flex items-center justify-between">
-                <h3 className="font-heading font-bold text-white text-lg">Vehicle Fleet</h3>
+                <h3 className="font-heading font-bold text-slate-900 dark:text-white text-lg">Vehicle Fleet</h3>
                 {subscription?.status === 'ACTIVE' ? (
                   <button
                     onClick={handleOpenAddModal}
@@ -362,8 +362,8 @@ export default function CompanyDashboard() {
                           </div>
                         </div>
                         <div className="p-4 flex-1 flex flex-col gap-2">
-                          <h4 className="font-heading font-bold text-white text-sm">{car.brand} {car.model}</h4>
-                          <p className="text-slate-500 text-xs">{car.year} • {car.fuelType} • {car.transmission}</p>
+                          <h4 className="font-heading font-bold text-slate-900 dark:text-white text-sm">{car.brand} {car.model}</h4>
+                          <p className="text-slate-500 dark:text-slate-400 text-xs">{car.year} • {car.fuelType} • {car.transmission}</p>
                           <p className="text-slate-400 text-2xs leading-relaxed line-clamp-2 mt-1">{car.description}</p>
                         </div>
                       </div>
@@ -373,7 +373,7 @@ export default function CompanyDashboard() {
               ) : (
                 <div className="glass-card p-16 text-center border border-white/5">
                   <span className="text-5xl block mb-3">🚗</span>
-                  <h4 className="text-white font-bold text-base mb-1">No Vehicles Listed Yet</h4>
+                  <h4 className="text-slate-900 dark:text-white font-bold text-base mb-1">No Vehicles Listed Yet</h4>
                   <p className="text-slate-400 text-xs mb-6">Create listings for your cars so clients can discover and rent them.</p>
                   {subscription?.status === 'ACTIVE' && (
                     <button onClick={handleOpenAddModal} className="btn-primary text-xs px-6 py-2.5">
@@ -392,22 +392,22 @@ export default function CompanyDashboard() {
 
               <div className="md:col-span-7 flex flex-col gap-6">
                 <div className="glass-card p-6 border border-white/5">
-                  <h3 className="font-heading font-bold text-white text-base mb-4">Subscription Overview</h3>
+                  <h3 className="font-heading font-bold text-slate-900 dark:text-white text-base mb-4">Subscription Overview</h3>
 
                   {subscription ? (
                     <div className="flex flex-col gap-4">
                       <div className="flex justify-between items-center py-2 border-b border-white/5">
                         <span className="text-slate-500 text-xs">Plan Name</span>
-                        <span className="text-white text-sm font-semibold">{subscription.planName}</span>
+                        <span className="text-slate-900 dark:text-white text-sm font-semibold">{subscription.planName}</span>
                       </div>
                       <div className="flex justify-between items-center py-2 border-b border-white/5">
                         <span className="text-slate-500 text-xs">Verification Status</span>
                         <span className={`text-xs font-semibold ${
                           subscription.status === 'ACTIVE' 
-                            ? 'text-emerald-400' 
+                            ? 'text-emerald-500 dark:text-emerald-400' 
                             : subscription.status === 'PENDING'
-                              ? 'text-amber-400'
-                              : 'text-rose-400'
+                              ? 'text-amber-500 dark:text-amber-400'
+                              : 'text-rose-500 dark:text-rose-400'
                         }`}>
                           {subscription.status === 'ACTIVE' 
                             ? 'Active / Verified' 
@@ -418,20 +418,20 @@ export default function CompanyDashboard() {
                       </div>
                       <div className="flex justify-between items-center py-2 border-b border-white/5">
                         <span className="text-slate-500 text-xs">Car Listings Usage</span>
-                        <span className="text-white text-sm font-semibold">
+                        <span className="text-slate-900 dark:text-white text-sm font-semibold">
                           {cars.length} / {subscription.maxCars} vehicles
                         </span>
                       </div>
                       {subscription.startDate && (
                         <div className="flex justify-between items-center py-2 border-b border-white/5">
                           <span className="text-slate-500 text-xs">Started On</span>
-                          <span className="text-white text-sm">{formatDate(subscription.startDate)}</span>
+                          <span className="text-slate-900 dark:text-white text-sm">{formatDate(subscription.startDate)}</span>
                         </div>
                       )}
                       {subscription.endDate && (
                         <div className="flex justify-between items-center py-2">
                           <span className="text-slate-500 text-xs">Expires On</span>
-                          <span className="text-white text-sm font-semibold text-primary">
+                          <span className="text-slate-900 dark:text-white text-sm font-semibold">
                             {formatDate(subscription.endDate)}
                           </span>
                         </div>
@@ -440,19 +440,19 @@ export default function CompanyDashboard() {
                   ) : (
                     <div className="text-center py-6">
                       <span className="text-4xl block mb-2">💳</span>
-                      <h4 className="text-white font-bold text-sm mb-1">No Active Subscription</h4>
+                      <h4 className="text-slate-900 dark:text-white font-bold text-sm mb-1">No Active Subscription</h4>
                       <p className="text-slate-400 text-xs">Subscribe to list up to 10 vehicles on the marketplace.</p>
                     </div>
                   )}
                 </div>
 
                 <div className="glass-card p-6 border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
-                  <h4 className="font-heading font-black text-white text-base mb-1">Standard Market Plan</h4>
-                  <div className="text-2xl font-black text-white my-3">
+                  <h4 className="font-heading font-black text-slate-900 dark:text-white text-base mb-1">Standard Market Plan</h4>
+                  <div className="text-2xl font-black text-slate-900 dark:text-white my-3">
                     {planPrice}<span className="text-slate-500 text-sm font-medium"> / month</span>
                   </div>
                   <p className="text-slate-500 text-xs">Base price: Rs. {SUBSCRIPTION_BASE_PKR.toLocaleString()} PKR / month</p>
-                  <ul className="text-xs text-slate-300 flex flex-col gap-2 mt-4">
+                  <ul className="text-xs text-slate-600 dark:text-slate-300 flex flex-col gap-2 mt-4">
                     <li className="flex items-center gap-2">✓ List up to 10 cars simultaneously</li>
                     <li className="flex items-center gap-2">✓ Verified badges on listings</li>
                     <li className="flex items-center gap-2">✓ Direct WhatsApp CTA leading to your inbox</li>
@@ -464,27 +464,27 @@ export default function CompanyDashboard() {
               <div className="md:col-span-5">
                 {(!subscription || subscription.status !== 'ACTIVE') ? (
                   <div className="glass-card p-6 border border-white/5">
-                    <h3 className="font-heading font-bold text-white text-base mb-4">Activate Subscription</h3>
+                    <h3 className="font-heading font-bold text-slate-900 dark:text-white text-base mb-4">Activate Subscription</h3>
                     <form onSubmit={handlePayment} className="flex flex-col gap-4">
 
                       {bankDetails && (
                         <div className="glass p-4 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent flex flex-col gap-2 mb-2">
-                          <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                          <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                             🏦 Admin Bank Transfer Details
                           </span>
                           <div className="text-2xs text-slate-400 flex flex-col gap-1.5 mt-1">
                             <div className="flex justify-between items-center py-1 border-b border-white/5">
                               <span>Bank Name</span>
-                              <span className="text-white font-medium">{bankDetails.bankName}</span>
+                              <span className="text-slate-900 dark:text-white font-medium">{bankDetails.bankName}</span>
                             </div>
                             <div className="flex justify-between items-center py-1 border-b border-white/5">
                               <span>Account Title</span>
-                              <span className="text-white font-medium">{bankDetails.accountName}</span>
+                              <span className="text-slate-900 dark:text-white font-medium">{bankDetails.accountName}</span>
                             </div>
                             <div className="flex justify-between items-center py-1">
                               <span>Account / IBAN</span>
                               <div className="flex items-center gap-1">
-                                <span className="text-white font-mono font-bold select-all bg-dark-900 px-1.5 py-0.5 rounded border border-white/5">{bankDetails.accountNumber}</span>
+                                <span className="text-slate-900 dark:text-white font-mono font-bold select-all bg-dark-900 px-1.5 py-0.5 rounded border border-white/5">{bankDetails.accountNumber}</span>
                                 <button
                                   type="button"
                                   onClick={() => {
@@ -515,8 +515,8 @@ export default function CompanyDashboard() {
                               onClick={() => setSelectedGateway(g.name)}
                               className={`flex items-center gap-3 p-2.5 rounded-xl border text-left transition-all ${
                                 selectedGateway === g.name
-                                  ? 'bg-primary/20 border-primary text-white shadow-neon-violet/10'
-                                  : 'glass border-white/5 text-slate-400 hover:text-white hover:border-white/10'
+                                  ? 'bg-primary/20 border-primary text-primary dark:text-white shadow-neon-violet/10'
+                                  : 'glass border-white/5 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:border-white/10'
                               }`}
                             >
                               <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center p-1 overflow-hidden shrink-0">
@@ -566,7 +566,7 @@ export default function CompanyDashboard() {
                 ) : (
                   <div className="glass-card p-6 border border-emerald-500/20 bg-emerald-500/5 text-center">
                     <span className="text-2xl block mb-2">🎉</span>
-                    <h4 className="text-white font-bold text-sm mb-1">Active Subscription</h4>
+                    <h4 className="text-slate-900 dark:text-white font-bold text-sm mb-1">Active Subscription</h4>
                     <p className="text-slate-400 text-xs leading-relaxed">
                       Your subscription is active and verified. You have full access to add and manage car listings.
                     </p>
@@ -597,7 +597,7 @@ export default function CompanyDashboard() {
               className="relative w-full max-w-2xl bg-dark-900 border border-white/10 rounded-2xl p-6 shadow-2xl flex flex-col max-h-[85vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4">
-                <h3 className="font-heading font-black text-xl text-white">
+                <h3 className="font-heading font-black text-xl text-slate-900 dark:text-white">
                   {editingCarId ? 'Edit / View Vehicle Details' : 'Add New Vehicle Listing'}
                 </h3>
                 <button onClick={() => setShowAddCarModal(false)} className="text-slate-400 hover:text-white text-lg">✕</button>
