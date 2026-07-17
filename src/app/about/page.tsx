@@ -37,33 +37,37 @@ export default function AboutPage() {
       <main className="flex-grow pt-20 pb-16 relative z-10">
         <div className="container-app max-w-4xl mx-auto px-6">
 
-        <motion.div
-          className="mb-14 max-w-2xl"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <h1 className="font-heading font-black text-3xl sm:text-4xl text-slate-900 dark:text-white mb-4 leading-tight">
-            Helping you find the right ride and the right stay
-          </h1>
-          <p className="text-slate-600 dark:text-slate-400 text-base leading-relaxed">
-            NextTripy is a marketplace that brings together car rental companies and hotels in one easy-to-browse place.
-            We&apos;re not a booking agency — we simply help you discover great options and connect with providers directly.
-          </p>
-        </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 mb-16 items-start">
-          <div className="lg:col-span-7 space-y-4">
-            <h2 className="font-heading font-bold text-xl text-slate-900 dark:text-white">
-              How it works
-            </h2>
-            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
-              Rental companies and hotels register with us, upload their listings, and get approved by our team.
-              You search by location, compare options, and when you&apos;re ready — reach out on WhatsApp to arrange the details.
-            </p>
-            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
-              Prices, availability, and payment are always agreed between you and the provider. We&apos;re here to make discovery simple, not to get in the way.
-            </p>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 mb-16" style={{ alignItems: 'start' }}>
+          <div className="lg:col-span-7">
+            <motion.div
+              className="mb-10"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <h1 className="font-heading font-black text-3xl sm:text-4xl text-slate-900 dark:text-white mb-4 leading-tight">
+                Helping you find the right ride and the right stay
+              </h1>
+              <p className="text-slate-600 dark:text-slate-400 text-base leading-relaxed">
+                NextTripy is a marketplace that brings together car rental companies and hotels in one easy-to-browse place.
+                We&apos;re not a booking agency — we simply help you discover great options and connect with providers directly.
+              </p>
+            </motion.div>
+
+            <div className="space-y-4">
+              <h2 className="font-heading font-bold text-xl text-slate-900 dark:text-white">
+                How it works
+              </h2>
+              <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                Rental companies and hotels register with us, upload their listings, and get approved by our team.
+                You search by location, compare options, and when you&apos;re ready — reach out on WhatsApp to arrange the details.
+              </p>
+              <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                Prices, availability, and payment are always agreed between you and the provider. We&apos;re here to make discovery simple, not to get in the way.
+              </p>
+            </div>
           </div>
 
           <div className="lg:col-span-5">
@@ -82,6 +86,7 @@ export default function AboutPage() {
             </div>
           </div>
         </div>
+
 
         <div className="space-y-6">
           <h2 className="font-heading font-bold text-xl text-slate-900 dark:text-white">

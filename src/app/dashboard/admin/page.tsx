@@ -18,7 +18,7 @@ interface Room {
   company?: { name: string }
 }
 
-type AdminTab = 'stats' | 'notifications' | 'companies' | 'cars' | 'rooms' | 'payments' | 'users' | 'reviews'
+type AdminTab = 'stats' | 'notifications' | 'companies' | 'cars' | 'rooms' | 'payments' | 'users' | 'reviews' | 'profile'
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -37,6 +37,8 @@ export default function AdminDashboard() {
   const [updatingBank, setUpdatingBank] = useState(false)
   const [bankDetails, setBankDetails] = useState<{ bankName: string; accountNumber: string; accountName: string } | null>(null)
   const [bankForm, setBankForm] = useState({ bankName: '', accountNumber: '', accountName: '' })
+  const [profileForm, setProfileForm] = useState({ fullName: '', email: '', currentPassword: '', newPassword: '', confirmPassword: '' })
+  const [updatingProfile, setUpdatingProfile] = useState(false)
 
   const loadData = async () => {
     try {
@@ -52,6 +54,12 @@ export default function AdminDashboard() {
         router.push('/')
         return
       }
+      // Pre-fill profile form with current admin info
+      setProfileForm(prev => ({
+        ...prev,
+        fullName: meData.data?.fullName || '',
+        email: meData.data?.email || '',
+      }))
 
       const res = await fetch('/api/admin?resource=dashboard', { credentials: 'include' })
       if (res.ok) {
@@ -147,6 +155,45 @@ export default function AdminDashboard() {
     }
   }
 
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (profileForm.newPassword && profileForm.newPassword !== profileForm.confirmPassword) {
+      toast.error('New passwords do not match')
+      return
+    }
+    if (profileForm.newPassword && profileForm.newPassword.length < 8) {
+      toast.error('New password must be at least 8 characters')
+      return
+    }
+    setUpdatingProfile(true)
+    try {
+      const body: Record<string, string> = {}
+      if (profileForm.fullName) body.fullName = profileForm.fullName
+      if (profileForm.email) body.email = profileForm.email
+      if (profileForm.newPassword && profileForm.currentPassword) {
+        body.currentPassword = profileForm.currentPassword
+        body.newPassword = profileForm.newPassword
+      }
+      const res = await fetch('/api/auth/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(body),
+      })
+      const data = await res.json()
+      if (res.ok && data.success) {
+        toast.success('Profile updated successfully!')
+        setProfileForm(prev => ({ ...prev, currentPassword: '', newPassword: '', confirmPassword: '' }))
+      } else {
+        toast.error(data.error || 'Failed to update profile')
+      }
+    } catch (err) {
+      toast.error('Error updating profile')
+    } finally {
+      setUpdatingProfile(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="container-app py-16 text-center">
@@ -219,6 +266,7 @@ export default function AdminDashboard() {
             { id: 'payments', label: '💳 Payment Verification', badge: pendingPayments.length },
             { id: 'users', label: '👥 User Management', badge: 0 },
             { id: 'reviews', label: '⭐ Review Moderation', badge: 0 },
+            { id: 'profile', label: '👤 My Profile', badge: 0 },
           ].map(tab => (
             <button
               key={tab.id}
@@ -742,7 +790,110 @@ export default function AdminDashboard() {
                 ))}
               </motion.div>
             )}
+
+            {activeTab === 'profile' && (
+              <motion.div
+                key="profile"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="flex flex-col gap-6"
+              >
+                <h3 className="font-heading font-bold text-white text-lg mb-2">👤 Profile Management</h3>
+
+                <form onSubmit={handleSaveProfile} className="flex flex-col gap-6">
+                  {/* Update Info */}
+                  <div className="glass-card p-6 border border-white/5">
+                    <h4 className="font-semibold text-white text-sm mb-4 flex items-center gap-2">
+                      <span className="w-6 h-6 rounded-md bg-primary/20 text-primary flex items-center justify-center text-xs">✏️</span>
+                      Update Profile Info
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-slate-400 text-xs font-semibold mb-1.5">Full Name</label>
+                        <input
+                          type="text"
+                          value={profileForm.fullName}
+                          onChange={e => setProfileForm(prev => ({ ...prev, fullName: e.target.value }))}
+                          className="w-full bg-elevated border border-border rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-primary/50 transition-colors"
+                          placeholder="Your full name"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-slate-400 text-xs font-semibold mb-1.5">Email Address</label>
+                        <input
+                          type="email"
+                          value={profileForm.email}
+                          onChange={e => setProfileForm(prev => ({ ...prev, email: e.target.value }))}
+                          className="w-full bg-elevated border border-border rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-primary/50 transition-colors"
+                          placeholder="admin@email.com"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Change Password */}
+                  <div className="glass-card p-6 border border-white/5">
+                    <h4 className="font-semibold text-white text-sm mb-4 flex items-center gap-2">
+                      <span className="w-6 h-6 rounded-md bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs">🔒</span>
+                      Change Password
+                    </h4>
+                    <p className="text-slate-500 text-xs mb-4">Leave password fields blank if you only want to update your name or email.</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-slate-400 text-xs font-semibold mb-1.5">Current Password</label>
+                        <input
+                          type="password"
+                          value={profileForm.currentPassword}
+                          onChange={e => setProfileForm(prev => ({ ...prev, currentPassword: e.target.value }))}
+                          className="w-full bg-elevated border border-border rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-primary/50 transition-colors"
+                          placeholder="••••••••"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-slate-400 text-xs font-semibold mb-1.5">New Password</label>
+                        <input
+                          type="password"
+                          value={profileForm.newPassword}
+                          onChange={e => setProfileForm(prev => ({ ...prev, newPassword: e.target.value }))}
+                          className="w-full bg-elevated border border-border rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-primary/50 transition-colors"
+                          placeholder="Min 8 characters"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-slate-400 text-xs font-semibold mb-1.5">Confirm New Password</label>
+                        <input
+                          type="password"
+                          value={profileForm.confirmPassword}
+                          onChange={e => setProfileForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                          className="w-full bg-elevated border border-border rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-primary/50 transition-colors"
+                          placeholder="Repeat new password"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <button
+                      type="submit"
+                      disabled={updatingProfile}
+                      className="btn-primary px-8 py-2.5 text-sm font-bold disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      {updatingProfile ? (
+                        <>
+                          <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        'Save Changes'
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            )}
           </AnimatePresence>
+
         </div>
       </div>
     </div>
