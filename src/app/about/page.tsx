@@ -52,7 +52,7 @@ export default function AboutPage() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 mb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 mb-16 items-start">
           <div className="lg:col-span-7 space-y-4">
             <h2 className="font-heading font-bold text-xl text-slate-900 dark:text-white">
               How it works

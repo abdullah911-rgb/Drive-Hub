@@ -37,19 +37,31 @@ export function usePwaInstall() {
   const [isDesktop, setIsDesktop] = useState(false)
 
   useEffect(() => {
-    setIsInstalled(isStandaloneMode())
+    const standalone = isStandaloneMode()
+    setIsInstalled(standalone)
     setIsIOS(isIOSDevice())
     setIsAndroid(isAndroidDevice())
     setIsDesktop(isDesktopDevice())
 
+    if (standalone) return
+
+    // Capture any prompt that fired before this component mounted
+    const win = window as Window & { __pwaInstallPrompt?: BeforeInstallPromptEvent }
+    if (win.__pwaInstallPrompt) {
+      setDeferredPrompt(win.__pwaInstallPrompt)
+    }
+
     const onBeforeInstall = (e: Event) => {
       e.preventDefault()
-      setDeferredPrompt(e as BeforeInstallPromptEvent)
+      const prompt = e as BeforeInstallPromptEvent
+      win.__pwaInstallPrompt = prompt
+      setDeferredPrompt(prompt)
     }
 
     const onInstalled = () => {
       setIsInstalled(true)
       setDeferredPrompt(null)
+      delete win.__pwaInstallPrompt
     }
 
     window.addEventListener('beforeinstallprompt', onBeforeInstall)
@@ -62,6 +74,7 @@ export function usePwaInstall() {
   }, [])
 
   const canNativeInstall = Boolean(deferredPrompt)
+  // Always show install option unless already running in standalone (installed) mode
   const showInstallOption = !isInstalled
 
   const install = useCallback(async () => {

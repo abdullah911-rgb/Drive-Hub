@@ -106,10 +106,7 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2.5 group">
               <Image src="/logo.png" alt="NextTripy Logo" width={40} height={40} className="object-contain" priority />
-              <div>
-                <span className="font-heading font-bold text-lg text-slate-900 dark:text-white leading-none block">NextTripy</span>
-                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Rent · Stay · Explore</div>
-              </div>
+              <span className="font-heading font-bold text-lg text-slate-900 dark:text-white leading-none block">NextTripy</span>
             </Link>
 
             <div className="hidden md:flex items-center gap-6">

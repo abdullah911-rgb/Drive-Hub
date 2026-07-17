@@ -23,7 +23,7 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   metadataBase,
   title: {
-    default: 'NextTripy Marketplace — Rent · Stay · Explore',
+    default: 'NextTripy — Car Rentals & Hotel Rooms',
     template: '%s | NextTripy',
   },
   description: siteConfig.description,
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   applicationName: siteConfig.shortName,
   category: 'Automotive',
   openGraph: {
-    title: 'NextTripy — Car Rentals & Hotel Rooms Worldwide',
+    title: 'NextTripy — Car Rentals & Hotel Rooms',
     description: siteConfig.description,
     type: 'website',
     locale: siteConfig.locale,
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'NextTripy — Car Rentals & Hotel Rooms Worldwide',
+    title: 'NextTripy — Car Rentals & Hotel Rooms',
     description: siteConfig.description,
     images: ['/opengraph-image'],
     creator: siteConfig.twitterHandle,
@@ -84,6 +84,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <head>
         <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
+        {/* Capture PWA install prompt early, before React hydrates */}
+        <script dangerouslySetInnerHTML={{ __html: `window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__pwaInstallPrompt=e;});` }} />
       </head>
       <body className={`${inter.variable} ${outfit.variable} font-sans bg-background text-foreground antialiased transition-colors duration-300`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>

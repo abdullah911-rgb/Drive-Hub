@@ -185,7 +185,7 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
                 <a href="#cars" className="btn-primary px-8 py-3.5 text-sm font-bold w-full sm:w-auto text-center shadow-lg hover:shadow-primary/30 transition-all">
                   Browse Cars
                 </a>
-                <Link href="/marketplace/rooms" className="btn-primary px-8 py-3.5 text-sm font-bold w-full sm:w-auto text-center shadow-lg hover:shadow-primary/30 transition-all">
+                <Link href="/marketplace/rooms" className="px-8 py-3.5 text-sm font-bold w-full sm:w-auto text-center shadow-lg rounded-xl bg-green-500 hover:bg-green-400 text-white transition-all hover:shadow-green-400/30">
                   Browse Hotel Rooms
                 </Link>
               </div>
@@ -511,7 +511,7 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
                   : 'Join NextTripy and reach customers looking for cars and rooms in your area. Getting started only takes a few minutes.'}
               </p>
               <button onClick={openRegisterCompany} className="btn-primary px-8 py-3 text-sm font-semibold">
-                {user ? 'Register your business' : 'Get started — it\'s free to list'}
+                {user ? 'Register your business' : 'Get started — list your business'}
               </button>
             </motion.div>
           </section>
