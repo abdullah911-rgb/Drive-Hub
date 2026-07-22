@@ -112,7 +112,7 @@ export default function Navbar() {
             </Link>
 
             <div className="hidden md:flex items-center gap-6">
-              <Link href="/#cars" className="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-white transition-colors text-sm font-semibold">Cars</Link>
+              <Link href="/marketplace" className="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-white transition-colors text-sm font-semibold">Cars</Link>
               <Link href="/marketplace/rooms" className="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-white transition-colors text-sm font-semibold">Hotels</Link>
               <Link href="/#companies" className="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-white transition-colors text-sm font-semibold">Companies</Link>
               <Link href="/about" className="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-white transition-colors text-sm font-semibold">About</Link>
@@ -247,7 +247,7 @@ export default function Navbar() {
                 className="md:hidden glass border-t border-border overflow-hidden"
               >
                 <div className="p-4 flex flex-col gap-3">
-                  <Link href="/#cars" className="text-slate-700 dark:text-slate-300 hover:text-primary dark:hover:text-white text-sm py-2 font-semibold" onClick={() => setMenuOpen(false)}>Cars</Link>
+                  <Link href="/marketplace" className="text-slate-700 dark:text-slate-300 hover:text-primary dark:hover:text-white text-sm py-2 font-semibold" onClick={() => setMenuOpen(false)}>Cars</Link>
                   <Link href="/marketplace/rooms" className="text-slate-700 dark:text-slate-300 hover:text-primary dark:hover:text-white text-sm py-2 font-semibold" onClick={() => setMenuOpen(false)}>Hotels</Link>
                   <Link href="/#companies" className="text-slate-700 dark:text-slate-300 hover:text-primary dark:hover:text-white text-sm py-2 font-semibold" onClick={() => setMenuOpen(false)}>Companies</Link>
                   <Link href="/about" className="text-slate-700 dark:text-slate-300 hover:text-primary dark:hover:text-white text-sm py-2 font-semibold" onClick={() => setMenuOpen(false)}>About</Link>

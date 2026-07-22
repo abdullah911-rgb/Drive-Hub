@@ -23,6 +23,7 @@ function MarketplaceContent() {
   const [selectedSeating, setSelectedSeating] = useState('')
   const [locationSearch, setLocationSearch] = useState('')
   const [showMobileFilters, setShowMobileFilters] = useState(false)
+  const [countryDropdownOpen, setCountryDropdownOpen] = useState(false)
 
   useEffect(() => {
     async function fetchCountries() {
@@ -114,22 +115,58 @@ function MarketplaceContent() {
 
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
         <div>
-          <div className="flex items-center gap-3 mb-2">
-            <span className="text-3xl">{getFlagEmoji(selectedCountry?.code || '')}</span>
-            <div className="flex gap-1.5">
-              {countries.map((c) => (
-                <button
-                  key={c.code}
-                  onClick={() => handleCountrySwitch(c)}
-                  className={`text-xs font-semibold px-3 py-1 rounded-full border transition-all ${
-                    selectedCountry?.code === c.code
-                      ? 'bg-primary border-primary text-white shadow-neon-violet'
-                      : 'glass border-white/5 text-slate-400 hover:text-white'
-                  }`}
-                >
-                  {c.name}
-                </button>
-              ))}
+          <div className="relative mb-3 flex items-center gap-3">
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setCountryDropdownOpen(!countryDropdownOpen)}
+                className="flex items-center justify-between gap-3 bg-dark-900 border border-white/10 hover:border-primary/40 rounded-xl px-4 py-2 text-xs text-white font-semibold transition-all shadow-lg min-w-[200px] text-left group"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-lg leading-none">{getFlagEmoji(selectedCountry?.code || '')}</span>
+                  <span>{selectedCountry?.name || 'Loading Country...'}</span>
+                  <span className="text-3xs bg-white/5 text-slate-400 px-1 py-0.5 rounded font-mono uppercase">{selectedCountry?.currency}</span>
+                </div>
+                <span className={`text-slate-400 group-hover:text-white transition-transform duration-200 ${countryDropdownOpen ? 'rotate-180' : ''}`}>▼</span>
+              </button>
+
+              <AnimatePresence>
+                {countryDropdownOpen && (
+                  <>
+                    <div className="fixed inset-0 z-30" onClick={() => setCountryDropdownOpen(false)} />
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                      className="absolute left-0 mt-2 w-64 bg-dark-950 border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-40 max-h-60 overflow-y-auto"
+                    >
+                      <div className="p-1 flex flex-col gap-1">
+                        {countries.map((c) => (
+                          <button
+                            key={c.code}
+                            type="button"
+                            onClick={() => {
+                              handleCountrySwitch(c)
+                              setCountryDropdownOpen(false)
+                            }}
+                            className={`flex items-center justify-between px-3 py-1.5 rounded-xl text-2xs font-semibold transition-all text-left ${
+                              selectedCountry?.code === c.code
+                                ? 'bg-primary/20 text-primary border border-primary/20'
+                                : 'text-slate-300 hover:bg-white/5 border border-transparent hover:text-white'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-base leading-none">{getFlagEmoji(c.code)}</span>
+                              <span>{c.name}</span>
+                            </div>
+                            <span className="text-3xs text-slate-500 font-mono uppercase">{c.currency}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
             </div>
           </div>
           <h1 className="font-heading font-black text-3xl md:text-4xl text-white">

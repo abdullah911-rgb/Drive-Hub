@@ -1,8 +1,10 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
+import { getFlagEmoji } from '@/lib/utils'
+import type { Country } from '@/types'
 
 interface Room {
   id: string
@@ -29,10 +31,44 @@ export default function RoomsMarketplaceClient() {
   const [minCapacity, setMinCapacity] = useState('')
   const [locationSearch, setLocationSearch] = useState('')
 
+  const [countries, setCountries] = useState<Country[]>([])
+  const [selectedCountry, setSelectedCountry] = useState<Country | null>(null)
+  const [countryDropdownOpen, setCountryDropdownOpen] = useState(false)
+
   useEffect(() => {
+    async function fetchCountries() {
+      try {
+        const res = await fetch('/api/countries')
+        if (res.ok) {
+          const resData = await res.json()
+          setCountries(resData.data || [])
+        }
+      } catch (err) {
+        console.error('Error fetching countries:', err)
+      }
+    }
+    fetchCountries()
+  }, [])
+
+  useEffect(() => {
+    if (countries.length === 0) return
+    const sessionCountry = typeof window !== 'undefined' ? sessionStorage.getItem('selectedCountry') : null
+    const countryCode = sessionCountry || countries[0].code
+    const match = countries.find(c => c.code.toUpperCase() === countryCode.toUpperCase())
+    if (match) {
+      setSelectedCountry(match)
+    } else {
+      setSelectedCountry(countries[0])
+    }
+  }, [countries])
+
+  useEffect(() => {
+    if (!selectedCountry) return
     const loadRooms = async () => {
+      setLoading(true)
       try {
         const params = new URLSearchParams({ status: 'APPROVED' })
+        params.set('countryId', selectedCountry.id)
         if (selectedType !== 'ALL') params.set('roomType', selectedType)
         if (maxPrice) params.set('maxPrice', maxPrice)
         if (minCapacity) params.set('minCapacity', minCapacity)
@@ -47,13 +83,18 @@ export default function RoomsMarketplaceClient() {
       }
     }
     loadRooms()
-  }, [selectedType, maxPrice, minCapacity, locationSearch])
+  }, [selectedCountry, selectedType, maxPrice, minCapacity, locationSearch])
 
   const filtered = rooms.filter(r =>
     !search || r.name.toLowerCase().includes(search.toLowerCase()) ||
     r.company?.name.toLowerCase().includes(search.toLowerCase()) ||
     r.description.toLowerCase().includes(search.toLowerCase())
   )
+
+  const handleCountrySwitch = (country: Country) => {
+    setSelectedCountry(country)
+    sessionStorage.setItem('selectedCountry', country.code)
+  }
 
   return (
     <div className="container-app py-10">
@@ -70,9 +111,65 @@ export default function RoomsMarketplaceClient() {
         <h1 className="font-heading font-black text-4xl md:text-5xl text-white mb-3">
           Find Your Perfect <span className="gradient-text">Stay</span>
         </h1>
-        <p className="text-slate-400 text-base max-w-xl mx-auto">
+        <p className="text-slate-400 text-sm max-w-xl mx-auto mb-6">
           Discover handpicked, verified hotel rooms from trusted partners. From cozy studios to spacious family rooms.
         </p>
+
+        {/* Center Prominent Country Dropdown */}
+        <div className="flex justify-center mb-2">
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setCountryDropdownOpen(!countryDropdownOpen)}
+              className="flex items-center justify-between gap-3 bg-dark-900 border border-white/10 hover:border-primary/40 rounded-xl px-4 py-2.5 text-xs text-white font-semibold transition-all shadow-lg min-w-[220px] text-left group"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-lg leading-none">{getFlagEmoji(selectedCountry?.code || '')}</span>
+                <span>{selectedCountry?.name || 'Loading Country...'}</span>
+                <span className="text-3xs bg-white/5 text-slate-400 px-1 py-0.5 rounded font-mono uppercase">{selectedCountry?.currency}</span>
+              </div>
+              <span className={`text-slate-400 group-hover:text-white transition-transform duration-200 ${countryDropdownOpen ? 'rotate-180' : ''}`}>▼</span>
+            </button>
+
+            <AnimatePresence>
+              {countryDropdownOpen && (
+                <>
+                  <div className="fixed inset-0 z-30" onClick={() => setCountryDropdownOpen(false)} />
+                  <motion.div
+                    initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                    className="absolute left-1/2 -translate-x-1/2 mt-2 w-64 bg-dark-950 border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-40 max-h-60 overflow-y-auto"
+                  >
+                    <div className="p-1 flex flex-col gap-1">
+                      {countries.map((c) => (
+                        <button
+                          key={c.code}
+                          type="button"
+                          onClick={() => {
+                            handleCountrySwitch(c)
+                            setCountryDropdownOpen(false)
+                          }}
+                          className={`flex items-center justify-between px-3 py-1.5 rounded-xl text-2xs font-semibold transition-all text-left ${
+                            selectedCountry?.code === c.code
+                              ? 'bg-primary/20 text-primary border border-primary/20'
+                              : 'text-slate-300 hover:bg-white/5 border border-transparent hover:text-white'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="text-base leading-none">{getFlagEmoji(c.code)}</span>
+                            <span>{c.name}</span>
+                          </div>
+                          <span className="text-3xs text-slate-500 font-mono uppercase">{c.currency}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
       </motion.div>
 
       {/* Search & Filters */}

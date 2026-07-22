@@ -51,10 +51,12 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-border mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-slate-500 dark:text-slate-500 text-sm font-medium">© {new Date().getFullYear()} NextTripy Marketplace. All rights reserved.</p>
-          <p className="text-slate-400 dark:text-slate-600 text-xs">
+        <div className="border-t border-white/5 mt-20 pt-10 flex flex-col items-center justify-center text-center gap-3">
+          <p className="text-slate-500 dark:text-slate-400 text-xs max-w-2xl">
             NextTripy is a marketplace platform only. Rental and hotel agreements are made directly between customers and companies.
+          </p>
+          <p className="text-slate-600 dark:text-slate-500 text-sm font-medium">
+            © 2026 NextTripy Marketplace. All rights reserved.
           </p>
         </div>
       </div>
