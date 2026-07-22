@@ -162,8 +162,9 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
       <div className="relative w-full bg-[#0b0c10]/80 border border-white/10 rounded-2xl overflow-hidden shadow-xl p-2 md:p-3 flex items-center justify-between gap-4 h-20 md:h-24 group">
         <span className="absolute top-1 left-2 text-[8px] text-slate-500 font-bold uppercase tracking-wider bg-white/5 px-1 py-0.5 rounded select-none">Ad</span>
         <div className="flex items-center gap-3 w-full h-full">
-          <div className="relative h-full aspect-[16/9] rounded-lg overflow-hidden flex-shrink-0 border border-white/5">
-            <Image src="/ads.jfif" alt="Google Ad" fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+          <div className="relative h-full aspect-[16/9] rounded-lg overflow-hidden flex-shrink-0 border border-white/5 bg-white/5">
+            {/* Using standard img tag because next/image component doesn't support jfif files natively */}
+            <img src="/ads.jfif" alt="Google Ad" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
           </div>
           <div className="min-w-0 flex-1">
             <h4 className="text-2xs md:text-xs font-bold text-white truncate">Special Trip Offer ✈️</h4>
@@ -185,10 +186,10 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
 
       <div className="relative z-10 flex flex-col min-h-screen pt-16">
         {/* Top Ad (Navbar & Hero Gap) */}
-        <GoogleAd className="mt-6 mb-2" />
+        <GoogleAd className="mt-4 mb-0" />
 
         {/* Hero */}
-        <section className="px-6 py-10 md:py-20">
+        <section className="px-6 pb-10 md:pb-20 pt-2 md:pt-4">
           <div className="container-app max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             {/* Left side: Content */}
             <motion.div
@@ -521,7 +522,6 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
             ) : (
               <div className="text-center py-16 glass-card rounded-xl">
                 <p className="text-slate-600 dark:text-slate-400 text-sm">We&apos;re adding new hotel rooms soon. Check back shortly!</p>
-                <button onClick={openRegisterCompany} className="btn-primary px-5 py-2 mt-4 text-sm">List your hotel with us</button>
               </div>
             )}
           </div>
