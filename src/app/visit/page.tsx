@@ -115,15 +115,11 @@ function VisitContent() {
           toast.error('Please fill in all required fields')
           return
         }
-        if (!licenseFile || !cnicFrontFile || !cnicBackFile) {
-          toast.error('Please upload all three documents (License, CNIC/ID Front & Back)')
-          return
-        }
         Object.entries(compForm).forEach(([k, v]) => formData.append(k, v))
         formData.append('userType', userRole!)
-        formData.append('licenseDocument', licenseFile)
-        formData.append('cnicFront', cnicFrontFile)
-        formData.append('cnicBack', cnicBackFile)
+        if (licenseFile) formData.append('licenseDocument', licenseFile)
+        if (cnicFrontFile) formData.append('cnicFront', cnicFrontFile)
+        if (cnicBackFile) formData.append('cnicBack', cnicBackFile)
       }
 
       const res = await fetch('/api/auth/profile/complete', {
@@ -153,7 +149,7 @@ function VisitContent() {
     label, file, onChange, id
   }: { label: string; file: File | null; onChange: (f: File) => void; id: string }) => (
     <div>
-      <label className={labelClass}>{label} *</label>
+      <label className={labelClass}>{label}</label>
       <label htmlFor={id}
         className="flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-xl p-4 cursor-pointer hover:border-primary/40 transition-colors bg-white/2 min-h-[80px]">
         {file ? (

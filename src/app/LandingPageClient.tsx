@@ -157,14 +157,38 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
     setRegisterCompanyOpen(true)
   }
 
+  const GoogleAd = ({ className = "" }: { className?: string }) => (
+    <div className={`w-full max-w-7xl mx-auto px-6 ${className}`}>
+      <div className="relative w-full bg-[#0b0c10]/80 border border-white/10 rounded-2xl overflow-hidden shadow-xl p-2 md:p-3 flex items-center justify-between gap-4 h-20 md:h-24 group">
+        <span className="absolute top-1 left-2 text-[8px] text-slate-500 font-bold uppercase tracking-wider bg-white/5 px-1 py-0.5 rounded select-none">Ad</span>
+        <div className="flex items-center gap-3 w-full h-full">
+          <div className="relative h-full aspect-[16/9] rounded-lg overflow-hidden flex-shrink-0 border border-white/5">
+            <Image src="/ads.jfif" alt="Google Ad" fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h4 className="text-2xs md:text-xs font-bold text-white truncate">Special Trip Offer ✈️</h4>
+            <p className="text-[10px] text-slate-400 line-clamp-1 mt-0.5">Rent cars or book hotel rooms with special discounts. Directly message providers on WhatsApp!</p>
+            <span className="text-[9px] text-slate-500 hover:text-slate-300 transition-colors cursor-pointer mt-0.5 block">nexttripy.com</span>
+          </div>
+          <a href="https://nexttripy.com" target="_blank" rel="noopener noreferrer" className="bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30 hover:border-primary/50 text-[10px] md:text-xs font-bold px-3 py-1.5 rounded-lg flex-shrink-0 transition-all active:scale-95">
+            Learn More
+          </a>
+        </div>
+      </div>
+    </div>
+  )
+
   return (
     <div className="min-h-screen bg-background flex flex-col relative">
       <ParticleBackground />
       <Navbar />
 
       <div className="relative z-10 flex flex-col min-h-screen pt-16">
+        {/* Top Ad (Navbar & Hero Gap) */}
+        <GoogleAd className="mt-6 mb-2" />
+
         {/* Hero */}
-        <section className="px-6 py-12 md:py-24">
+        <section className="px-6 py-10 md:py-20">
           <div className="container-app max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             {/* Left side: Content */}
             <motion.div
@@ -278,6 +302,9 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
             </motion.div>
           </div>
         </section>
+
+        {/* Ad Under Hero Images */}
+        <GoogleAd className="mb-8" />
 
         {/* Features */}
         <section className="px-6 pb-8">

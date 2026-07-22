@@ -76,9 +76,7 @@ export async function POST(request: NextRequest) {
       if (!ownerName || !cnicOrId || !licenseNumber || !businessAddress || !whatsAppNumber || !countryId) {
         return NextResponse.json({ success: false, error: 'All company fields are required' }, { status: 400 })
       }
-      if (!licenseFile || !cnicFront || !cnicBack) {
-        return NextResponse.json({ success: false, error: 'All three documents are required' }, { status: 400 })
-      }
+      // Documents are now optional; we process whichever ones are provided.
 
       // Get company associated with this user
       const user = await prisma.user.findUnique({
