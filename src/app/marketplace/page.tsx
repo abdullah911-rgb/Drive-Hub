@@ -66,7 +66,7 @@ function MarketplaceContent() {
     setSelectedCityId('')
     async function fetchCities() {
       try {
-        const res = await fetch(`/api/cities?countryId=${selectedCountry!.id}`)
+        const res = await fetch(`/api/cities?countryId=${selectedCountry!.id}&filterType=cars`)
         if (res.ok) {
           const data = await res.json()
           setCities(data.data || [])
@@ -134,7 +134,7 @@ function MarketplaceContent() {
         <select
           value={selectedCityId}
           onChange={(e) => setSelectedCityId(e.target.value)}
-          className="input w-full bg-dark-900/60"
+          className="input w-full bg-dark-900/60 dark:bg-dark-900/60 text-slate-800 dark:text-white"
         >
           <option value="">All Cities</option>
           {cities.map(c => (
@@ -146,7 +146,7 @@ function MarketplaceContent() {
       {/* Brand */}
       <div>
         <label className="text-slate-400 text-xs font-semibold mb-2 block">Brand</label>
-        <select value={selectedBrand} onChange={(e) => setSelectedBrand(e.target.value)} className="input w-full bg-dark-900/60">
+        <select value={selectedBrand} onChange={(e) => setSelectedBrand(e.target.value)} className="input w-full bg-dark-900/60 dark:bg-dark-900/60 text-slate-800 dark:text-white">
           <option value="">All Brands</option>
           {['Toyota','Honda','Hyundai','Suzuki','Nissan','Kia','Ford','BMW','Mercedes','Audi','Lexus','Chevrolet','Jeep','Mitsubishi','Mazda'].map(b => (
             <option key={b} value={b}>{b}</option>
@@ -157,7 +157,7 @@ function MarketplaceContent() {
       {/* Transmission */}
       <div>
         <label className="text-slate-400 text-xs font-semibold mb-2 block">Transmission</label>
-        <select value={selectedTransmission} onChange={(e) => setSelectedTransmission(e.target.value)} className="input w-full bg-dark-900/60">
+        <select value={selectedTransmission} onChange={(e) => setSelectedTransmission(e.target.value)} className="input w-full bg-dark-900/60 dark:bg-dark-900/60 text-slate-800 dark:text-white">
           <option value="">Any Transmission</option>
           <option value="AUTOMATIC">Automatic</option>
           <option value="MANUAL">Manual</option>
@@ -167,7 +167,7 @@ function MarketplaceContent() {
       {/* Fuel Type */}
       <div>
         <label className="text-slate-400 text-xs font-semibold mb-2 block">Fuel Type</label>
-        <select value={selectedFuelType} onChange={(e) => setSelectedFuelType(e.target.value)} className="input w-full bg-dark-900/60">
+        <select value={selectedFuelType} onChange={(e) => setSelectedFuelType(e.target.value)} className="input w-full bg-dark-900/60 dark:bg-dark-900/60 text-slate-800 dark:text-white">
           <option value="">Any Fuel</option>
           <option value="PETROL">Petrol</option>
           <option value="DIESEL">Diesel</option>
@@ -179,7 +179,7 @@ function MarketplaceContent() {
       {/* Min Seating */}
       <div>
         <label className="text-slate-400 text-xs font-semibold mb-2 block">Min Seating</label>
-        <select value={selectedSeating} onChange={(e) => setSelectedSeating(e.target.value)} className="input w-full bg-dark-900/60">
+        <select value={selectedSeating} onChange={(e) => setSelectedSeating(e.target.value)} className="input w-full bg-dark-900/60 dark:bg-dark-900/60 text-slate-800 dark:text-white">
           <option value="">Any Capacity</option>
           <option value="2">2+ Seats</option>
           <option value="4">4+ Seats</option>
@@ -201,14 +201,14 @@ function MarketplaceContent() {
               <button
                 type="button"
                 onClick={() => setCountryDropdownOpen(!countryDropdownOpen)}
-                className="flex items-center justify-between gap-3 bg-[#12151e] border border-white/15 hover:border-primary/50 rounded-xl px-4 py-2 text-xs text-white font-semibold transition-all shadow-lg min-w-[220px] text-left group"
+                className="flex items-center justify-between gap-3 bg-white dark:bg-dark-900 border border-slate-200 dark:border-white/10 hover:border-primary/50 rounded-xl px-4 py-2 text-xs text-slate-800 dark:text-white font-semibold transition-all shadow-lg min-w-[220px] text-left group"
               >
                 <div className="flex items-center gap-2">
                   <span className="text-lg leading-none">{getFlagEmoji(selectedCountry?.code || '')}</span>
-                  <span className="text-white">{selectedCountry?.name || 'Select Country'}</span>
+                  <span className="text-slate-800 dark:text-white">{selectedCountry?.name || 'Select Country'}</span>
                   <span className="text-2xs bg-primary/10 text-primary px-1.5 py-0.5 rounded font-mono uppercase border border-primary/20">{selectedCountry?.currency}</span>
                 </div>
-                <span className={`text-slate-300 transition-transform duration-200 ${countryDropdownOpen ? 'rotate-180' : ''}`}>▼</span>
+                <span className={`text-slate-400 dark:text-slate-300 transition-transform duration-200 ${countryDropdownOpen ? 'rotate-180' : ''}`}>▼</span>
               </button>
 
               <AnimatePresence>
@@ -219,8 +219,7 @@ function MarketplaceContent() {
                       initial={{ opacity: 0, y: 8, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                      className="absolute left-0 mt-2 w-64 rounded-2xl shadow-2xl z-[999] max-h-64 overflow-y-auto"
-                      style={{ background: '#12151e', border: '1px solid rgba(255,255,255,0.12)' }}
+                      className="absolute left-0 mt-2 w-64 rounded-2xl shadow-2xl z-[999] max-h-64 overflow-y-auto bg-white dark:bg-dark-955 border border-slate-200 dark:border-white/10"
                     >
                       <div className="p-1 flex flex-col gap-0.5">
                         {countries.map((c) => (
@@ -234,7 +233,7 @@ function MarketplaceContent() {
                             className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all text-left ${
                               selectedCountry?.code === c.code
                                 ? 'bg-primary/20 text-primary border border-primary/30'
-                                : 'text-slate-200 hover:bg-white/8 border border-transparent hover:text-white'
+                                : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/8 border border-transparent hover:text-slate-900 dark:hover:text-white'
                             }`}
                           >
                             <div className="flex items-center gap-2">

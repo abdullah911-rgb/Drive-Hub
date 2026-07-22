@@ -365,7 +365,28 @@ export default function AdminDashboard() {
                          key={comp.id}
                          onClick={() => {
                            const matchingUser = users.find(u => u.id === comp.userId)
-                           if (matchingUser) setSelectedUser(matchingUser)
+                           if (matchingUser) {
+                             setSelectedUser({
+                               ...matchingUser,
+                               company: comp
+                             })
+                           } else {
+                             setSelectedUser({
+                               id: comp.userId,
+                               email: comp.email,
+                               phone: comp.contactNumber,
+                               roleId: '',
+                               roleName: comp.companyType === 'HOTEL' ? 'HOTEL' : 'COMPANY',
+                               status: comp.status,
+                               emailVerified: true,
+                               phoneVerified: true,
+                               fullName: comp.ownerName,
+                               cnicOrId: comp.cnicOrId,
+                               company: comp,
+                               createdAt: comp.createdAt,
+                               updatedAt: comp.updatedAt
+                             })
+                           }
                          }}
                          className="glass-card p-5 border border-white/5 flex flex-col md:flex-row justify-between gap-4 cursor-pointer hover:border-primary/30 transition-all hover:shadow-neon-violet/5"
                        >
@@ -807,7 +828,7 @@ export default function AdminDashboard() {
 
             {/* User Details Modal */}
             {selectedUser && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setSelectedUser(null)}>
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={() => setSelectedUser(null)}>
                 <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -883,7 +904,7 @@ export default function AdminDashboard() {
                         </div>
 
                         {/* Documents */}
-                        {((selectedUser as User & { company?: { documents?: { docType: string; fileUrl: string }[] } }).company?.documents?.length ?? 0) > 0 && (
+                        {((selectedUser as User & { company?: { documents?: { docType: string; fileUrl: string }[] } }).company?.documents?.length ?? 0) > 0 ? (
                           <div className="mt-4">
                             <h5 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Uploaded Documents</h5>
                             <div className="grid grid-cols-3 gap-3">
@@ -906,6 +927,13 @@ export default function AdminDashboard() {
                                 </a>
                               ))}
                             </div>
+                          </div>
+                        ) : (
+                          <div className="mt-4">
+                            <h5 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Uploaded Documents</h5>
+                            <p className="text-xs text-amber-400 bg-amber-500/5 border border-amber-500/10 rounded-xl p-3">
+                              ⚠ No verification documents uploaded by this company.
+                            </p>
                           </div>
                         )}
                       </div>

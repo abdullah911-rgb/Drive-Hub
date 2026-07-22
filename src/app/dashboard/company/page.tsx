@@ -524,7 +524,7 @@ export default function CompanyDashboard() {
                                   : 'glass border-white/5 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:border-white/10'
                               }`}
                             >
-                              <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center p-1 overflow-hidden shrink-0">
+                              <div className="relative w-8 h-8 rounded-lg bg-white flex items-center justify-center p-1 overflow-hidden shrink-0">
                                 {g.logoUrl ? (
                                   <Image src={g.logoUrl} alt={g.name} fill className="w-full h-full object-contain" />
                                 ) : (

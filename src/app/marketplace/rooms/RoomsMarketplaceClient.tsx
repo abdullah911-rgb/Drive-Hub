@@ -70,7 +70,7 @@ export default function RoomsMarketplaceClient() {
     setSelectedCityId('')
     async function fetchCities() {
       try {
-        const res = await fetch(`/api/cities?countryId=${selectedCountry!.id}`)
+        const res = await fetch(`/api/cities?countryId=${selectedCountry!.id}&filterType=rooms`)
         if (res.ok) {
           const data = await res.json()
           setCities(data.data || [])
@@ -129,27 +129,13 @@ export default function RoomsMarketplaceClient() {
 
   const FilterPanel = () => (
     <div className="flex flex-col gap-5">
-      {/* Search */}
-      <div>
-        <label className="text-slate-400 text-xs font-semibold mb-2 block">Search</label>
-        <div className="relative">
-          <input
-            className="input w-full pr-10 bg-dark-900/60"
-            placeholder="Room name, hotel..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500">🔍</span>
-        </div>
-      </div>
-
       {/* City */}
       <div>
         <label className="text-slate-400 text-xs font-semibold mb-2 block">Location / City</label>
         <select
           value={selectedCityId}
           onChange={e => setSelectedCityId(e.target.value)}
-          className="input w-full bg-dark-900/60"
+          className="input w-full bg-dark-900/60 dark:bg-dark-900/60 text-slate-800 dark:text-white"
         >
           <option value="">All Cities</option>
           {cities.map(c => (
@@ -164,7 +150,7 @@ export default function RoomsMarketplaceClient() {
         <select
           value={selectedType}
           onChange={e => setSelectedType(e.target.value)}
-          className="input w-full bg-dark-900/60"
+          className="input w-full bg-dark-900/60 dark:bg-dark-900/60 text-slate-800 dark:text-white"
         >
           {ROOM_TYPES.map(t => (
             <option key={t} value={t}>{t === 'ALL' ? 'All Types' : t}</option>
@@ -177,7 +163,7 @@ export default function RoomsMarketplaceClient() {
         <label className="text-slate-400 text-xs font-semibold mb-2 block">Max Price / Night (USD)</label>
         <input
           type="number"
-          className="input w-full bg-dark-900/60"
+          className="input w-full bg-dark-900/60 dark:bg-dark-900/60 text-slate-800 dark:text-white"
           placeholder="e.g. 200"
           value={maxPrice}
           onChange={e => setMaxPrice(e.target.value)}
@@ -191,7 +177,7 @@ export default function RoomsMarketplaceClient() {
         <select
           value={minCapacity}
           onChange={e => setMinCapacity(e.target.value)}
-          className="input w-full bg-dark-900/60"
+          className="input w-full bg-dark-900/60 dark:bg-dark-900/60 text-slate-800 dark:text-white"
         >
           <option value="">Any</option>
           <option value="1">1+</option>
@@ -220,14 +206,14 @@ export default function RoomsMarketplaceClient() {
               <button
                 type="button"
                 onClick={() => setCountryDropdownOpen(!countryDropdownOpen)}
-                className="flex items-center justify-between gap-3 bg-[#12151e] border border-white/15 hover:border-primary/50 rounded-xl px-4 py-2 text-xs text-white font-semibold transition-all shadow-lg min-w-[220px] text-left group"
+                className="flex items-center justify-between gap-3 bg-white dark:bg-dark-900 border border-slate-200 dark:border-white/10 hover:border-primary/50 rounded-xl px-4 py-2 text-xs text-slate-800 dark:text-white font-semibold transition-all shadow-lg min-w-[220px] text-left group"
               >
                 <div className="flex items-center gap-2">
                   <span className="text-lg leading-none">{getFlagEmoji(selectedCountry?.code || '')}</span>
-                  <span className="text-white">{selectedCountry?.name || 'Select Country'}</span>
+                  <span className="text-slate-800 dark:text-white">{selectedCountry?.name || 'Select Country'}</span>
                   <span className="text-2xs bg-primary/10 text-primary px-1.5 py-0.5 rounded font-mono uppercase border border-primary/20">{selectedCountry?.currency}</span>
                 </div>
-                <span className={`text-slate-300 transition-transform duration-200 ${countryDropdownOpen ? 'rotate-180' : ''}`}>▼</span>
+                <span className={`text-slate-400 dark:text-slate-300 transition-transform duration-200 ${countryDropdownOpen ? 'rotate-180' : ''}`}>▼</span>
               </button>
 
               <AnimatePresence>
@@ -238,8 +224,7 @@ export default function RoomsMarketplaceClient() {
                       initial={{ opacity: 0, y: 8, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                      className="absolute left-0 mt-2 w-64 rounded-2xl shadow-2xl z-[999] max-h-64 overflow-y-auto"
-                      style={{ background: '#12151e', border: '1px solid rgba(255,255,255,0.12)' }}
+                      className="absolute left-0 mt-2 w-64 rounded-2xl shadow-2xl z-[999] max-h-64 overflow-y-auto bg-white dark:bg-dark-955 border border-slate-200 dark:border-white/10"
                     >
                       <div className="p-1 flex flex-col gap-0.5">
                         {countries.map((c) => (
@@ -250,7 +235,7 @@ export default function RoomsMarketplaceClient() {
                             className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all text-left ${
                               selectedCountry?.code === c.code
                                 ? 'bg-primary/20 text-primary border border-primary/30'
-                                : 'text-slate-200 hover:bg-white/8 border border-transparent hover:text-white'
+                                : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/8 border border-transparent hover:text-slate-900 dark:hover:text-white'
                             }`}
                           >
                             <div className="flex items-center gap-2">

@@ -157,8 +157,8 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
     setRegisterCompanyOpen(true)
   }
 
-  const GoogleAd = ({ className = "" }: { className?: string }) => (
-    <div className={`w-full max-w-7xl mx-auto px-6 ${className}`}>
+  const GoogleAd = ({ className = "", maxWidthClass = "max-w-7xl" }: { className?: string; maxWidthClass?: string }) => (
+    <div className={`w-full ${maxWidthClass} mx-auto px-6 ${className}`}>
       <div className="relative w-full bg-[#0b0c10]/80 border border-white/10 rounded-2xl overflow-hidden shadow-xl p-2 md:p-3 flex items-center justify-between gap-4 h-20 md:h-24 group">
         <span className="absolute top-1 left-2 text-[8px] text-slate-500 font-bold uppercase tracking-wider bg-white/5 px-1 py-0.5 rounded select-none">Ad</span>
         <div className="flex items-center gap-3 w-full h-full">
@@ -167,9 +167,9 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
             <img src="/ads.jfif" alt="Google Ad" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
           </div>
           <div className="min-w-0 flex-1">
-            <h4 className="text-2xs md:text-xs font-bold text-white truncate">Special Trip Offer ✈️</h4>
-            <p className="text-[10px] text-slate-400 line-clamp-1 mt-0.5">Rent cars or book hotel rooms with special discounts. Directly message providers on WhatsApp!</p>
-            <span className="text-[9px] text-slate-500 hover:text-slate-300 transition-colors cursor-pointer mt-0.5 block">nexttripy.com</span>
+            <h4 className="text-2xs md:text-xs font-bold truncate" style={{ color: '#ffffff' }}>Special Trip Offer ✈️</h4>
+            <p className="text-[10px] line-clamp-1 mt-0.5 font-medium" style={{ color: '#94a3b8' }}>Rent cars or book hotel rooms with special discounts. Directly message providers on WhatsApp!</p>
+            <span className="text-[9px] hover:text-slate-300 transition-colors cursor-pointer mt-0.5 block font-mono" style={{ color: '#64748b' }}>nexttripy.com</span>
           </div>
           <a href="https://nexttripy.com" target="_blank" rel="noopener noreferrer" className="bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30 hover:border-primary/50 text-[10px] md:text-xs font-bold px-3 py-1.5 rounded-lg flex-shrink-0 transition-all active:scale-95">
             Learn More
@@ -305,7 +305,7 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
         </section>
 
         {/* Ad Under Hero Images */}
-        <GoogleAd className="mb-8" />
+        <GoogleAd className="mb-8" maxWidthClass="max-w-3xl" />
 
         {/* Features */}
         <section className="px-6 pb-8">
