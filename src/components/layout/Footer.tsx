@@ -4,7 +4,7 @@ import Image from 'next/image'
 export default function Footer() {
   return (
     <footer className="border-t border-border bg-card mt-28">
-      <div className="container-app py-12">
+      <div className="container-app pt-12 pb-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
 
           <div className="md:col-span-2">
@@ -51,11 +51,11 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-white/5 mt-10 pt-4 flex flex-col items-center justify-center text-center gap-1.5">
-          <p className="text-slate-500 dark:text-slate-400 text-xs max-w-2xl">
+        <div className="border-t border-white/5 mt-10 pt-4 flex flex-col items-center justify-center text-center gap-0">
+          <p className="text-slate-500 dark:text-slate-400 text-xs max-w-2xl leading-normal">
             NextTripy is a marketplace platform only. Rental and hotel agreements are made directly between customers and companies.
           </p>
-          <p className="text-slate-600 dark:text-slate-500 text-sm font-medium">
+          <p className="text-slate-600 dark:text-slate-500 text-xs font-semibold mt-1">
             © 2026 NextTripy Marketplace. All rights reserved.
           </p>
         </div>
