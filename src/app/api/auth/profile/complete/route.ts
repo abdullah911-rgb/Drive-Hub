@@ -108,15 +108,15 @@ export async function POST(request: NextRequest) {
       try {
         const documents: { id: string; companyId: string; docType: string; fileUrl: string }[] = []
         const docSaves = [
-          { file: licenseFile, docType: 'LICENSE_DOCUMENT' },
-          { file: cnicFront, docType: 'CNIC_FRONT' },
-          { file: cnicBack, docType: 'CNIC_BACK' },
+          { file: licenseFile, docType: 'LICENSE_FRONT' as const },
+          { file: cnicFront, docType: 'CNIC_FRONT' as const },
+          { file: cnicBack, docType: 'CNIC_BACK' as const },
         ]
         for (const { file, docType } of docSaves) {
           if (!file || file.size === 0) continue
           try {
             // Use saveCompanyDocument for proper saving
-            const fileUrl = await saveCompanyDocument(companyId, docType as 'BUSINESS_CNIC_FRONT' | 'BUSINESS_CNIC_BACK' | 'BUSINESS_LICENSE', file)
+            const fileUrl = await saveCompanyDocument(companyId, docType, file)
             documents.push({ id: uuidv4(), companyId, docType, fileUrl })
           } catch (docErr) {
             console.error(`Error saving document ${docType}:`, docErr)
