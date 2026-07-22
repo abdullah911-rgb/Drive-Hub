@@ -9,7 +9,7 @@ import ParticleBackground from '@/components/shared/ParticleBackground'
 import { getFlagEmoji } from '@/lib/utils'
 import Image from 'next/image'
 
-interface Country { id: string; name: string; code: string; currency: string }
+interface Country { id: string; name: string; code: string; currency: string; dialCode: string }
 
 function VisitContent() {
   const router = useRouter()
@@ -36,6 +36,30 @@ function VisitContent() {
   const [licenseFile, setLicenseFile] = useState<File | null>(null)
   const [cnicFrontFile, setCnicFrontFile] = useState<File | null>(null)
   const [cnicBackFile, setCnicBackFile] = useState<File | null>(null)
+
+  const getPhonePlaceholder = (countryId: string) => {
+    const c = countries.find(x => x.id === countryId)
+    return c ? `${c.dialCode} 123 456789` : "+92 300 0000000"
+  }
+
+  const getIdPlaceholder = (countryId: string) => {
+    const c = countries.find(x => x.id === countryId)
+    if (c?.code === 'PK') return "35201-1234567-1"
+    if (c?.code === 'SA') return "10xxxxxxxx"
+    return "ID Card or Passport Number"
+  }
+
+  const getLicenseLabel = (countryId: string) => {
+    const c = countries.find(x => x.id === countryId)
+    if (c?.code === 'SA') return "Commercial Registration (CR) Number *"
+    return "Business / License Number *"
+  }
+
+  const getLicensePlaceholder = (countryId: string) => {
+    const c = countries.find(x => x.id === countryId)
+    if (c?.code === 'SA') return "10xxxxxxxx"
+    return "License or registration number"
+  }
 
   useEffect(() => {
     async function init() {
@@ -227,7 +251,7 @@ function VisitContent() {
                     </div>
                     <div>
                       <label className={labelClass}>National ID / CNIC *</label>
-                      <input className={inputClass} placeholder="e.g. 35201-1234567-1"
+                      <input className={inputClass} placeholder={getIdPlaceholder(custForm.countryId)}
                         value={custForm.cnicOrId} onChange={e => setCustForm(p => ({ ...p, cnicOrId: e.target.value }))} required />
                     </div>
                     <div>
@@ -250,7 +274,7 @@ function VisitContent() {
                       </div>
                       <div>
                         <label className={labelClass}>Emergency Phone *</label>
-                        <input className={inputClass} type="tel" placeholder="+92 300 0000000"
+                        <input className={inputClass} type="tel" placeholder={getPhonePlaceholder(custForm.countryId)}
                           value={custForm.emergencyPhone} onChange={e => setCustForm(p => ({ ...p, emergencyPhone: e.target.value }))} required />
                       </div>
                     </div>
@@ -265,13 +289,13 @@ function VisitContent() {
                       </div>
                       <div>
                         <label className={labelClass}>Owner CNIC / National ID *</label>
-                        <input className={inputClass} placeholder="35201-1234567-1"
+                        <input className={inputClass} placeholder={getIdPlaceholder(compForm.countryId)}
                           value={compForm.cnicOrId} onChange={e => setCompForm(p => ({ ...p, cnicOrId: e.target.value }))} required />
                       </div>
                     </div>
                     <div>
-                      <label className={labelClass}>Business / License Number *</label>
-                      <input className={inputClass} placeholder="License or registration number"
+                      <label className={labelClass}>{getLicenseLabel(compForm.countryId)}</label>
+                      <input className={inputClass} placeholder={getLicensePlaceholder(compForm.countryId)}
                         value={compForm.licenseNumber} onChange={e => setCompForm(p => ({ ...p, licenseNumber: e.target.value }))} required />
                     </div>
                     <div>
@@ -282,7 +306,7 @@ function VisitContent() {
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className={labelClass}>WhatsApp Number *</label>
-                        <input className={inputClass} type="tel" placeholder="+92 300 0000000"
+                        <input className={inputClass} type="tel" placeholder={getPhonePlaceholder(compForm.countryId)}
                           value={compForm.whatsAppNumber} onChange={e => setCompForm(p => ({ ...p, whatsAppNumber: e.target.value }))} required />
                       </div>
                       <div>

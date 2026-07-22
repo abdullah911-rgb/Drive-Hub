@@ -31,7 +31,7 @@ export const getCachedCountries = unstable_cache(
     const list = await prisma.country.findMany({
       where: { deletedAt: null },
       orderBy: { name: 'asc' },
-      select: { id: true, name: true, code: true, flagUrl: true, currency: true },
+      select: { id: true, name: true, code: true, flagUrl: true, currency: true, dialCode: true },
     })
     return serializePrisma(list)
   },

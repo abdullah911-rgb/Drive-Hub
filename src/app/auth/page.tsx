@@ -29,7 +29,7 @@ function AuthContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const [countries, setCountries] = useState<{ id: string; name: string; code: string; currency: string }[]>([])
+  const [countries, setCountries] = useState<{ id: string; name: string; code: string; currency: string; dialCode: string }[]>([])
   const [subscriptionPreview, setSubscriptionPreview] = useState<{ price: string; currency: string }>({
     price: formatSubscriptionPrice(SUBSCRIPTION_BASE_PKR, 'PKR'),
     currency: 'PKR',
@@ -92,6 +92,11 @@ function AuthContent() {
   }, [compData.countryId, countries])
 
   const [loginData, setLoginData] = useState({ emailOrPhone: '', password: '' })
+
+  const getPhonePlaceholder = (countryId: string) => {
+    const c = countries.find(x => x.id === countryId)
+    return c ? `${c.dialCode} 123 456789` : "+92 300 0000000"
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -260,12 +265,6 @@ function AuthContent() {
                   ))}
                 </div>
 
-                {/* Info banner */}
-                <div className="glass rounded-xl p-3 border border-blue-500/20 bg-blue-500/5 mb-4 text-xs text-blue-300 flex items-start gap-2">
-                  <span className="text-lg leading-none">ℹ️</span>
-                  <span>Quick sign-up — sensitive verification details (ID, license, documents) are collected separately after admin approval.</span>
-                </div>
-
                 <form onSubmit={handleRegister} className="space-y-3">
                   {signupRole === 'CUSTOMER' ? (
                     <>
@@ -281,7 +280,7 @@ function AuthContent() {
                       </div>
                       <div>
                         <label className={labelClass}>Phone Number *</label>
-                        <input className={inputClass} type="tel" placeholder="+92 300 0000000" value={custData.phone}
+                        <input className={inputClass} type="tel" placeholder={getPhonePlaceholder(custData.countryId)} value={custData.phone}
                           onChange={e => setCustData(p => ({ ...p, phone: e.target.value }))} required />
                       </div>
                       <div>
@@ -356,7 +355,7 @@ function AuthContent() {
                       </div>
                       <div>
                         <label className={labelClass}>Contact Number *</label>
-                        <input className={inputClass} type="tel" placeholder="+92 300 0000000" value={compData.contactNumber}
+                        <input className={inputClass} type="tel" placeholder={getPhonePlaceholder(compData.countryId)} value={compData.contactNumber}
                           onChange={e => setCompData(p => ({ ...p, contactNumber: e.target.value }))} required />
                       </div>
                       <div>
@@ -367,19 +366,6 @@ function AuthContent() {
                           {countries.map(c => <option key={c.id} value={c.id}>{getFlagEmoji(c.code)} {c.name}</option>)}
                         </select>
                       </div>
-
-                      {/* Subscription preview */}
-                      {compData.countryId && (
-                        <div className="glass rounded-xl p-3 border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-slate-400">📋 Monthly Subscription</span>
-                            <div className="text-right">
-                              <span className="text-slate-900 dark:text-white font-bold text-sm">{subscriptionPreview.price}</span>
-                              <span className="text-slate-500 text-2xs"> / mo</span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
 
                       <div className="grid grid-cols-2 gap-3">
                         <div>
