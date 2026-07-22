@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 import { useState } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
@@ -67,7 +67,7 @@ export default function ContactPage() {
             {/* Contact badges */}
             <div className="mt-4 flex flex-wrap items-center justify-center gap-3 text-sm">
               <span className="flex items-center gap-2 glass px-3 py-1.5 rounded-lg border border-border text-slate-700 dark:text-slate-300 font-semibold text-xs">
-                ✉️ nexttripy@nexttripy.com
+                ✉️ info@nexttripy.com
               </span>
               <a
                 href="https://wa.me/923395007019?text=Hello%2C%20I%20need%20help%20with%20NextTripy%20Marketplace."

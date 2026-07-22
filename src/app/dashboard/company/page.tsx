@@ -90,6 +90,11 @@ export default function CompanyDashboard() {
         return
       }
 
+      if (userData.data?.cnicOrId === 'Pending') {
+        router.push('/visit')
+        return
+      }
+
       const companyRes = await fetch(`/api/companies/${userData.data.companyId}`, { credentials: 'include' })
       if (companyRes.ok) {
         const compData = await companyRes.json()

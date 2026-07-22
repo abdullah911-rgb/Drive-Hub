@@ -76,6 +76,11 @@ export default function HotelDashboardClient() {
         return
       }
 
+      if (userData.data?.cnicOrId === 'Pending') {
+        router.push('/visit')
+        return
+      }
+
       if (userData.data.companyId) {
         const companyRes = await fetch(`/api/companies/${userData.data.companyId}`, { credentials: 'include' })
         if (companyRes.ok) {

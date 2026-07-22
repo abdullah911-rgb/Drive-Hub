@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, Suspense, useCallback } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -7,17 +7,8 @@ import { toast } from 'sonner'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import ParticleBackground from '@/components/shared/ParticleBackground'
-import CompanyFormFields from '@/components/shared/CompanyFormFields'
-import CompanyDocumentUploads, {
-  EMPTY_COMPANY_DOCUMENTS,
-  appendCompanyDocumentsToFormData,
-  type CompanyDocumentFiles,
-} from '@/components/shared/CompanyDocumentUploads'
-import ValidatedInput from '@/components/shared/ValidatedInput'
 import { getFlagEmoji } from '@/lib/utils'
-import { validateCompanyForm, getCountryFormConfig, applyFieldFormat, validateCountryField } from '@/lib/countryFormConfig'
-import { validateRequiredText, validateEmail } from '@/lib/liveValidation'
-import { validateCompanyDocuments } from '@/lib/companyDocuments'
+import { validateEmail } from '@/lib/liveValidation'
 import { SUBSCRIPTION_BASE_PKR } from '@/lib/subscription'
 import { formatSubscriptionPrice } from '@/lib/currency'
 
@@ -32,12 +23,10 @@ function AuthContent() {
   const searchParams = useSearchParams()
 
   const [countries, setCountries] = useState<{ id: string; name: string; code: string; currency: string }[]>([])
-  const [selectedCountryCode, setSelectedCountryCode] = useState<string>('')
   const [subscriptionPreview, setSubscriptionPreview] = useState<{ price: string; currency: string }>({
     price: formatSubscriptionPrice(SUBSCRIPTION_BASE_PKR, 'PKR'),
     currency: 'PKR',
   })
-  const [companyDocuments, setCompanyDocuments] = useState<CompanyDocumentFiles>({ ...EMPTY_COMPANY_DOCUMENTS })
 
   useEffect(() => {
     if (searchParams.get('tab') === 'signup') setTab('signup')
@@ -58,14 +47,6 @@ function AuthContent() {
         const data = await res.json()
         if (data.success) {
           setCountries(data.data)
-
-          const sessionCountry = sessionStorage.getItem('selectedCountry')
-          if (sessionCountry) {
-            setSelectedCountryCode(sessionCountry)
-          } else if (data.data.length > 0) {
-            setSelectedCountryCode(data.data[0].code)
-            sessionStorage.setItem('selectedCountry', data.data[0].code)
-          }
         }
       } catch (err) {
         console.error('Failed to load countries', err)
@@ -74,7 +55,37 @@ function AuthContent() {
     loadCountries()
   }, [])
 
+  // Simple registration state — all sensitive info collected later on /visit
+  const [custData, setCustData] = useState({
+    fullName: '', phone: '', email: '', countryId: '', password: '', confirmPassword: ''
+  })
+
+  const [compData, setCompData] = useState({
+    companyName: '', ownerName: '', contactNumber: '', email: '', countryId: '',
+    password: '', confirmPassword: '', companyType: 'CAR_RENTAL'
+  })
+
+  // Update subscription preview when country changes (for company registration)
+  useEffect(() => {
+    if (!compData.countryId || countries.length === 0) return
+    const country = countries.find(c => c.id === compData.countryId)
+    if (!country) return
+    const fetchPrice = async () => {
+      try {
+        const res = await fetch(`/api/currency?to=${country.currency}&amount=${SUBSCRIPTION_BASE_PKR}`)
+        const data = await res.json()
+        if (data.success) {
+          setSubscriptionPreview({ price: formatSubscriptionPrice(data.data.converted, data.data.to), currency: data.data.to })
+        }
+      } catch {
+        setSubscriptionPreview({ price: formatSubscriptionPrice(SUBSCRIPTION_BASE_PKR, 'PKR'), currency: 'PKR' })
+      }
+    }
+    fetchPrice()
+  }, [compData.countryId, countries])
+
   const [loginData, setLoginData] = useState({ emailOrPhone: '', password: '' })
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -97,122 +108,53 @@ function AuthContent() {
     finally { setLoading(false) }
   }
 
-  const [custData, setCustData] = useState({
-    fullName: '', fatherName: '', cnicOrId: '', dateOfBirth: '', phone: '',
-    email: '', address: '', countryId: '', emergencyName: '', emergencyPhone: '',
-    password: '', confirmPassword: ''
-  })
-
-  const [compData, setCompData] = useState({
-    companyName: '', ownerName: '', cnicOrId: '', contactNumber: '', whatsAppNumber: '',
-    email: '', businessAddress: '', countryId: '', licenseNumber: '',
-    password: '', confirmPassword: '', companyType: 'CAR_RENTAL'
-  })
-
-  useEffect(() => {
-    if (selectedCountryCode && countries.length > 0) {
-      const matched = countries.find(c => c.code === selectedCountryCode)
-      if (matched) {
-        setCustData(prev => ({ ...prev, countryId: matched.id }))
-        setCompData(prev => ({ ...prev, countryId: matched.id }))
-      }
-    }
-  }, [selectedCountryCode, countries])
-
-  const handleGlobalCountryChange = (code: string) => {
-    setSelectedCountryCode(code)
-    sessionStorage.setItem('selectedCountry', code)
-  }
-
-  useEffect(() => {
-    if (!selectedCountryCode || countries.length === 0) return
-    const country = countries.find(c => c.code === selectedCountryCode)
-    if (!country) return
-    const fetchPrice = async () => {
-      try {
-        const res = await fetch(`/api/currency?to=${country.currency}&amount=${SUBSCRIPTION_BASE_PKR}`)
-        const data = await res.json()
-        if (data.success) {
-          const { converted, to } = data.data
-          setSubscriptionPreview({
-            price: formatSubscriptionPrice(converted, to),
-            currency: to,
-          })
-        }
-      } catch {
-        setSubscriptionPreview({
-          price: formatSubscriptionPrice(SUBSCRIPTION_BASE_PKR, 'PKR'),
-          currency: 'PKR',
-        })
-      }
-    }
-    fetchPrice()
-  }, [selectedCountryCode, countries])
-
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
-    const data = signupRole === 'CUSTOMER' ? custData : compData
-    if ((data as typeof custData).password !== (data as typeof custData).confirmPassword) {
-      toast.error('Passwords do not match')
-      return
-    }
 
-    if (signupRole === 'COMPANY') {
-      const country = countries.find(c => c.id === compData.countryId)
-      const validation = validateCompanyForm(country?.code || 'PK', compData, compData.companyType === 'HOTEL')
-      if (!validation.valid) {
-        toast.error(validation.message || 'Please check your form fields')
-        return
-      }
-      const docValidation = validateCompanyDocuments(companyDocuments, compData.companyType === 'HOTEL')
-      if (!docValidation.valid) {
-        toast.error(docValidation.error || 'Please upload all required documents')
-        return
-      }
-    }
-
+    // Validate passwords match
     if (signupRole === 'CUSTOMER') {
-      const cc = customerCountryCode
-      const checks = [
-        validateRequiredText(custData.fullName, 'Full name', 2),
-        validateRequiredText(custData.fatherName, 'Father name', 2),
-        validateCountryField(cc, 'nationalId', custData.cnicOrId),
-        validateCountryField(cc, 'phone', custData.phone),
-        validateEmail(custData.email),
-        validateRequiredText(custData.address, 'Address', 5),
-        validateCountryField(cc, 'phone', custData.emergencyPhone),
-      ]
-      const failed = checks.find(c => !c.valid)
-      if (failed) {
-        toast.error(failed.message || 'Please check your form fields')
+      if (!custData.fullName.trim() || custData.fullName.trim().length < 2) {
+        toast.error('Please enter your full name (at least 2 characters)')
         return
       }
+      if (!custData.phone.trim()) {
+        toast.error('Please enter your phone number')
+        return
+      }
+      const emailCheck = validateEmail(custData.email)
+      if (!emailCheck.valid) { toast.error(emailCheck.message || 'Invalid email'); return }
+      if (!custData.countryId) { toast.error('Please select your country'); return }
+      if (custData.password.length < 8) { toast.error('Password must be at least 8 characters'); return }
+      if (custData.password !== custData.confirmPassword) { toast.error('Passwords do not match'); return }
+    } else {
+      if (!compData.companyName.trim()) { toast.error('Please enter your company name'); return }
+      if (!compData.ownerName.trim()) { toast.error('Please enter the owner name'); return }
+      if (!compData.contactNumber.trim()) { toast.error('Please enter a contact number'); return }
+      const emailCheck = validateEmail(compData.email)
+      if (!emailCheck.valid) { toast.error(emailCheck.message || 'Invalid email'); return }
+      if (!compData.countryId) { toast.error('Please select your country'); return }
+      if (compData.password.length < 8) { toast.error('Password must be at least 8 characters'); return }
+      if (compData.password !== compData.confirmPassword) { toast.error('Passwords do not match'); return }
     }
 
     setLoading(true)
     try {
-      let res: Response
-      if (signupRole === 'COMPANY') {
-        const formData = new FormData()
-        Object.entries(compData).forEach(([key, value]) => formData.append(key, value))
-        appendCompanyDocumentsToFormData(formData, companyDocuments)
-        res = await fetch('/api/auth/register', {
-          method: 'POST',
-          credentials: 'include',
-          body: formData,
-        })
+      let body: Record<string, string>
+      if (signupRole === 'CUSTOMER') {
+        body = { type: 'customer', ...custData }
       } else {
-        res = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ type: 'customer', ...custData }),
-        })
+        body = { type: 'company', ...compData }
       }
+
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(body),
+      })
       const json = await res.json()
       if (json.success) {
         toast.success('Registration submitted! Awaiting admin approval.')
-        if (json.data?.otp) toast.info(`[Dev] Your OTP: ${json.data.otp}`, { duration: 10000 })
         setTab('login')
       } else {
         toast.error(json.error)
@@ -220,13 +162,6 @@ function AuthContent() {
     } catch { toast.error('Registration failed.') }
     finally { setLoading(false) }
   }
-
-  const handleCompChange = useCallback((updates: Partial<typeof compData>) => {
-    setCompData(prev => ({ ...prev, ...updates }))
-  }, [])
-
-  const customerCountryCode = countries.find(c => c.id === custData.countryId)?.code || selectedCountryCode || 'PK'
-  const customerCountryConfig = getCountryFormConfig(customerCountryCode)
 
   const inputClass = "input-dark text-sm"
   const labelClass = "text-xs font-medium text-slate-400 mb-1 block"
@@ -250,27 +185,15 @@ function AuthContent() {
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-3">
             <img src="/logo.png" alt="NextTripy Logo" className="w-10 h-10 rounded-xl" />
-            <span className="font-heading font-bold text-xl gradient-text">NextTripy</span>
+            <span className="font-heading font-bold text-xl">
+              <span className="text-slate-900 dark:text-white">Next</span>
+              <span className="text-blue-500">Tripy</span>
+            </span>
           </Link>
           <p className="text-slate-400 text-sm">Car Rentals · Hotel Rooms · Worldwide</p>
         </div>
 
         <div className="glass-card p-6 md:p-8">
-
-          <div className="mb-6">
-            <label className={labelClass}>Select Your Country</label>
-            <select
-              value={selectedCountryCode}
-              onChange={e => handleGlobalCountryChange(e.target.value)}
-              className={`${inputClass} font-semibold`}
-            >
-              {countries.map(c => (
-                <option key={c.code} value={c.code}>
-                  {getFlagEmoji(c.code)} {c.name} ({c.currency})
-                </option>
-              ))}
-            </select>
-          </div>
 
           <div className="flex gap-1 p-1 glass rounded-xl mb-6">
             {(['login', 'signup'] as AuthTab[]).map(t => (
@@ -298,9 +221,6 @@ function AuthContent() {
                   <input className={inputClass} type="password" placeholder="••••••••"
                     value={loginData.password} onChange={e => setLoginData(p => ({ ...p, password: e.target.value }))} required />
                 </div>
-                <div className="text-right">
-                  <button type="button" className="text-xs text-primary hover:text-primary/80 transition-colors">Forgot password?</button>
-                </div>
                 <button type="submit" disabled={loading} className="btn-primary w-full py-3">
                   {loading ? <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Sign In'}
                 </button>
@@ -310,12 +230,13 @@ function AuthContent() {
             {tab === 'signup' && (
               <motion.div key="signup" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
 
+                {/* Role selector */}
                 <div className="flex gap-2 mb-5">
                   {([
                     { role: 'CUSTOMER', icon: '👤', label: 'Customer' },
                     { role: 'COMPANY', icon: '🏢', label: 'Company / Owner' },
                   ] as { role: SignupRole; icon: string; label: string }[]).map(({ role, icon, label }) => (
-                    <button key={role} onClick={() => setSignupRole(role)}
+                    <button key={role} type="button" onClick={() => setSignupRole(role)}
                       className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-medium transition-all ${
                         signupRole === role
                           ? 'border-primary/50 bg-primary/10 text-primary'
@@ -326,162 +247,132 @@ function AuthContent() {
                   ))}
                 </div>
 
-                <form onSubmit={handleRegister} className="space-y-3 max-h-[50vh] overflow-y-auto pr-1">
+                {/* Info banner */}
+                <div className="glass rounded-xl p-3 border border-blue-500/20 bg-blue-500/5 mb-4 text-xs text-blue-300 flex items-start gap-2">
+                  <span className="text-lg leading-none">ℹ️</span>
+                  <span>Quick sign-up — sensitive verification details (ID, license, documents) are collected separately after admin approval.</span>
+                </div>
+
+                <form onSubmit={handleRegister} className="space-y-3">
                   {signupRole === 'CUSTOMER' ? (
                     <>
-                      <div className="grid grid-cols-2 gap-3">
-                        <ValidatedInput
-                          label="Full Name"
-                          value={custData.fullName}
-                          onChange={v => setCustData(p => ({ ...p, fullName: v }))}
-                          validate={v => validateRequiredText(v, 'Full name', 2)}
-                          placeholder="Ali Hassan"
-                        />
-                        <ValidatedInput
-                          label="Father Name"
-                          value={custData.fatherName}
-                          onChange={v => setCustData(p => ({ ...p, fatherName: v }))}
-                          validate={v => validateRequiredText(v, 'Father name', 2)}
-                          placeholder="Hassan Ahmed"
-                        />
+                      <div>
+                        <label className={labelClass}>Full Name *</label>
+                        <input className={inputClass} placeholder="Ali Hassan" value={custData.fullName}
+                          onChange={e => setCustData(p => ({ ...p, fullName: e.target.value }))} required />
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <ValidatedInput
-                          key={`${customerCountryCode}-cust-id`}
-                          label={customerCountryConfig.nationalId.label}
-                          value={custData.cnicOrId}
-                          onChange={v => setCustData(p => ({ ...p, cnicOrId: applyFieldFormat(customerCountryCode, 'nationalId', v) }))}
-                          validate={v => validateCountryField(customerCountryCode, 'nationalId', v)}
-                          hint={customerCountryConfig.nationalId.hint}
-                          example={customerCountryConfig.nationalId.example}
-                          placeholder={customerCountryConfig.nationalId.placeholder}
-                          maxLength={customerCountryConfig.nationalId.maxLength}
-                        />
-                        <div>
-                          <label className={labelClass}>Date of Birth *</label>
-                          <input className={inputClass} type="date" value={custData.dateOfBirth} onChange={e => setCustData(p => ({ ...p, dateOfBirth: e.target.value }))} required />
-                        </div>
+                      <div>
+                        <label className={labelClass}>Email *</label>
+                        <input className={inputClass} type="email" placeholder="you@example.com" value={custData.email}
+                          onChange={e => setCustData(p => ({ ...p, email: e.target.value }))} required />
                       </div>
-                      <ValidatedInput
-                        key={`${customerCountryCode}-cust-phone`}
-                        label="Phone Number"
-                        value={custData.phone}
-                        onChange={v => setCustData(p => ({ ...p, phone: applyFieldFormat(customerCountryCode, 'phone', v) }))}
-                        validate={v => validateCountryField(customerCountryCode, 'phone', v)}
-                        hint={customerCountryConfig.phone.hint}
-                        example={customerCountryConfig.phone.example}
-                        placeholder={customerCountryConfig.phone.placeholder}
-                        maxLength={customerCountryConfig.phone.maxLength}
-                      />
-                      <ValidatedInput
-                        label="Email"
-                        type="email"
-                        value={custData.email}
-                        onChange={v => setCustData(p => ({ ...p, email: v }))}
-                        validate={validateEmail}
-                        placeholder="you@example.com"
-                      />
-                      <ValidatedInput
-                        label="Address"
-                        value={custData.address}
-                        onChange={v => setCustData(p => ({ ...p, address: v }))}
-                        validate={v => validateRequiredText(v, 'Address', 5)}
-                        placeholder={customerCountryConfig.address.placeholder}
-                      />
+                      <div>
+                        <label className={labelClass}>Phone Number *</label>
+                        <input className={inputClass} type="tel" placeholder="+92 300 0000000" value={custData.phone}
+                          onChange={e => setCustData(p => ({ ...p, phone: e.target.value }))} required />
+                      </div>
                       <div>
                         <label className={labelClass}>Country *</label>
-                        <select className={inputClass} value={custData.countryId} onChange={e => {
-                          const matched = countries.find(c => c.id === e.target.value)
-                          if (matched) handleGlobalCountryChange(matched.code)
-                          setCustData(p => ({ ...p, countryId: e.target.value, cnicOrId: '', phone: '', emergencyPhone: '' }))
-                        }} required>
+                        <select className={inputClass} value={custData.countryId}
+                          onChange={e => setCustData(p => ({ ...p, countryId: e.target.value }))} required>
                           <option value="">Select Country</option>
                           {countries.map(c => <option key={c.id} value={c.id}>{getFlagEmoji(c.code)} {c.name}</option>)}
                         </select>
                       </div>
                       <div className="grid grid-cols-2 gap-3">
-                        <div><label className={labelClass}>Emergency Contact Name *</label>
-                          <input className={inputClass} placeholder="Sara Hassan" value={custData.emergencyName} onChange={e => setCustData(p => ({ ...p, emergencyName: e.target.value }))} required /></div>
-                        <ValidatedInput
-                          key={`${customerCountryCode}-emergency-phone`}
-                          label="Emergency Phone"
-                          value={custData.emergencyPhone}
-                          onChange={v => setCustData(p => ({ ...p, emergencyPhone: applyFieldFormat(customerCountryCode, 'phone', v) }))}
-                          validate={v => validateCountryField(customerCountryCode, 'phone', v)}
-                          placeholder={customerCountryConfig.phone.placeholder}
-                          maxLength={customerCountryConfig.phone.maxLength}
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div><label className={labelClass}>Password *</label>
-                          <input className={inputClass} type="password" placeholder="Min 8 chars" value={custData.password} onChange={e => setCustData(p => ({ ...p, password: e.target.value }))} required /></div>
-                        <div><label className={labelClass}>Confirm Password *</label>
-                          <input className={inputClass} type="password" placeholder="Repeat password" value={custData.confirmPassword} onChange={e => setCustData(p => ({ ...p, confirmPassword: e.target.value }))} required /></div>
+                        <div>
+                          <label className={labelClass}>Password *</label>
+                          <input className={inputClass} type="password" placeholder="Min 8 chars" value={custData.password}
+                            onChange={e => setCustData(p => ({ ...p, password: e.target.value }))} required />
+                        </div>
+                        <div>
+                          <label className={labelClass}>Confirm Password *</label>
+                          <input className={inputClass} type="password" placeholder="Repeat password" value={custData.confirmPassword}
+                            onChange={e => setCustData(p => ({ ...p, confirmPassword: e.target.value }))} required />
+                        </div>
                       </div>
                     </>
                   ) : (
                     <>
-                      {/* Business Type Toggle */}
-                      <div className="flex gap-2 mb-3">
+                      {/* Business type toggle */}
+                      <div className="flex gap-2 mb-1">
                         {[
                           { type: 'CAR_RENTAL', label: '🚗 Car Rental' },
                           { type: 'HOTEL', label: '🏨 Hotel' },
                         ].map(opt => (
-                          <button
-                            key={opt.type}
-                            type="button"
+                          <button key={opt.type} type="button"
                             onClick={() => setCompData(p => ({ ...p, companyType: opt.type }))}
                             className={`flex-1 py-2 px-3 rounded-lg border text-xs font-bold transition-all ${
                               compData.companyType === opt.type
                                 ? 'border-primary/50 bg-primary/10 text-primary'
                                 : 'border-white/10 text-slate-400 hover:border-white/20'
-                            }`}
-                          >
+                            }`}>
                             {opt.label}
                           </button>
                         ))}
                       </div>
 
-                      <CompanyFormFields
-                        form={compData}
-                        onChange={handleCompChange}
-                        onCountryChange={(_id, code) => handleGlobalCountryChange(code)}
-                        countries={countries}
-                        countryPosition="bottom"
-                        showDocumentHint={false}
-                        companyType={compData.companyType as 'CAR_RENTAL' | 'HOTEL'}
-                      />
-                      <CompanyDocumentUploads
-                        documents={companyDocuments}
-                        onChange={(docType, file) => setCompanyDocuments(prev => ({ ...prev, [docType]: file }))}
-                        idLabel={countries.find(c => c.id === compData.countryId)?.code === 'PK' ? 'CNIC' : 'National ID'}
-                        licenseLabel={compData.companyType === 'HOTEL' ? 'Hotel License' : 'Business License'}
-                        companyType={compData.companyType as 'CAR_RENTAL' | 'HOTEL'}
-                      />
-                      <div><label className={labelClass}>Email *</label>
-                        <input className={inputClass} type="email" placeholder="company@example.com" value={compData.email} onChange={e => setCompData(p => ({ ...p, email: e.target.value }))} required /></div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className={labelClass}>{compData.companyType === 'HOTEL' ? 'Hotel' : 'Company'} Name *</label>
+                          <input className={inputClass} placeholder="My Business" value={compData.companyName}
+                            onChange={e => setCompData(p => ({ ...p, companyName: e.target.value }))} required />
+                        </div>
+                        <div>
+                          <label className={labelClass}>Owner Name *</label>
+                          <input className={inputClass} placeholder="Full Name" value={compData.ownerName}
+                            onChange={e => setCompData(p => ({ ...p, ownerName: e.target.value }))} required />
+                        </div>
+                      </div>
+                      <div>
+                        <label className={labelClass}>Email *</label>
+                        <input className={inputClass} type="email" placeholder="company@example.com" value={compData.email}
+                          onChange={e => setCompData(p => ({ ...p, email: e.target.value }))} required />
+                      </div>
+                      <div>
+                        <label className={labelClass}>Contact Number *</label>
+                        <input className={inputClass} type="tel" placeholder="+92 300 0000000" value={compData.contactNumber}
+                          onChange={e => setCompData(p => ({ ...p, contactNumber: e.target.value }))} required />
+                      </div>
+                      <div>
+                        <label className={labelClass}>Country *</label>
+                        <select className={inputClass} value={compData.countryId}
+                          onChange={e => setCompData(p => ({ ...p, countryId: e.target.value }))} required>
+                          <option value="">Select Country</option>
+                          {countries.map(c => <option key={c.id} value={c.id}>{getFlagEmoji(c.code)} {c.name}</option>)}
+                        </select>
+                      </div>
 
-                      <div className="glass rounded-xl p-3 border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs text-slate-400">📋 Monthly Subscription</span>
-                          <div className="text-right">
-                            <span className="text-white font-bold text-sm">{subscriptionPreview.price}</span>
-                            <span className="text-slate-500 text-2xs"> / mo</span>
+                      {/* Subscription preview */}
+                      {compData.countryId && (
+                        <div className="glass rounded-xl p-3 border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-slate-400">📋 Monthly Subscription</span>
+                            <div className="text-right">
+                              <span className="text-slate-900 dark:text-white font-bold text-sm">{subscriptionPreview.price}</span>
+                              <span className="text-slate-500 text-2xs"> / mo</span>
+                            </div>
                           </div>
                         </div>
+                      )}
 
-                      </div>
                       <div className="grid grid-cols-2 gap-3">
-                        <div><label className={labelClass}>Password *</label>
-                          <input className={inputClass} type="password" placeholder="Min 8 chars" value={compData.password} onChange={e => setCompData(p => ({ ...p, password: e.target.value }))} required /></div>
-                        <div><label className={labelClass}>Confirm Password *</label>
-                          <input className={inputClass} type="password" placeholder="Repeat password" value={compData.confirmPassword} onChange={e => setCompData(p => ({ ...p, confirmPassword: e.target.value }))} required /></div>
+                        <div>
+                          <label className={labelClass}>Password *</label>
+                          <input className={inputClass} type="password" placeholder="Min 8 chars" value={compData.password}
+                            onChange={e => setCompData(p => ({ ...p, password: e.target.value }))} required />
+                        </div>
+                        <div>
+                          <label className={labelClass}>Confirm Password *</label>
+                          <input className={inputClass} type="password" placeholder="Repeat password" value={compData.confirmPassword}
+                            onChange={e => setCompData(p => ({ ...p, confirmPassword: e.target.value }))} required />
+                        </div>
                       </div>
                     </>
                   )}
 
                   <button type="submit" disabled={loading} className="btn-primary w-full py-3 mt-2">
-                    {loading ? <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Submit Registration'}
+                    {loading ? <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Create Account'}
                   </button>
 
                   <p className="text-xs text-slate-500 text-center">

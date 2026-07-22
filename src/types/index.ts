@@ -50,6 +50,7 @@ export interface User {
   country?: Country
   emergencyName?: string
   emergencyPhone?: string
+  company?: Company
   createdAt: string
   updatedAt: string
 }

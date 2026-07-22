@@ -34,6 +34,7 @@ export async function GET() {
         countryId: user.countryId,
         emailVerified: user.emailVerified,
         phoneVerified: user.phoneVerified,
+        cnicOrId: user.cnicOrId,
         companyId,
       },
     })

@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server'
 import { jwtVerify } from 'jose'
 import { getJwtSecret } from '@/lib/env'
 
-const PUBLIC_PATHS = ['/', '/about', '/auth', '/contact', '/privacy', '/terms', '/api/auth/login', '/api/auth/register', '/api/auth/logout', '/api/countries', '/api/cities']
+const PUBLIC_PATHS = ['/', '/about', '/auth', '/contact', '/privacy', '/terms', '/visit', '/api/auth/login', '/api/auth/register', '/api/auth/logout', '/api/auth/profile', '/api/countries', '/api/cities']
 const COMPANY_PATHS = ['/dashboard/company']
 const HOTEL_PATHS = ['/dashboard/hotel']
 const ADMIN_PATHS = ['/dashboard/admin']

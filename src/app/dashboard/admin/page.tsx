@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
@@ -39,18 +39,20 @@ export default function AdminDashboard() {
   const [bankForm, setBankForm] = useState({ bankName: '', accountNumber: '', accountName: '' })
   const [profileForm, setProfileForm] = useState({ fullName: '', email: '', currentPassword: '', newPassword: '', confirmPassword: '' })
   const [updatingProfile, setUpdatingProfile] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
 
-  const loadData = async () => {
+  const hasFetched = useRef(false)
+
+  const loadData = useCallback(async () => {
     try {
       const meRes = await fetch('/api/auth/me', { credentials: 'include' })
       if (!meRes.ok) {
-        toast.error('Session expired')
+        // Not authenticated — redirect silently without showing toast (may be a normal logout)
         router.push('/auth')
         return
       }
       const meData = await meRes.json()
       if (meData.data?.roleName !== 'ADMIN' && meData.data?.roleName !== 'SUPER_ADMIN') {
-        toast.error('Unauthorized access')
         router.push('/')
         return
       }
@@ -81,14 +83,16 @@ export default function AdminDashboard() {
       }
     } catch (err) {
       console.error('Error loading admin dashboard:', err)
-      toast.error('Failed to load dashboard data')
     } finally {
       setLoading(false)
     }
-  }
+  }, [router])
 
   useEffect(() => {
-    loadData()
+    if (!hasFetched.current) {
+      hasFetched.current = true
+      loadData()
+    }
   }, [loadData])
 
   const handleAdminAction = async (resource: string, id: string, action: string) => {
@@ -708,48 +712,230 @@ export default function AdminDashboard() {
               >
                 <h3 className="font-heading font-bold text-slate-900 dark:text-white text-lg mb-2">Registered Accounts</h3>
 
-                {users.map(u => (
-                  <div key={u.id} className="glass-card p-5 border border-white/5 flex flex-col md:flex-row justify-between gap-4">
-                    <div>
-                      <h4 className="font-bold text-slate-900 dark:text-white text-sm mb-1">{u.fullName || 'No Name'}</h4>
-                      <p className="text-slate-400 text-xs">{u.email} • Role: {u.roleName} • Status: {u.status}</p>
-                      <p className="text-slate-500 text-xs">Phone: {u.phone}</p>
+                {/* User cards grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {users.map(u => {
+                    const roleColors: Record<string, string> = {
+                      ADMIN: 'text-violet-500 bg-violet-500/10 border-violet-500/20',
+                      SUPER_ADMIN: 'text-purple-500 bg-purple-500/10 border-purple-500/20',
+                      COMPANY: 'text-blue-500 bg-blue-500/10 border-blue-500/20',
+                      HOTEL: 'text-cyan-500 bg-cyan-500/10 border-cyan-500/20',
+                      CUSTOMER: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20',
+                    }
+                    const statusColors: Record<string, string> = {
+                      PENDING: 'text-amber-500 bg-amber-500/10',
+                      APPROVED: 'text-emerald-500 bg-emerald-500/10',
+                      REJECTED: 'text-red-500 bg-red-500/10',
+                      SUSPENDED: 'text-orange-500 bg-orange-500/10',
+                      BANNED: 'text-red-700 bg-red-700/10',
+                    }
+                    return (
+                      <button
+                        key={u.id}
+                        onClick={() => setSelectedUser(u)}
+                        className="glass-card p-5 border border-white/5 hover:border-primary/30 text-left transition-all hover:shadow-neon-violet/10 hover:scale-[1.01] group"
+                      >
+                        {/* Avatar + name */}
+                        <div className="flex items-start gap-3 mb-3">
+                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/20 flex items-center justify-center text-lg font-black text-primary flex-shrink-0">
+                            {(u.fullName || u.email)?.[0]?.toUpperCase() || '?'}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h4 className="font-bold text-slate-900 dark:text-white text-sm truncate group-hover:text-primary transition-colors">
+                              {u.fullName || '—'}
+                            </h4>
+                            <p className="text-slate-500 text-xs truncate">{u.email}</p>
+                          </div>
+                        </div>
+
+                        {/* Tags */}
+                        <div className="flex flex-wrap gap-1.5 mb-3">
+                          <span className={`text-2xs px-2 py-0.5 rounded font-bold border ${roleColors[u.roleName] || 'text-slate-400 bg-white/5 border-white/10'}`}>
+                            {u.roleName}
+                          </span>
+                          <span className={`text-2xs px-2 py-0.5 rounded font-bold ${statusColors[u.status] || 'text-slate-400'}`}>
+                            {u.status}
+                          </span>
+                          {(u as User & { cnicOrId?: string }).cnicOrId === 'Pending' && (
+                            <span className="text-2xs px-2 py-0.5 rounded font-bold text-yellow-600 bg-yellow-500/10">Profile Pending</span>
+                          )}
+                          {(u as User & { cnicOrId?: string }).cnicOrId === 'SKIPPED' && (
+                            <span className="text-2xs px-2 py-0.5 rounded font-bold text-slate-500 bg-white/5">Skipped Verify</span>
+                          )}
+                        </div>
+
+                        <p className="text-slate-500 text-xs">📱 {u.phone || '—'}</p>
+
+                        {/* Actions row */}
+                        <div className="flex gap-2 mt-3 pt-3 border-t border-white/5" onClick={e => e.stopPropagation()}>
+                          {u.status === 'PENDING' ? (
+                            <>
+                              <button onClick={() => handleAdminAction('user', u.id, 'approve')}
+                                className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold py-1.5 rounded-lg transition-colors">
+                                Approve
+                              </button>
+                              <button onClick={() => handleAdminAction('user', u.id, 'suspend')}
+                                className="flex-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold py-1.5 rounded-lg transition-colors">
+                                Suspend
+                              </button>
+                            </>
+                          ) : u.status === 'APPROVED' ? (
+                            <button onClick={() => handleAdminAction('user', u.id, 'suspend')}
+                              className="flex-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold py-1.5 rounded-lg transition-colors">
+                              Suspend
+                            </button>
+                          ) : (
+                            <button onClick={() => handleAdminAction('user', u.id, 'restore')}
+                              className="flex-1 bg-primary hover:bg-primary/80 text-white text-xs font-semibold py-1.5 rounded-lg transition-colors">
+                              Restore
+                            </button>
+                          )}
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+
+                {users.length === 0 && (
+                  <div className="glass-card p-12 text-center border border-white/5 text-slate-400 text-sm">No users found.</div>
+                )}
+              </motion.div>
+            )}
+
+            {/* User Details Modal */}
+            {selectedUser && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setSelectedUser(null)}>
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                  onClick={e => e.stopPropagation()}
+                  className="relative w-full max-w-2xl bg-dark-900 border border-white/10 rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto"
+                >
+                  {/* Modal header */}
+                  <div className="sticky top-0 bg-dark-900/95 backdrop-blur-sm border-b border-white/5 flex items-center justify-between px-6 py-4 z-10">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/20 flex items-center justify-center text-lg font-black text-primary">
+                        {(selectedUser.fullName || selectedUser.email)?.[0]?.toUpperCase() || '?'}
+                      </div>
+                      <div>
+                        <h3 className="font-heading font-bold text-slate-900 dark:text-white text-base">
+                          {selectedUser.fullName || selectedUser.email}
+                        </h3>
+                        <p className="text-slate-500 text-xs">{selectedUser.roleName} • {selectedUser.status}</p>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 mt-2 md:mt-0 flex-shrink-0">
-                      {u.status === 'PENDING' ? (
+                    <button onClick={() => setSelectedUser(null)} className="text-slate-400 hover:text-white text-xl">✕</button>
+                  </div>
+
+                  <div className="p-6 space-y-6">
+                    {/* Basic info */}
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Account Info</h4>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { label: 'Full Name', value: selectedUser.fullName },
+                          { label: 'Email', value: selectedUser.email },
+                          { label: 'Phone', value: selectedUser.phone },
+                          { label: 'Status', value: selectedUser.status },
+                          { label: 'Role', value: selectedUser.roleName },
+                          { label: 'Father Name', value: (selectedUser as User & { fatherName?: string }).fatherName },
+                          { label: 'National ID / CNIC', value: (selectedUser as User & { cnicOrId?: string }).cnicOrId },
+                          { label: 'Date of Birth', value: (selectedUser as User & { dateOfBirth?: string }).dateOfBirth },
+                          { label: 'Address', value: (selectedUser as User & { address?: string }).address },
+                          { label: 'Emergency Name', value: (selectedUser as User & { emergencyName?: string }).emergencyName },
+                          { label: 'Emergency Phone', value: (selectedUser as User & { emergencyPhone?: string }).emergencyPhone },
+                          { label: 'Registered On', value: formatDate(selectedUser.createdAt) },
+                        ].map(({ label, value }) => value && value !== 'Pending' && value !== 'SKIPPED' ? (
+                          <div key={label} className="glass p-3 rounded-xl border border-white/5">
+                            <p className="text-slate-500 text-2xs">{label}</p>
+                            <p className="text-slate-900 dark:text-white text-xs font-semibold mt-0.5 break-all">{value}</p>
+                          </div>
+                        ) : null)}
+                      </div>
+                    </div>
+
+                    {/* Company info (if applicable) */}
+                    {(selectedUser as User & { company?: { name: string; ownerName: string; cnicOrId: string; contactNumber: string; whatsAppNumber: string; businessAddress: string; licenseNumber: string; status: string; companyType?: string; documents?: { docType: string; fileUrl: string }[] } }).company && (
+                      <div>
+                        <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Company Info</h4>
+                        <div className="grid grid-cols-2 gap-3">
+                          {[
+                            { label: 'Company Name', value: (selectedUser as User & { company?: { name: string } }).company?.name },
+                            { label: 'Company Type', value: (selectedUser as User & { company?: { companyType?: string } }).company?.companyType },
+                            { label: 'Owner Name', value: (selectedUser as User & { company?: { ownerName: string } }).company?.ownerName },
+                            { label: 'Owner CNIC', value: (selectedUser as User & { company?: { cnicOrId: string } }).company?.cnicOrId },
+                            { label: 'Contact', value: (selectedUser as User & { company?: { contactNumber: string } }).company?.contactNumber },
+                            { label: 'WhatsApp', value: (selectedUser as User & { company?: { whatsAppNumber: string } }).company?.whatsAppNumber },
+                            { label: 'Business Address', value: (selectedUser as User & { company?: { businessAddress: string } }).company?.businessAddress },
+                            { label: 'License Number', value: (selectedUser as User & { company?: { licenseNumber: string } }).company?.licenseNumber },
+                            { label: 'Company Status', value: (selectedUser as User & { company?: { status: string } }).company?.status },
+                          ].map(({ label, value }) => value && value !== 'Pending' ? (
+                            <div key={label} className="glass p-3 rounded-xl border border-white/5">
+                              <p className="text-slate-500 text-2xs">{label}</p>
+                              <p className="text-slate-900 dark:text-white text-xs font-semibold mt-0.5 break-all">{value}</p>
+                            </div>
+                          ) : null)}
+                        </div>
+
+                        {/* Documents */}
+                        {((selectedUser as User & { company?: { documents?: { docType: string; fileUrl: string }[] } }).company?.documents?.length ?? 0) > 0 && (
+                          <div className="mt-4">
+                            <h5 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Uploaded Documents</h5>
+                            <div className="grid grid-cols-3 gap-3">
+                              {(selectedUser as User & { company?: { documents?: { docType: string; fileUrl: string }[] } }).company!.documents!.map(doc => (
+                                <a key={doc.fileUrl} href={doc.fileUrl} target="_blank" rel="noopener noreferrer"
+                                  className="glass border border-white/10 rounded-xl overflow-hidden hover:border-primary/40 transition-colors group">
+                                  {doc.fileUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+                                    <div className="relative">
+                                      <img src={doc.fileUrl} alt={doc.docType} className="w-full h-24 object-cover group-hover:scale-105 transition-transform" />
+                                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                        <span className="text-white text-xs font-bold bg-black/60 px-2 py-1 rounded">View ↗</span>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="h-24 flex items-center justify-center">
+                                      <span className="text-3xl">📄</span>
+                                    </div>
+                                  )}
+                                  <p className="text-2xs text-slate-400 text-center py-2 px-1 truncate">{doc.docType.replace(/_/g, ' ')}</p>
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Action buttons */}
+                    <div className="flex gap-3 pt-2 border-t border-white/5">
+                      {selectedUser.status === 'PENDING' ? (
                         <>
-                          <button
-                            onClick={() => handleAdminAction('user', u.id, 'approve')}
-                            className="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg"
-                          >
-                            Approve
+                          <button onClick={() => { handleAdminAction('user', selectedUser.id, 'approve'); setSelectedUser(null) }}
+                            className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors">
+                            ✓ Approve Account
                           </button>
-                          <button
-                            onClick={() => handleAdminAction('user', u.id, 'suspend')}
-                            className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg"
-                          >
+                          <button onClick={() => { handleAdminAction('user', selectedUser.id, 'suspend'); setSelectedUser(null) }}
+                            className="flex-1 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors">
                             Suspend
                           </button>
                         </>
-                      ) : u.status === 'APPROVED' ? (
-                        <button
-                          onClick={() => handleAdminAction('user', u.id, 'suspend')}
-                          className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg"
-                        >
-                          Suspend
+                      ) : selectedUser.status === 'APPROVED' ? (
+                        <button onClick={() => { handleAdminAction('user', selectedUser.id, 'suspend'); setSelectedUser(null) }}
+                          className="flex-1 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors">
+                          Suspend Account
                         </button>
                       ) : (
-                        <button
-                          onClick={() => handleAdminAction('user', u.id, 'restore')}
-                          className="bg-primary hover:bg-primary/80 text-white text-xs font-semibold px-4 py-2 rounded-lg"
-                        >
-                          Restore
+                        <button onClick={() => { handleAdminAction('user', selectedUser.id, 'restore'); setSelectedUser(null) }}
+                          className="flex-1 bg-primary hover:bg-primary/80 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors">
+                          Restore Account
                         </button>
                       )}
                     </div>
                   </div>
-                ))}
-              </motion.div>
+                </motion.div>
+              </div>
             )}
 
             {activeTab === 'reviews' && (

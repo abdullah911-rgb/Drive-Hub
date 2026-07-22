@@ -59,7 +59,15 @@ export const db = {
   async getUsers() {
     const list = await prisma.user.findMany({
       where: { deletedAt: null },
-      include: { role: true },
+      include: {
+        role: true,
+        company: {
+          include: {
+            documents: { where: { deletedAt: null } },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
     })
     return list.map(withRoleName)
   },

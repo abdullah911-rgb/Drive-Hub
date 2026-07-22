@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
 
     // Send notification to NextTripy inbox
     await sendEmail({
-      to: 'nexttripy@nexttripy.com',
+      to: 'info@nexttripy.com',
       subject: `[Contact Form] ${subject}`,
       title: `New message from ${name}`,
       bodyHtml: `
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
         <p>Thank you for reaching out. We've received your message and will get back to you as soon as possible.</p>
         <p style="margin-top:16px;"><strong>Your message:</strong></p>
         <p style="background:rgba(255,255,255,0.05);padding:12px;border-radius:8px;white-space:pre-wrap;">${message.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>
-        <p style="margin-top:16px;color:#94a3b8;font-size:13px;">If you have any urgent questions, you can also reach us at <a href="mailto:nexttripy@nexttripy.com" style="color:#6366f1;">nexttripy@nexttripy.com</a></p>
+        <p style="margin-top:16px;color:#94a3b8;font-size:13px;">If you have any urgent questions, you can also reach us at <a href="mailto:info@nexttripy.com" style="color:#6366f1;">info@nexttripy.com</a></p>
       `,
       ctaLabel: 'Visit NextTripy',
       ctaUrl: process.env.NEXT_PUBLIC_APP_URL || 'https://nexttripy.com',

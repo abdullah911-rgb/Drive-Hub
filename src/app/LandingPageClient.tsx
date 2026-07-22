@@ -53,9 +53,16 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
   useEffect(() => {
     fetch('/api/auth/me', { credentials: 'include' })
       .then((res) => (res.ok ? res.json() : null))
-      .then((data) => { if (data?.data) setUser(data.data) })
+      .then((data) => {
+        if (data?.data) {
+          setUser(data.data)
+          if (data.data.role === 'CUSTOMER' && data.data.cnicOrId === 'Pending') {
+            router.push('/visit')
+          }
+        }
+      })
       .catch(() => {})
-  }, [])
+  }, [router])
 
   useEffect(() => {
     if (initialCars.length > 0 || initialCompanies.length > 0) return
