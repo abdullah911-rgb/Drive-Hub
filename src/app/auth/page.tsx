@@ -19,6 +19,13 @@ function AuthContent() {
   const [tab, setTab] = useState<AuthTab>('login')
   const [signupRole, setSignupRole] = useState<SignupRole>('CUSTOMER')
   const [loading, setLoading] = useState(false)
+
+  // Password visibility toggles
+  const [showLoginPw, setShowLoginPw] = useState(false)
+  const [showCustPw, setShowCustPw] = useState(false)
+  const [showCustConfPw, setShowCustConfPw] = useState(false)
+  const [showCompPw, setShowCompPw] = useState(false)
+  const [showCompConfPw, setShowCompConfPw] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -218,8 +225,14 @@ function AuthContent() {
                 </div>
                 <div>
                   <label className={labelClass}>Password</label>
-                  <input className={inputClass} type="password" placeholder="••••••••"
-                    value={loginData.password} onChange={e => setLoginData(p => ({ ...p, password: e.target.value }))} required />
+                  <div className="relative">
+                    <input className={inputClass} type={showLoginPw ? 'text' : 'password'} placeholder="••••••••"
+                      value={loginData.password} onChange={e => setLoginData(p => ({ ...p, password: e.target.value }))} required />
+                    <button type="button" onClick={() => setShowLoginPw(v => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors text-sm select-none">
+                      {showLoginPw ? '🙈' : '👁️'}
+                    </button>
+                  </div>
                 </div>
                 <button type="submit" disabled={loading} className="btn-primary w-full py-3">
                   {loading ? <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Sign In'}
@@ -282,13 +295,25 @@ function AuthContent() {
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className={labelClass}>Password *</label>
-                          <input className={inputClass} type="password" placeholder="Min 8 chars" value={custData.password}
-                            onChange={e => setCustData(p => ({ ...p, password: e.target.value }))} required />
+                          <div className="relative">
+                            <input className={inputClass} type={showCustPw ? 'text' : 'password'} placeholder="Min 8 chars" value={custData.password}
+                              onChange={e => setCustData(p => ({ ...p, password: e.target.value }))} required />
+                            <button type="button" onClick={() => setShowCustPw(v => !v)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors text-sm select-none">
+                              {showCustPw ? '🙈' : '👁️'}
+                            </button>
+                          </div>
                         </div>
                         <div>
                           <label className={labelClass}>Confirm Password *</label>
-                          <input className={inputClass} type="password" placeholder="Repeat password" value={custData.confirmPassword}
-                            onChange={e => setCustData(p => ({ ...p, confirmPassword: e.target.value }))} required />
+                          <div className="relative">
+                            <input className={inputClass} type={showCustConfPw ? 'text' : 'password'} placeholder="Repeat password" value={custData.confirmPassword}
+                              onChange={e => setCustData(p => ({ ...p, confirmPassword: e.target.value }))} required />
+                            <button type="button" onClick={() => setShowCustConfPw(v => !v)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors text-sm select-none">
+                              {showCustConfPw ? '🙈' : '👁️'}
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </>
@@ -359,13 +384,25 @@ function AuthContent() {
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className={labelClass}>Password *</label>
-                          <input className={inputClass} type="password" placeholder="Min 8 chars" value={compData.password}
-                            onChange={e => setCompData(p => ({ ...p, password: e.target.value }))} required />
+                          <div className="relative">
+                            <input className={inputClass} type={showCompPw ? 'text' : 'password'} placeholder="Min 8 chars" value={compData.password}
+                              onChange={e => setCompData(p => ({ ...p, password: e.target.value }))} required />
+                            <button type="button" onClick={() => setShowCompPw(v => !v)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors text-sm select-none">
+                              {showCompPw ? '🙈' : '👁️'}
+                            </button>
+                          </div>
                         </div>
                         <div>
                           <label className={labelClass}>Confirm Password *</label>
-                          <input className={inputClass} type="password" placeholder="Repeat password" value={compData.confirmPassword}
-                            onChange={e => setCompData(p => ({ ...p, confirmPassword: e.target.value }))} required />
+                          <div className="relative">
+                            <input className={inputClass} type={showCompConfPw ? 'text' : 'password'} placeholder="Repeat password" value={compData.confirmPassword}
+                              onChange={e => setCompData(p => ({ ...p, confirmPassword: e.target.value }))} required />
+                            <button type="button" onClick={() => setShowCompConfPw(v => !v)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors text-sm select-none">
+                              {showCompConfPw ? '🙈' : '👁️'}
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </>

@@ -40,6 +40,9 @@ export default function AdminDashboard() {
   const [profileForm, setProfileForm] = useState({ fullName: '', email: '', currentPassword: '', newPassword: '', confirmPassword: '' })
   const [updatingProfile, setUpdatingProfile] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [showAdminCurPw, setShowAdminCurPw] = useState(false)
+  const [showAdminNewPw, setShowAdminNewPw] = useState(false)
+  const [showAdminConfPw, setShowAdminConfPw] = useState(false)
 
   const hasFetched = useRef(false)
 
@@ -358,10 +361,17 @@ export default function AdminDashboard() {
                      const subStatus = companySub?.status || 'UNSUBSCRIBED'
  
                      return (
-                       <div key={comp.id} className="glass-card p-5 border border-white/5 flex flex-col md:flex-row justify-between gap-4">
+                       <div
+                         key={comp.id}
+                         onClick={() => {
+                           const matchingUser = users.find(u => u.id === comp.userId)
+                           if (matchingUser) setSelectedUser(matchingUser)
+                         }}
+                         className="glass-card p-5 border border-white/5 flex flex-col md:flex-row justify-between gap-4 cursor-pointer hover:border-primary/30 transition-all hover:shadow-neon-violet/5"
+                       >
                          <div>
                           <div className="flex items-center gap-2 mb-1.5 flex-wrap text-slate-900 dark:text-white">
-                             <h4 className="font-bold text-sm">{comp.name}</h4>
+                             <h4 className="font-bold text-sm group-hover:text-primary transition-colors">{comp.name}</h4>
                             <span className={`text-3xs px-2 py-0.5 rounded border font-semibold ${
                               comp.status === 'APPROVED' 
                                 ? 'text-emerald-400 border-emerald-400/20 bg-emerald-400/5' 
@@ -385,23 +395,16 @@ export default function AdminDashboard() {
                           <p className="text-slate-400 text-xs">Phone: {comp.contactNumber} • WhatsApp: {comp.whatsAppNumber}</p>
                           <p className="text-slate-500 text-xs mt-1">Address: {comp.businessAddress}</p>
 
-                          {(comp as { documents?: { docType: string; fileUrl: string }[] }).documents?.length ? (
-                            <div className="mt-3 flex flex-wrap gap-2">
-                              {(comp as { documents: { docType: string; fileUrl: string }[] }).documents.map(doc => (
-                                <a
-                                  key={`${comp.id}-${doc.docType}`}
-                                  href={doc.fileUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-2xs px-2 py-1 rounded border border-cyan-400/20 bg-cyan-400/5 text-cyan-300 hover:bg-cyan-400/10 transition-colors"
-                                >
-                                  📎 {doc.docType.replace(/_/g, ' ')}
-                                </a>
-                              ))}
-                            </div>
-                          ) : (
-                            <p className="text-2xs text-amber-400 mt-2">No verification documents uploaded</p>
-                          )}
+                          {/* Document count badge — click card to view full documents */}
+                          <div className="mt-2 flex items-center gap-2">
+                            {(comp as { documents?: { docType: string; fileUrl: string }[] }).documents?.length ? (
+                              <span className="inline-flex items-center gap-1 text-2xs px-2 py-0.5 rounded border border-cyan-400/20 bg-cyan-400/5 text-cyan-300 font-semibold">
+                                📎 {(comp as { documents: { docType: string; fileUrl: string }[] }).documents.length} document{(comp as { documents: { docType: string; fileUrl: string }[] }).documents.length !== 1 ? 's' : ''} uploaded (Click to View)
+                              </span>
+                            ) : (
+                              <span className="text-2xs text-amber-400">⚠ No documents uploaded</span>
+                            )}
+                          </div>
 
                           {(() => {
                             const code = COUNTRIES.find(c => c.name === comp.country?.name || c.code === comp.country?.code)?.code
@@ -423,7 +426,7 @@ export default function AdminDashboard() {
                             )
                           })()}
                         </div>
-                        <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row items-stretch sm:items-center md:items-stretch lg:items-center gap-2 mt-2 md:mt-0 flex-shrink-0 justify-center">
+                        <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row items-stretch sm:items-center md:items-stretch lg:items-center gap-2 mt-2 md:mt-0 flex-shrink-0 justify-center" onClick={e => e.stopPropagation()}>
 
                           {comp.status === 'PENDING' && (
                             <div className="flex gap-2">
@@ -887,7 +890,7 @@ export default function AdminDashboard() {
                               {(selectedUser as User & { company?: { documents?: { docType: string; fileUrl: string }[] } }).company!.documents!.map(doc => (
                                 <a key={doc.fileUrl} href={doc.fileUrl} target="_blank" rel="noopener noreferrer"
                                   className="glass border border-white/10 rounded-xl overflow-hidden hover:border-primary/40 transition-colors group">
-                                  {doc.fileUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+                                  {!doc.fileUrl.toLowerCase().endsWith('.pdf') ? (
                                     <div className="relative">
                                       <img src={doc.fileUrl} alt={doc.docType} className="w-full h-24 object-cover group-hover:scale-105 transition-transform" />
                                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
@@ -895,7 +898,7 @@ export default function AdminDashboard() {
                                       </div>
                                     </div>
                                   ) : (
-                                    <div className="h-24 flex items-center justify-center">
+                                    <div className="h-24 flex items-center justify-center bg-white/5">
                                       <span className="text-3xl">📄</span>
                                     </div>
                                   )}
@@ -1028,33 +1031,51 @@ export default function AdminDashboard() {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
                         <label className="block text-slate-400 text-xs font-semibold mb-1.5">Current Password</label>
-                        <input
-                          type="password"
-                          value={profileForm.currentPassword}
-                          onChange={e => setProfileForm(prev => ({ ...prev, currentPassword: e.target.value }))}
-                          className="w-full bg-elevated border border-border rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-primary/50 transition-colors"
-                          placeholder="••••••••"
-                        />
+                        <div className="relative">
+                          <input
+                            type={showAdminCurPw ? 'text' : 'password'}
+                            value={profileForm.currentPassword}
+                            onChange={e => setProfileForm(prev => ({ ...prev, currentPassword: e.target.value }))}
+                            className="w-full bg-elevated border border-border rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-primary/50 transition-colors pr-10"
+                            placeholder="••••••••"
+                          />
+                          <button type="button" onClick={() => setShowAdminCurPw(v => !v)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors text-sm select-none">
+                            {showAdminCurPw ? '🙈' : '👁️'}
+                          </button>
+                        </div>
                       </div>
                       <div>
                         <label className="block text-slate-400 text-xs font-semibold mb-1.5">New Password</label>
-                        <input
-                          type="password"
-                          value={profileForm.newPassword}
-                          onChange={e => setProfileForm(prev => ({ ...prev, newPassword: e.target.value }))}
-                          className="w-full bg-elevated border border-border rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-primary/50 transition-colors"
-                          placeholder="Min 8 characters"
-                        />
+                        <div className="relative">
+                          <input
+                            type={showAdminNewPw ? 'text' : 'password'}
+                            value={profileForm.newPassword}
+                            onChange={e => setProfileForm(prev => ({ ...prev, newPassword: e.target.value }))}
+                            className="w-full bg-elevated border border-border rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-primary/50 transition-colors pr-10"
+                            placeholder="Min 8 characters"
+                          />
+                          <button type="button" onClick={() => setShowAdminNewPw(v => !v)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors text-sm select-none">
+                            {showAdminNewPw ? '🙈' : '👁️'}
+                          </button>
+                        </div>
                       </div>
                       <div>
                         <label className="block text-slate-400 text-xs font-semibold mb-1.5">Confirm New Password</label>
-                        <input
-                          type="password"
-                          value={profileForm.confirmPassword}
-                          onChange={e => setProfileForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                          className="w-full bg-elevated border border-border rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-primary/50 transition-colors"
-                          placeholder="Repeat new password"
-                        />
+                        <div className="relative">
+                          <input
+                            type={showAdminConfPw ? 'text' : 'password'}
+                            value={profileForm.confirmPassword}
+                            onChange={e => setProfileForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                            className="w-full bg-elevated border border-border rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-primary/50 transition-colors pr-10"
+                            placeholder="Repeat new password"
+                          />
+                          <button type="button" onClick={() => setShowAdminConfPw(v => !v)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors text-sm select-none">
+                            {showAdminConfPw ? '🙈' : '👁️'}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
