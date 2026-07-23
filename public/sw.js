@@ -1,4 +1,4 @@
-const CACHE_NAME = 'drivehub-v1'
+const CACHE_NAME = 'nexttripy-v2'
 const PRECACHE_URLS = ['/']
 
 self.addEventListener('install', event => {
@@ -18,11 +18,26 @@ self.addEventListener('activate', event => {
 })
 
 self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET') return
+  const { request } = event
 
+  // Never intercept non-GET requests (POST, PUT, DELETE, etc.)
+  // Returning without calling respondWith() lets the browser handle it natively
+  if (request.method !== 'GET') return
+
+  // Never intercept API calls — always go to network for fresh data
+  if (request.url.includes('/api/')) return
+
+  // For GET page/asset requests: network-first, fallback to cache
   event.respondWith(
-    fetch(event.request)
-      .then(response => response)
-      .catch(() => caches.match(event.request))
+    fetch(request)
+      .then(response => {
+        // Only cache valid responses for same-origin requests
+        if (response && response.status === 200 && request.url.startsWith(self.location.origin)) {
+          const responseClone = response.clone()
+          caches.open(CACHE_NAME).then(cache => cache.put(request, responseClone))
+        }
+        return response
+      })
+      .catch(() => caches.match(request))
   )
 })
