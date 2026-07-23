@@ -186,10 +186,10 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
 
       <div className="relative z-10 flex flex-col min-h-screen pt-16">
         {/* Top Ad (Navbar & Hero Gap) */}
-        <GoogleAd className="mt-4 mb-0" />
+        <GoogleAd className="mt-2 mb-0" />
 
         {/* Hero */}
-        <section className="px-6 pb-10 md:pb-20 pt-2 md:pt-4">
+        <section className="px-6 pb-6 pt-2">
           <div className="container-app max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             {/* Left side: Content */}
             <motion.div
@@ -305,12 +305,12 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
         </section>
 
         {/* Ad Under Hero Images */}
-        <GoogleAd className="mb-8" maxWidthClass="max-w-3xl" />
+        <GoogleAd className="mb-2" maxWidthClass="max-w-3xl" />
 
         {/* Features */}
-        <section className="px-6 pb-8">
+        <section className="px-6 py-6">
           <div className="container-app max-w-5xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {featuresList.map((f, i) => (
                 <motion.div
                   key={f.title}
@@ -333,13 +333,13 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
         {/* Stats */}
         {statItems.length > 0 && (
           <motion.section
-            className="px-6 pb-20"
+            className="px-6 pb-6"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.35 }}
           >
             <div className="container-app max-w-3xl mx-auto">
-              <div className="flex flex-wrap justify-center gap-x-12 gap-y-6 pt-8 border-t border-border">
+              <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 pt-4 border-t border-border">
                 {statItems.map(stat => (
                   <div key={stat.label} className="text-center min-w-[100px]">
                     <div className="text-3xl font-heading font-black text-slate-900 dark:text-white">{stat.value}</div>
@@ -352,9 +352,9 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
         )}
 
         {brands.length > 0 && (
-          <section id="brands" className="px-6 py-16 border-t border-border/30">
+          <section id="brands" className="px-6 py-6 border-t border-border/30">
             <div className="container-app max-w-6xl mx-auto">
-              <div className="mb-8">
+              <div className="mb-4">
                 <h2 className="font-heading font-black text-2xl md:text-3xl text-slate-900 dark:text-white mb-2">Popular brands</h2>
                 <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Manufacturers currently listed on the site</p>
               </div>
@@ -373,9 +373,9 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
           </section>
         )}
 
-        <section id="cars" className="px-6 py-16 border-t border-border/30">
+        <section id="cars" className="px-6 py-6 border-t border-border/30">
           <div className="container-app max-w-6xl mx-auto">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6">
               <div>
                 <h2 className="font-heading font-black text-2xl md:text-3xl text-slate-900 dark:text-white mb-2">Available cars</h2>
                 <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Hand-picked listings from our rental partners — contact them directly when you&apos;re ready</p>
@@ -386,11 +386,11 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
             </div>
 
             {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                 {Array.from({ length: 8 }).map((_, i) => <CarCardSkeleton key={i} />)}
               </div>
             ) : featuredCars.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                 {featuredCars.map((car, i) => <CarCard key={car.id} car={car} priority={i < 4} />)}
               </div>
             ) : (
@@ -401,9 +401,9 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
           </div>
         </section>
 
-        <section id="companies" className="px-6 py-16 border-t border-border/30">
+        <section id="companies" className="px-6 py-6 border-t border-border/30">
           <div className="container-app max-w-6xl mx-auto">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6">
               <div>
                 <h2 className="font-heading font-black text-2xl md:text-3xl text-slate-900 dark:text-white mb-2">Our rental partners</h2>
                 <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Local companies with vehicles ready for your next journey</p>
@@ -414,13 +414,13 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
             </div>
 
             {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {Array.from({ length: 3 }).map((_, i) => (
                   <div key={i} className="glass-card h-40 animate-pulse rounded-2xl" />
                 ))}
               </div>
             ) : carCompanies.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {carCompanies.map(company => <CompanyCard key={company.id} company={company} />)}
               </div>
             ) : (
@@ -431,9 +431,9 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
           </div>
         </section>
 
-        <section id="hotel-partners" className="px-6 py-16 border-t border-border/30">
+        <section id="hotel-partners" className="px-6 py-6 border-t border-border/30">
           <div className="container-app max-w-6xl mx-auto">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6">
               <div>
                 <h2 className="font-heading font-black text-2xl md:text-3xl text-slate-900 dark:text-white mb-2">Hotel partners</h2>
                 <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Comfortable stays from hotels we&apos;ve verified and approved</p>
@@ -444,13 +444,13 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
             </div>
 
             {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {Array.from({ length: 3 }).map((_, i) => (
                   <div key={i} className="glass-card h-40 animate-pulse rounded-2xl" />
                 ))}
               </div>
             ) : hotelCompanies.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {hotelCompanies.map(company => <CompanyCard key={company.id} company={company} />)}
               </div>
             ) : (
@@ -462,9 +462,9 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
         </section>
 
         {/* Hotels Section */}
-        <section id="hotels" className="px-6 py-16 border-t border-border/30">
+        <section id="hotels" className="px-6 py-6 border-t border-border/30">
           <div className="container-app max-w-6xl mx-auto">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6">
               <div>
                 <h2 className="font-heading font-black text-2xl md:text-3xl text-slate-900 dark:text-white mb-2">Featured hotel rooms</h2>
                 <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">A few of our latest room listings — more added every week</p>
@@ -475,13 +475,13 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
             </div>
 
             {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {Array.from({ length: 3 }).map((_, i) => (
                   <div key={i} className="glass-card h-72 animate-pulse rounded-2xl" />
                 ))}
               </div>
             ) : featuredRooms.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {featuredRooms.map((room, i) => (
                   <motion.div
                     key={room.id}
@@ -528,7 +528,7 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
         </section>
 
         {(!user || (user.role === 'CUSTOMER' && user.status === 'APPROVED')) && (
-          <section className="px-6 py-16 border-t border-border/30">
+          <section className="px-6 py-6 border-t border-border/30">
             <motion.div
               className="container-app max-w-2xl mx-auto text-center glass-card p-8 md:p-10"
               initial={{ opacity: 0, y: 16 }}

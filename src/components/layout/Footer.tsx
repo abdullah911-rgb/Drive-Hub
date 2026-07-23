@@ -3,60 +3,23 @@ import Image from 'next/image'
 
 export default function Footer() {
   return (
-    <footer className="border-t border-border bg-card mt-28">
-      <div className="container-app pt-12 pb-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
-
-          <div className="md:col-span-2">
-            <div className="flex items-center gap-2 mb-3">
-              <Image src="/logo.png" alt="NextTripy Logo" width={36} height={36} className="rounded-md" />
-              <span className="font-heading font-bold text-lg text-slate-900 dark:text-white">NextTripy</span>
-            </div>
-            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed max-w-sm">
-              A friendly marketplace for car rentals and hotel rooms. We help you find great options — you book directly with the provider.
-            </p>
+    <footer className="border-t border-white/10 bg-slate-900 dark:bg-black mt-0">
+      <div className="container-app py-3 px-6">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Image src="/logo.png" alt="NextTripy Logo" width={24} height={24} className="rounded" />
+            <span className="font-heading font-bold text-sm text-white">
+              Next<span className="text-primary">Tripy</span>
+            </span>
           </div>
-
-          <div>
-            <h4 className="font-heading font-bold text-slate-900 dark:text-white mb-4">Platform</h4>
-            <ul className="space-y-2.5">
-              {[
-                { href: '/about', label: 'About Us' },
-                { href: '/marketplace', label: 'Browse Cars' },
-                { href: '/marketplace/rooms', label: 'Browse Hotels' },
-                { href: '/marketplace/companies', label: 'Partners' },
-                { href: '/auth', label: 'Sign In' },
-                { href: '/auth?tab=signup', label: 'Register' },
-              ].map(l => (
-                <li key={l.href}>
-                  <Link href={l.href} className="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors text-sm font-medium">{l.label}</Link>
-                </li>
-              ))}
-            </ul>
+          <div className="flex items-center gap-4 text-xs">
+            <Link href="/about" className="text-slate-400 hover:text-primary transition-colors">About</Link>
+            <Link href="/marketplace" className="text-slate-400 hover:text-primary transition-colors">Cars</Link>
+            <Link href="/marketplace/rooms" className="text-slate-400 hover:text-primary transition-colors">Hotels</Link>
+            <Link href="/contact" className="text-slate-400 hover:text-primary transition-colors">Contact</Link>
           </div>
-
-          <div>
-            <h4 className="font-heading font-bold text-slate-900 dark:text-white mb-4">Legal</h4>
-            <ul className="space-y-2.5">
-              {[
-                { href: '/privacy', label: 'Privacy Policy' },
-                { href: '/terms', label: 'Terms & Conditions' },
-                { href: '/contact', label: 'Contact Us' },
-              ].map(l => (
-                <li key={l.href}>
-                  <Link href={l.href} className="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors text-sm font-medium">{l.label}</Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        <div className="border-t border-white/5 mt-10 pt-4 flex flex-col items-center justify-center text-center gap-0">
-          <p className="text-slate-500 dark:text-slate-400 text-xs max-w-2xl leading-normal">
-            NextTripy is a marketplace platform only. Rental and hotel agreements are made directly between customers and companies.
-          </p>
-          <p className="text-slate-600 dark:text-slate-500 text-xs font-semibold mt-1">
-            © 2026 NextTripy Marketplace. All rights reserved.
+          <p className="text-slate-500 text-xs">
+            © {new Date().getFullYear()} NextTripy
           </p>
         </div>
       </div>
