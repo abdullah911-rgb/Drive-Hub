@@ -1,0 +1,13 @@
+---
+description: Always commit and push completed work to GitHub main
+alwaysApply: true
+---
+
+# Always push to GitHub main
+
+After finishing code changes the user asked for:
+
+1. Commit the relevant files with a concise message (follow the repo's git commit protocol).
+2. Push to `origin main` immediately — do not wait to be asked again.
+3. If the push is rejected, `git pull --rebase origin main`, resolve conflicts if needed, then push again.
+4. Never force-push to `main` unless the user explicitly requests it.
