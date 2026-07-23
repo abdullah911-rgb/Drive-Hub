@@ -115,6 +115,10 @@ async function registerCompany(data: {
       return NextResponse.json({ success: false, error: 'Please fill in all required fields' }, { status: 400 })
     }
 
+    if (!data.countryId) {
+      return NextResponse.json({ success: false, error: 'Country selection is required.' }, { status: 400 })
+    }
+
     const existing = await db.getUserByEmail(data.email)
     if (existing) return NextResponse.json({ success: false, error: 'This email is already registered.' }, { status: 409 })
 
@@ -154,7 +158,7 @@ async function registerCompany(data: {
       phoneVerified: false,
       fullName: data.ownerName,
       cnicOrId: 'Pending',
-      countryId: data.countryId || undefined,
+      countryId: data.countryId,
       cityId,
     })
 
@@ -170,7 +174,7 @@ async function registerCompany(data: {
       businessAddress: 'Pending',
       licenseNumber: 'Pending',
       cityId,
-      countryId: data.countryId || 'country-pk',
+      countryId: data.countryId,
       status: 'PENDING',
       companyType,
     })
