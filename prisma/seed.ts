@@ -39,6 +39,7 @@ async function main() {
   const roles = [
     { name: RoleName.CUSTOMER, description: 'Car rental customer' },
     { name: RoleName.COMPANY, description: 'Car rental company or owner' },
+    { name: RoleName.HOTEL, description: 'Hotel owner or manager' },
     { name: RoleName.ADMIN, description: 'Platform administrator' },
     { name: RoleName.SUPER_ADMIN, description: 'Super administrator' },
   ]
@@ -86,12 +87,29 @@ async function main() {
 
   if (adminEmail && adminPassword) {
     const roleSuperAdmin = await prisma.role.findUniqueOrThrow({ where: { name: RoleName.SUPER_ADMIN } })
-    const existingAdmin = await prisma.user.findFirst({
+    const passwordHash = await bcrypt.hash(adminPassword, 12)
+    const existingByEmail = await prisma.user.findUnique({ where: { email: adminEmail } })
+    const existingAdmin = existingByEmail || await prisma.user.findFirst({
       where: { roleId: roleSuperAdmin.id, deletedAt: null },
     })
 
-    if (!existingAdmin) {
-      const passwordHash = await bcrypt.hash(adminPassword, 12)
+    if (existingAdmin) {
+      await prisma.user.update({
+        where: { id: existingAdmin.id },
+        data: {
+          email: adminEmail,
+          phone: adminPhone,
+          passwordHash,
+          roleId: roleSuperAdmin.id,
+          status: ApprovalStatus.APPROVED,
+          fullName: existingAdmin.fullName || 'Administrator',
+          emailVerified: true,
+          phoneVerified: true,
+          deletedAt: null,
+        },
+      })
+      console.log(`Admin account ready for ${adminEmail}`)
+    } else {
       await prisma.user.create({
         data: {
           email: adminEmail,
@@ -105,8 +123,6 @@ async function main() {
         },
       })
       console.log(`Admin account created for ${adminEmail}`)
-    } else {
-      console.log('Admin account already exists — skipped')
     }
   } else {
     console.log('Set ADMIN_EMAIL and ADMIN_PASSWORD to create the first admin account')
