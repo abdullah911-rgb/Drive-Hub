@@ -5,6 +5,14 @@ import { saveCompanyDocument } from '@/lib/uploads'
 import { prisma } from '@/lib/prisma'
 import { v4 as uuidv4 } from 'uuid'
 
+function asUploadFile(entry: FormDataEntryValue | null): File | null {
+  if (!entry || typeof entry === 'string') return null
+  const file = entry as File
+  if (typeof file.arrayBuffer !== 'function' || typeof file.size !== 'number') return null
+  if (!file.size) return null
+  return file
+}
+
 export async function POST(request: NextRequest) {
   try {
     const currentUser = await getCurrentUser()
@@ -69,14 +77,9 @@ export async function POST(request: NextRequest) {
       const businessAddress = (formData.get('businessAddress') as string)?.trim()
       const whatsAppNumber = (formData.get('whatsAppNumber') as string)?.trim()
       const countryId = (formData.get('countryId') as string)?.trim()
-      const licenseFile = formData.get('licenseDocument') as File | null
-      const cnicFront = formData.get('cnicFront') as File | null
-      const cnicBack = formData.get('cnicBack') as File | null
-
       if (!ownerName || !cnicOrId || !licenseNumber || !businessAddress || !whatsAppNumber || !countryId) {
         return NextResponse.json({ success: false, error: 'All company fields are required' }, { status: 400 })
       }
-      // Documents are now optional; we process whichever ones are provided.
 
       // Get company associated with this user
       const user = await prisma.user.findUnique({
@@ -102,29 +105,43 @@ export async function POST(request: NextRequest) {
         status: 'PENDING',
       })
 
-      // Save uploaded documents
-      try {
-        const documents: { id: string; companyId: string; docType: string; fileUrl: string }[] = []
-        const docSaves = [
-          { file: licenseFile, docType: 'LICENSE_FRONT' as const },
-          { file: cnicFront, docType: 'CNIC_FRONT' as const },
-          { file: cnicBack, docType: 'CNIC_BACK' as const },
-        ]
-        for (const { file, docType } of docSaves) {
-          if (!file || file.size === 0) continue
-          try {
-            // Use saveCompanyDocument for proper saving
-            const fileUrl = await saveCompanyDocument(companyId, docType, file)
-            documents.push({ id: uuidv4(), companyId, docType, fileUrl })
-          } catch (docErr) {
-            console.error(`Error saving document ${docType}:`, docErr)
-          }
+      // Save uploaded documents — failures must not be silent
+      const documents: { id: string; companyId: string; docType: string; fileUrl: string }[] = []
+      const docSaves: { entry: FormDataEntryValue | null; docType: 'LICENSE_FRONT' | 'CNIC_FRONT' | 'CNIC_BACK' }[] = [
+        { entry: formData.get('licenseDocument') ?? formData.get('LICENSE_FRONT'), docType: 'LICENSE_FRONT' },
+        { entry: formData.get('cnicFront') ?? formData.get('CNIC_FRONT'), docType: 'CNIC_FRONT' },
+        { entry: formData.get('cnicBack') ?? formData.get('CNIC_BACK'), docType: 'CNIC_BACK' },
+      ]
+
+      const saveErrors: string[] = []
+      for (const { entry, docType } of docSaves) {
+        const file = asUploadFile(entry)
+        if (!file) continue
+        try {
+          const fileUrl = await saveCompanyDocument(companyId, docType, file)
+          documents.push({ id: uuidv4(), companyId, docType, fileUrl })
+        } catch (docErr) {
+          const message = docErr instanceof Error ? docErr.message : `Failed to save ${docType}`
+          console.error(`Error saving document ${docType}:`, docErr)
+          saveErrors.push(message)
         }
-        if (documents.length > 0) {
-          await db.createCompanyDocuments(documents)
-        }
-      } catch (docErr) {
-        console.error('Document save error (non-critical):', docErr)
+      }
+
+      if (saveErrors.length > 0) {
+        return NextResponse.json(
+          { success: false, error: saveErrors[0] || 'Failed to save verification documents.' },
+          { status: 400 }
+        )
+      }
+
+      if (documents.length > 0) {
+        // Soft-delete prior docs of the same types so re-uploads replace cleanly
+        const types = documents.map((d) => d.docType)
+        await prisma.companyDocument.updateMany({
+          where: { companyId, docType: { in: types }, deletedAt: null },
+          data: { deletedAt: new Date() },
+        })
+        await db.createCompanyDocuments(documents)
       }
 
       // Notify admin

@@ -72,14 +72,18 @@ export async function parseCompanyRegistrationRequest(
       continue
     }
     const entry = formData.get(docType)
-    if (!(entry instanceof File) || entry.size === 0) {
+    const file =
+      entry && typeof entry !== 'string' && typeof (entry as File).arrayBuffer === 'function' && (entry as File).size > 0
+        ? (entry as File)
+        : null
+    if (!file) {
       return { ok: false, error: `Missing required document: ${docType}`, status: 400 }
     }
-    const check = validateCompanyDocumentFile(entry)
+    const check = validateCompanyDocumentFile(file)
     if (!check.valid) {
       return { ok: false, error: check.error || 'Invalid document file', status: 400 }
     }
-    documents[docType] = entry
+    documents[docType] = file
   }
 
   return {

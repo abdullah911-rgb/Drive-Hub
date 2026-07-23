@@ -16,19 +16,34 @@ export const COMPANY_DOC_LABELS: Record<CompanyDocType, string> = {
 
 const ALLOWED_MIME_TYPES = new Set([
   'image/jpeg',
+  'image/jpg',
   'image/png',
   'image/webp',
   'application/pdf',
 ])
 
+const ALLOWED_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp', 'pdf'])
+
 const MAX_FILE_SIZE = 5 * 1024 * 1024
 
+function fileExtension(file: File): string {
+  const name = file.name || ''
+  const parts = name.split('.')
+  return parts.length > 1 ? parts.pop()!.toLowerCase() : ''
+}
+
 export function validateCompanyDocumentFile(file: File): { valid: boolean; error?: string } {
-  if (!ALLOWED_MIME_TYPES.has(file.type)) {
-    return { valid: false, error: 'Only JPG, PNG, WebP, or PDF files are allowed.' }
-  }
   if (file.size > MAX_FILE_SIZE) {
     return { valid: false, error: 'Each file must be 5 MB or smaller.' }
+  }
+
+  const mimeOk = !!file.type && ALLOWED_MIME_TYPES.has(file.type)
+  const extOk = ALLOWED_EXTENSIONS.has(fileExtension(file))
+  // Browsers often send empty or application/octet-stream — allow by extension too
+  const octetStream = !file.type || file.type === 'application/octet-stream' || file.type === 'binary/octet-stream'
+
+  if (!mimeOk && !(octetStream && extOk) && !extOk) {
+    return { valid: false, error: 'Only JPG, PNG, WebP, or PDF files are allowed.' }
   }
   return { valid: true }
 }

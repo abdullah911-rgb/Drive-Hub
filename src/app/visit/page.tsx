@@ -8,6 +8,7 @@ import Footer from '@/components/layout/Footer'
 import ParticleBackground from '@/components/shared/ParticleBackground'
 import { getFlagEmoji } from '@/lib/utils'
 import Image from 'next/image'
+import { validateCompanyDocumentFile } from '@/lib/companyDocuments'
 
 interface Country { id: string; name: string; code: string; currency: string; dialCode: string }
 
@@ -141,6 +142,19 @@ function VisitContent() {
         }
         Object.entries(compForm).forEach(([k, v]) => formData.append(k, v))
         formData.append('userType', userRole!)
+        const docs = [
+          { file: licenseFile, label: 'Business license' },
+          { file: cnicFrontFile, label: 'CNIC front' },
+          { file: cnicBackFile, label: 'CNIC back' },
+        ]
+        for (const { file, label } of docs) {
+          if (!file) continue
+          const check = validateCompanyDocumentFile(file)
+          if (!check.valid) {
+            toast.error(`${label}: ${check.error}`)
+            return
+          }
+        }
         if (licenseFile) formData.append('licenseDocument', licenseFile)
         if (cnicFrontFile) formData.append('cnicFront', cnicFrontFile)
         if (cnicBackFile) formData.append('cnicBack', cnicBackFile)
@@ -189,8 +203,18 @@ function VisitContent() {
             <span className="text-xs text-slate-500">Click to upload</span>
           </div>
         )}
-        <input id={id} type="file" accept="image/*,application/pdf" className="hidden"
-          onChange={e => { if (e.target.files?.[0]) onChange(e.target.files[0]) }} />
+        <input id={id} type="file" accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf" className="hidden"
+          onChange={e => {
+            const next = e.target.files?.[0]
+            if (!next) return
+            const check = validateCompanyDocumentFile(next)
+            if (!check.valid) {
+              toast.error(check.error || 'Invalid file')
+              e.target.value = ''
+              return
+            }
+            onChange(next)
+          }} />
       </label>
     </div>
   )
@@ -211,7 +235,8 @@ function VisitContent() {
 
       <Navbar />
 
-      <main className="flex-grow flex items-center justify-center px-4 py-16 relative z-10">
+      <div className="relative z-10 flex flex-grow flex-col">
+      <main className="flex-grow flex items-center justify-center px-4 py-16">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -356,6 +381,7 @@ function VisitContent() {
         </motion.div>
       </main>
       <Footer />
+      </div>
     </div>
   )
 }
