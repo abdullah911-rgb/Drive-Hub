@@ -94,8 +94,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Toaster
             theme="system"
             position="top-right"
+            offset={72}
             toastOptions={{
               className: 'glass border border-border text-foreground font-sans rounded-xl shadow-lg',
+              style: { zIndex: 100 },
             }}
           />
         </ThemeProvider>
