@@ -24,11 +24,11 @@ function normalizeFromAddress(rawFrom: string | undefined, smtpUser: string): st
   const fallback = `"NextTripy" <${smtpUser}>`
   if (!rawFrom) return fallback
 
-  let v = cleanEnv(rawFrom) || ''
+  const v = cleanEnv(rawFrom) || ''
   const angle = v.match(/<([^>]+)>/)
   if (angle) {
     const email = angle[1].trim().replace(/^["']|["']$/g, '')
-    let name = v.replace(/<[^>]+>/, '').trim().replace(/^["']|["']$/g, '').replace(/"/g, '').trim()
+    const name = v.replace(/<[^>]+>/, '').trim().replace(/^["']|["']$/g, '').replace(/"/g, '').trim()
     if (email.includes('@')) {
       return name ? `"${name}" <${email}>` : email
     }
