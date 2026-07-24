@@ -4,7 +4,41 @@ import { prisma } from './prisma'
 /** Strip surrounding quotes that appear when .env values are copy-pasted into Vercel's dashboard */
 function cleanEnv(val: string | undefined): string | undefined {
   if (!val) return val
-  return val.replace(/^["']|["']$/g, '').trim()
+  let v = val.trim()
+  // Peel nested/wrapping quotes from dashboard paste (e.g. "\"NextTripy\" <a@b.com>")
+  for (let i = 0; i < 3; i++) {
+    if (
+      (v.startsWith('"') && v.endsWith('"')) ||
+      (v.startsWith("'") && v.endsWith("'"))
+    ) {
+      v = v.slice(1, -1).trim()
+      continue
+    }
+    break
+  }
+  return v.replace(/\\"/g, '"').replace(/\\'/g, "'").trim()
+}
+
+/** Build a valid RFC From header; malformed SMTP_FROM often becomes "Name  user"@domain */
+function normalizeFromAddress(rawFrom: string | undefined, smtpUser: string): string {
+  const fallback = `"NextTripy" <${smtpUser}>`
+  if (!rawFrom) return fallback
+
+  let v = cleanEnv(rawFrom) || ''
+  const angle = v.match(/<([^>]+)>/)
+  if (angle) {
+    const email = angle[1].trim().replace(/^["']|["']$/g, '')
+    let name = v.replace(/<[^>]+>/, '').trim().replace(/^["']|["']$/g, '').replace(/"/g, '').trim()
+    if (email.includes('@')) {
+      return name ? `"${name}" <${email}>` : email
+    }
+  }
+
+  // Bare email
+  if (/^[^\s<>]+@[^\s<>]+$/.test(v)) return v
+
+  console.warn('[Email] Invalid SMTP_FROM — falling back to SMTP_USER. Got:', rawFrom)
+  return fallback
 }
 
 function createTransporter() {
@@ -116,8 +150,7 @@ export async function sendEmail(opts: {
 
   try {
     const transporter = createTransporter()
-    const rawFrom = cleanEnv(process.env.SMTP_FROM)
-    const fromAddress = rawFrom || `"NextTripy" <${smtpUser}>`
+    const fromAddress = normalizeFromAddress(process.env.SMTP_FROM, smtpUser)
     console.log(`[Email] Sending "${opts.subject}" → ${opts.to} (from: ${fromAddress})`)
     await transporter.sendMail({
       from: fromAddress,
