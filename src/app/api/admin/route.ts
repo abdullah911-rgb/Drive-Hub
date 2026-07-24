@@ -91,6 +91,7 @@ export async function PATCH(request: NextRequest) {
     const { resource, id, action } = body
     let whatsAppUrl: string | null = null
     let emailSent = false
+    let emailAttempted = false
 
     if (resource === 'user') {
       const statusMap: Record<string, string> = {
@@ -99,32 +100,36 @@ export async function PATCH(request: NextRequest) {
       const user = await db.updateUser(id, { status: statusMap[action] })
       if (!user) return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 })
 
+      const isApprovedAction = action === 'approve' || action === 'restore'
       await db.createNotification({
         id: uuidv4(), userId: id,
-        type: action === 'approve' ? 'ACCOUNT_APPROVED' : 'ACCOUNT_REJECTED',
-        title: action === 'approve' ? 'Account Approved' : `Account ${action}ed`,
-        message: action === 'approve'
+        type: isApprovedAction ? 'ACCOUNT_APPROVED' : 'ACCOUNT_REJECTED',
+        title: isApprovedAction ? 'Account Approved' : `Account ${action}ed`,
+        message: isApprovedAction
           ? 'Your account has been approved! Welcome to NextTripy.'
           : `Your account has been ${action}ed by admin.`,
         isRead: false,
       })
 
       const u = user as { email: string; phone: string; fullName?: string }
-      if (action === 'approve') {
+      if (action === 'approve' || action === 'restore') {
+        emailAttempted = true
         const result = await notifications.userApproved(u.email, u.phone, u.fullName)
         whatsAppUrl = result.whatsAppUrl
         emailSent = result.emailSent
       } else if (action === 'reject') {
+        emailAttempted = true
         const result = await notifications.userRejected(u.email, u.phone)
         whatsAppUrl = result.whatsAppUrl
         emailSent = result.emailSent
       } else if (action === 'suspend') {
+        emailAttempted = true
         const result = await notifications.userSuspended(u.email, u.phone)
         whatsAppUrl = result.whatsAppUrl
         emailSent = result.emailSent
       }
 
-      return NextResponse.json({ success: true, data: user, whatsAppUrl, emailSent })
+      return NextResponse.json({ success: true, data: user, whatsAppUrl, emailSent, emailAttempted })
     }
 
     if (resource === 'company') {
@@ -164,6 +169,7 @@ export async function PATCH(request: NextRequest) {
 
           const user = await db.getUserById(c.userId) as { email: string; phone: string } | null
           if (user) {
+            emailAttempted = true
             const expiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
             const result = await notifications.subscriptionActivated(user.email, user.phone, c.name, expiry)
             whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
@@ -180,11 +186,12 @@ export async function PATCH(request: NextRequest) {
           })
           const user = await db.getUserById(c.userId) as { email: string; phone: string } | null
           if (user) {
+            emailAttempted = true
             const result = await notifications.subscriptionDeactivated(user.email, user.phone, c.name)
             whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
           }
         }
-        return NextResponse.json({ success: true, data: sub, whatsAppUrl, emailSent })
+        return NextResponse.json({ success: true, data: sub, whatsAppUrl, emailSent, emailAttempted })
       }
 
       const company = await db.updateCompany(id, { status: statusMap[action] })
@@ -192,11 +199,12 @@ export async function PATCH(request: NextRequest) {
       const c = company as { id: string; userId: string; name: string }
 
       await db.updateUser(c.userId, { status: statusMap[action] })
+      const isApprovedAction = action === 'approve' || action === 'restore'
       await db.createNotification({
         id: uuidv4(), userId: c.userId,
-        type: action === 'approve' ? 'ACCOUNT_APPROVED' : 'ACCOUNT_REJECTED',
-        title: action === 'approve' ? 'Company Approved' : `Company ${action}ed`,
-        message: action === 'approve'
+        type: isApprovedAction ? 'ACCOUNT_APPROVED' : 'ACCOUNT_REJECTED',
+        title: isApprovedAction ? 'Company Approved' : `Company ${action}ed`,
+        message: isApprovedAction
           ? 'Your company has been approved! You can now subscribe and list cars.'
           : `Your company has been ${action}ed.`,
         isRead: false,
@@ -205,20 +213,23 @@ export async function PATCH(request: NextRequest) {
       const user = await db.getUserById(c.userId) as { email: string; phone: string } | null
       console.log(`[Admin] Company action=${action} userId=${c.userId} userFound=${!!user} email=${(user as {email?:string})?.email}`)
       if (user) {
-        if (action === 'approve') {
+        if (action === 'approve' || action === 'restore') {
+          emailAttempted = true
           const result = await notifications.companyApproved(user.email, user.phone, c.name)
           whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
         } else if (action === 'reject') {
+          emailAttempted = true
           const result = await notifications.companyRejected(user.email, user.phone, c.name)
           whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
         } else if (action === 'suspend') {
+          emailAttempted = true
           const result = await notifications.companySuspended(user.email, user.phone, c.name)
           whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
         }
       } else {
         console.error(`[Admin] Could not find user userId=${c.userId} — NO EMAIL SENT`)
       }
-      return NextResponse.json({ success: true, data: company, whatsAppUrl, emailSent })
+      return NextResponse.json({ success: true, data: company, whatsAppUrl, emailSent, emailAttempted })
     }
 
     if (resource === 'car') {
@@ -242,18 +253,21 @@ export async function PATCH(request: NextRequest) {
         const user = await db.getUserById(co.userId) as { email: string; phone: string } | null
         if (user) {
           if (action === 'approve') {
+            emailAttempted = true
             const result = await notifications.carApproved(user.email, user.phone, c.name)
             whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
           } else if (action === 'reject') {
+            emailAttempted = true
             const result = await notifications.carRejected(user.email, user.phone, c.name)
             whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
           } else if (action === 'suspend') {
+            emailAttempted = true
             const result = await notifications.carSuspended(user.email, user.phone, c.name)
             whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
           }
         }
       }
-      return NextResponse.json({ success: true, data: car, whatsAppUrl, emailSent })
+      return NextResponse.json({ success: true, data: car, whatsAppUrl, emailSent, emailAttempted })
     }
 
     if (resource === 'room') {
@@ -277,18 +291,21 @@ export async function PATCH(request: NextRequest) {
         const user = await db.getUserById(co.userId) as { email: string; phone: string } | null
         if (user) {
           if (action === 'approve') {
+            emailAttempted = true
             const result = await notifications.roomApproved(user.email, user.phone, r.name)
             whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
           } else if (action === 'reject') {
+            emailAttempted = true
             const result = await notifications.roomRejected(user.email, user.phone, r.name)
             whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
           } else if (action === 'suspend') {
+            emailAttempted = true
             const result = await notifications.roomSuspended(user.email, user.phone, r.name)
             whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
           }
         }
       }
-      return NextResponse.json({ success: true, data: room, whatsAppUrl, emailSent })
+      return NextResponse.json({ success: true, data: room, whatsAppUrl, emailSent, emailAttempted })
     }
 
     if (resource === 'payment') {
@@ -318,11 +335,12 @@ export async function PATCH(request: NextRequest) {
         })
         const user = await db.getUserById(companyRecord.userId) as { email: string; phone: string } | null
         if (user) {
+          emailAttempted = true
           const expiry = endDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
           const result = await notifications.subscriptionActivated(user.email, user.phone, companyRecord.name, expiry)
           whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
         }
-        return NextResponse.json({ success: true, data: sub, whatsAppUrl, emailSent })
+        return NextResponse.json({ success: true, data: sub, whatsAppUrl, emailSent, emailAttempted })
       }
 
       if (action === 'reject') {
@@ -337,10 +355,11 @@ export async function PATCH(request: NextRequest) {
         })
         const user2 = await db.getUserById(companyRecord.userId) as { email: string; phone: string } | null
         if (user2) {
+          emailAttempted = true
           const result = await notifications.paymentRejected(user2.email, user2.phone, companyRecord.name)
           whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
         }
-        return NextResponse.json({ success: true, data: sub, whatsAppUrl, emailSent })
+        return NextResponse.json({ success: true, data: sub, whatsAppUrl, emailSent, emailAttempted })
       }
 
       return NextResponse.json({ success: false, error: 'Unknown payment action' }, { status: 400 })

@@ -118,8 +118,13 @@ export default function AdminDashboard() {
       })
       const data = await res.json()
       if (res.ok && data.success) {
-        const emailMsg = data.emailSent ? '✉️ Email sent!' : '⚠️ Action applied (email not sent — check SMTP config)'
-        toast.success(`✅ Action "${action}" applied. ${emailMsg}`)
+        let emailMsg = ''
+        if (data.emailSent) {
+          emailMsg = '✉️ Email sent!'
+        } else if (data.emailAttempted) {
+          emailMsg = '⚠️ Email failed — check SMTP config / server logs'
+        }
+        toast.success(`✅ Action "${action}" applied.${emailMsg ? ` ${emailMsg}` : ''}`)
 
         if (data.whatsAppUrl) {
           const name = data.data?.name || data.data?.fullName || data.data?.email || 'User'
