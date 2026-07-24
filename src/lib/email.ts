@@ -305,6 +305,51 @@ export const notifications = {
     return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
   },
 
+  async roomApproved(to: string, phone: string, roomName: string) {
+    const msg = `Great news! ✅\n\nYour hotel room listing for "${roomName}" on NextTripy has been APPROVED and is now live on the marketplace!\n\nView it at: ${APP_URL()}/marketplace`
+    const emailSent = await sendEmail({
+      to,
+      subject: `✅ Room "${roomName}" is now live on NextTripy!`,
+      title: 'Room Listing Approved',
+      bodyHtml: `Your hotel room listing for <strong>${roomName}</strong> has been approved and is now <strong style="color:#34d399;">live on the NextTripy Marketplace</strong>. Customers can now find and book your room directly.`,
+      ctaLabel: 'View Marketplace',
+      ctaUrl: `${APP_URL()}/marketplace`,
+    })
+    const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
+    return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
+  },
+
+  async roomRejected(to: string, phone: string, roomName: string) {
+    const msg = `Hello,\n\nYour hotel room listing for "${roomName}" on NextTripy was not approved. Please review the listing details and resubmit. Contact info@nexttripy.com for help.`
+    const emailSent = await sendEmail({
+      to,
+      subject: `NextTripy — Room "${roomName}" Not Approved`,
+      title: 'Room Listing Not Approved',
+      bodyHtml: `Your hotel room listing for <strong>${roomName}</strong> was not approved at this time. This may be due to:<br><br>
+        • Incomplete room information or specifications<br>
+        • Low-quality or insufficient images<br>
+        • Pricing mismatch<br><br>
+        Please update the listing from your dashboard and resubmit.`,
+      ctaLabel: 'Go to Dashboard',
+      ctaUrl: `${APP_URL()}/dashboard/company`,
+    })
+    const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
+    return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
+  },
+
+  async roomSuspended(to: string, phone: string, roomName: string) {
+    const msg = `Hello,\n\nYour room listing "${roomName}" on NextTripy has been suspended. Contact info@nexttripy.com for assistance.`
+    const emailSent = await sendEmail({
+      to,
+      subject: `NextTripy — Room "${roomName}" Suspended`,
+      title: 'Room Listing Suspended',
+      bodyHtml: `Your hotel room listing for <strong>${roomName}</strong> has been temporarily suspended by an admin. Please contact <strong>info@nexttripy.com</strong> for details.`,
+    })
+    const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
+    return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
+  },
+
+
   async subscriptionActivated(to: string, phone: string, companyName: string, endDate: string) {
     const msg = `Hello ${companyName} ✅\n\nYour NextTripy subscription has been activated! Your account is now active until ${endDate}. Start adding your cars now: ${APP_URL()}/dashboard/company`
     const emailSent = await sendEmail({

@@ -184,7 +184,7 @@ export async function PATCH(request: NextRequest) {
             whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
           }
         }
-        return NextResponse.json({ success: true, data: sub, whatsAppUrl })
+        return NextResponse.json({ success: true, data: sub, whatsAppUrl, emailSent })
       }
 
       const company = await db.updateCompany(id, { status: statusMap[action] })
@@ -277,13 +277,13 @@ export async function PATCH(request: NextRequest) {
         const user = await db.getUserById(co.userId) as { email: string; phone: string } | null
         if (user) {
           if (action === 'approve') {
-            const result = await notifications.carApproved(user.email, user.phone, r.name)
+            const result = await notifications.roomApproved(user.email, user.phone, r.name)
             whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
           } else if (action === 'reject') {
-            const result = await notifications.carRejected(user.email, user.phone, r.name)
+            const result = await notifications.roomRejected(user.email, user.phone, r.name)
             whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
           } else if (action === 'suspend') {
-            const result = await notifications.carSuspended(user.email, user.phone, r.name)
+            const result = await notifications.roomSuspended(user.email, user.phone, r.name)
             whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
           }
         }
