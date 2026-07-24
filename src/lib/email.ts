@@ -164,24 +164,24 @@ export const notifications = {
   },
 
   async userRejected(to: string, phone: string) {
-    const msg = `Hello,\n\nYour NextTripy account application was not approved at this time. For assistance please contact support@nexttripy.com`
+    const msg = `Hello,\n\nYour NextTripy account application was not approved at this time. For assistance please contact info@nexttripy.com`
     await sendEmail({
       to,
       subject: 'NextTripy Account Application Update',
       title: 'Account Application — Update',
-      bodyHtml: `After reviewing your application, we were unable to approve your account at this time. If you believe this is an error or would like to provide additional information, please reach out to <strong>support@nexttripy.com</strong>.`,
+      bodyHtml: `After reviewing your application, we were unable to approve your account at this time. If you believe this is an error or would like to provide additional information, please reach out to <strong>info@nexttripy.com</strong>.`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
     return buildWhatsAppNotificationUrl(formattedPhone, msg)
   },
 
   async userSuspended(to: string, phone: string) {
-    const msg = `Hello,\n\nYour NextTripy account has been suspended. For assistance please contact support@nexttripy.com`
+    const msg = `Hello,\n\nYour NextTripy account has been suspended. For assistance please contact info@nexttripy.com`
     await sendEmail({
       to,
       subject: 'NextTripy Account Suspended',
       title: 'Account Suspended',
-      bodyHtml: `Your NextTripy account has been temporarily suspended by an administrator. Please contact <strong>support@nexttripy.com</strong> to resolve this.`,
+      bodyHtml: `Your NextTripy account has been temporarily suspended by an administrator. Please contact <strong>info@nexttripy.com</strong> to resolve this.`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
     return buildWhatsAppNotificationUrl(formattedPhone, msg)
@@ -207,24 +207,24 @@ export const notifications = {
   },
 
   async companyRejected(to: string, phone: string, companyName: string) {
-    const msg = `Hello ${companyName},\n\nYour NextTripy company application was not approved at this time. Please contact support@nexttripy.com for details.`
+    const msg = `Hello ${companyName},\n\nYour NextTripy company application was not approved at this time. Please contact info@nexttripy.com for details.`
     await sendEmail({
       to,
       subject: `${companyName} — NextTripy Application Update`,
       title: 'Company Application Not Approved',
-      bodyHtml: `Unfortunately, your company application for <strong>${companyName}</strong> was not approved at this time. This may be due to incomplete information or documentation issues.<br><br>Please contact <strong>support@nexttripy.com</strong> with your business license and CNIC/ID for assistance.`,
+      bodyHtml: `Unfortunately, your company application for <strong>${companyName}</strong> was not approved at this time. This may be due to incomplete information or documentation issues.<br><br>Please contact <strong>info@nexttripy.com</strong> with your business license and CNIC/ID for assistance.`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
     return buildWhatsAppNotificationUrl(formattedPhone, msg)
   },
 
   async companySuspended(to: string, phone: string, companyName: string) {
-    const msg = `Hello ${companyName},\n\nYour NextTripy company account has been suspended. Contact support@nexttripy.com for assistance.`
+    const msg = `Hello ${companyName},\n\nYour NextTripy company account has been suspended. Contact info@nexttripy.com for assistance.`
     await sendEmail({
       to,
       subject: `${companyName} — NextTripy Account Suspended`,
       title: 'Company Account Suspended',
-      bodyHtml: `Your company account for <strong>${companyName}</strong> has been temporarily suspended by an administrator. Your car listings are hidden until the suspension is lifted.<br><br>Contact <strong>support@nexttripy.com</strong> to resolve this.`,
+      bodyHtml: `Your company account for <strong>${companyName}</strong> has been temporarily suspended by an administrator. Your car listings are hidden until the suspension is lifted.<br><br>Contact <strong>info@nexttripy.com</strong> to resolve this.`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
     return buildWhatsAppNotificationUrl(formattedPhone, msg)
@@ -245,7 +245,7 @@ export const notifications = {
   },
 
   async carRejected(to: string, phone: string, carName: string) {
-    const msg = `Hello,\n\nYour vehicle listing for "${carName}" on NextTripy was not approved. Please review the listing details and resubmit. Contact support@nexttripy.com for help.`
+    const msg = `Hello,\n\nYour vehicle listing for "${carName}" on NextTripy was not approved. Please review the listing details and resubmit. Contact info@nexttripy.com for help.`
     await sendEmail({
       to,
       subject: `NextTripy — Listing "${carName}" Not Approved`,
@@ -263,12 +263,12 @@ export const notifications = {
   },
 
   async carSuspended(to: string, phone: string, carName: string) {
-    const msg = `Hello,\n\nYour listing "${carName}" on NextTripy has been suspended. Contact support@nexttripy.com for assistance.`
+    const msg = `Hello,\n\nYour listing "${carName}" on NextTripy has been suspended. Contact info@nexttripy.com for assistance.`
     await sendEmail({
       to,
       subject: `NextTripy — Listing "${carName}" Suspended`,
       title: 'Car Listing Suspended',
-      bodyHtml: `Your vehicle listing for <strong>${carName}</strong> has been temporarily suspended by an admin. Please contact <strong>support@nexttripy.com</strong> for details.`,
+      bodyHtml: `Your vehicle listing for <strong>${carName}</strong> has been temporarily suspended by an admin. Please contact <strong>info@nexttripy.com</strong> for details.`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
     return buildWhatsAppNotificationUrl(formattedPhone, msg)
@@ -289,12 +289,12 @@ export const notifications = {
   },
 
   async subscriptionDeactivated(to: string, phone: string, companyName: string) {
-    const msg = `Hello ${companyName},\n\nYour NextTripy subscription has been deactivated. Your listings are currently hidden. Contact support@nexttripy.com for help.`
+    const msg = `Hello ${companyName},\n\nYour NextTripy subscription has been deactivated. Your listings are currently hidden. Contact info@nexttripy.com for help.`
     await sendEmail({
       to,
       subject: 'NextTripy Subscription Deactivated',
       title: 'Subscription Deactivated',
-      bodyHtml: `Your NextTripy subscription for <strong>${companyName}</strong> has been deactivated by an administrator. Your vehicle listings are currently hidden from customers.<br><br>Contact <strong>support@nexttripy.com</strong> to resolve this or renew your subscription from the dashboard.`,
+      bodyHtml: `Your NextTripy subscription for <strong>${companyName}</strong> has been deactivated by an administrator. Your vehicle listings are currently hidden from customers.<br><br>Contact <strong>info@nexttripy.com</strong> to resolve this or renew your subscription from the dashboard.`,
       ctaLabel: 'Go to Dashboard',
       ctaUrl: `${APP_URL()}/dashboard/company`,
     })
@@ -303,12 +303,12 @@ export const notifications = {
   },
 
   async paymentRejected(to: string, phone: string, companyName: string) {
-    const msg = `Hello ${companyName},\n\nYour NextTripy subscription payment could not be verified. Please contact support@nexttripy.com or resubmit your payment from the dashboard.`
+    const msg = `Hello ${companyName},\n\nYour NextTripy subscription payment could not be verified. Please contact info@nexttripy.com or resubmit your payment from the dashboard.`
     await sendEmail({
       to,
       subject: 'NextTripy — Payment Could Not Be Verified',
       title: 'Payment Verification Failed',
-      bodyHtml: `The subscription payment submitted for <strong>${companyName}</strong> could not be verified. This may be due to an incorrect transaction ID or amount mismatch.<br><br>Please contact <strong>support@nexttripy.com</strong> or resubmit your payment from the dashboard.`,
+      bodyHtml: `The subscription payment submitted for <strong>${companyName}</strong> could not be verified. This may be due to an incorrect transaction ID or amount mismatch.<br><br>Please contact <strong>info@nexttripy.com</strong> or resubmit your payment from the dashboard.`,
       ctaLabel: 'Go to Dashboard',
       ctaUrl: `${APP_URL()}/dashboard/company`,
     })
