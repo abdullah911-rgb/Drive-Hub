@@ -48,6 +48,11 @@ export default function AdminDashboard() {
   const [showAdminNewPw, setShowAdminNewPw] = useState(false)
   const [showAdminConfPw, setShowAdminConfPw] = useState(false)
   const [whatsAppModal, setWhatsAppModal] = useState<{ url: string; name: string; action: string } | null>(null)
+  
+  const [companySearch, setCompanySearch] = useState('')
+  const [carSearch, setCarSearch] = useState('')
+  const [roomSearch, setRoomSearch] = useState('')
+  const [userSearch, setUserSearch] = useState('')
 
   const hasFetched = useRef(false)
 
@@ -346,9 +351,33 @@ export default function AdminDashboard() {
                  className="flex flex-col gap-4"
                >
                 <h3 className="font-heading font-bold text-slate-900 dark:text-white text-lg mb-2">Company Management</h3>
- 
-                 {companies.length > 0 ? (
-                   companies.map(comp => {
+
+                 <div className="relative mb-2">
+                   <input
+                     type="text"
+                     placeholder="Search companies by name or owner..."
+                     value={companySearch}
+                     onChange={(e) => setCompanySearch(e.target.value)}
+                     className="w-full px-4 py-2.5 rounded-xl border border-white/10 glass text-white placeholder-slate-400 text-sm focus:outline-none focus:border-primary/50 transition-all"
+                   />
+                   {companySearch && (
+                     <button
+                       type="button"
+                       onClick={() => setCompanySearch('')}
+                       className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs font-semibold"
+                     >
+                       Clear
+                     </button>
+                   )}
+                 </div>
+
+                 {(() => {
+                   const filteredCompanies = companies.filter(comp =>
+                     comp.name?.toLowerCase().includes(companySearch.toLowerCase()) ||
+                     comp.ownerName?.toLowerCase().includes(companySearch.toLowerCase())
+                   )
+                   return filteredCompanies.length > 0 ? (
+                     filteredCompanies.map(comp => {
                      const companySub = subscriptions.find(s => s.companyId === comp.id)
                      const subStatus = companySub?.status || 'UNSUBSCRIBED'
  
@@ -510,7 +539,8 @@ export default function AdminDashboard() {
                   <div className="glass-card p-12 text-center border border-white/5 text-slate-400 text-sm">
                     No company accounts found.
                   </div>
-                )}
+                )
+                 })()}
               </motion.div>
             )}
 
@@ -524,12 +554,37 @@ export default function AdminDashboard() {
               >
                 <h3 className="font-heading font-bold text-slate-900 dark:text-white text-lg mb-2">Vehicle Listings</h3>
 
+                <div className="relative mb-2">
+                   <input
+                     type="text"
+                     placeholder="Search vehicles by brand or model..."
+                     value={carSearch}
+                     onChange={(e) => setCarSearch(e.target.value)}
+                     className="w-full px-4 py-2.5 rounded-xl border border-white/10 glass text-white placeholder-slate-400 text-sm focus:outline-none focus:border-primary/50 transition-all"
+                   />
+                   {carSearch && (
+                     <button
+                       type="button"
+                       onClick={() => setCarSearch('')}
+                       className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs font-semibold"
+                     >
+                       Clear
+                     </button>
+                   )}
+                 </div>
+
                 {pendingCars.length > 0 && (
                   <p className="text-amber-400 text-xs mb-1">{pendingCars.length} vehicle(s) awaiting approval</p>
                 )}
 
-                {cars.length > 0 ? (
-                  cars.map(car => {
+                {(() => {
+                  const filteredCars = cars.filter(car =>
+                    car.brand?.toLowerCase().includes(carSearch.toLowerCase()) ||
+                    car.model?.toLowerCase().includes(carSearch.toLowerCase()) ||
+                    car.name?.toLowerCase().includes(carSearch.toLowerCase())
+                  )
+                  return filteredCars.length > 0 ? (
+                    filteredCars.map(car => {
                     const primaryImage = (car as Car & { images?: { imageUrl: string; isPrimary: boolean }[] }).images?.find(i => i.isPrimary)?.imageUrl
                       || (car as Car & { images?: { imageUrl: string }[] }).images?.[0]?.imageUrl
                     return (
@@ -576,7 +631,8 @@ export default function AdminDashboard() {
                   <div className="glass-card p-12 text-center border border-white/5 text-slate-400 text-sm">
                     No vehicle listings yet.
                   </div>
-                )}
+                )
+                })()}
               </motion.div>
             )}
 
@@ -590,12 +646,37 @@ export default function AdminDashboard() {
               >
                 <h3 className="font-heading font-bold text-slate-900 dark:text-white text-lg mb-2">Hotel Room Listings</h3>
 
+                <div className="relative mb-2">
+                   <input
+                     type="text"
+                     placeholder="Search rooms by name, type or hotel..."
+                     value={roomSearch}
+                     onChange={(e) => setRoomSearch(e.target.value)}
+                     className="w-full px-4 py-2.5 rounded-xl border border-white/10 glass text-white placeholder-slate-400 text-sm focus:outline-none focus:border-primary/50 transition-all"
+                   />
+                   {roomSearch && (
+                     <button
+                       type="button"
+                       onClick={() => setRoomSearch('')}
+                       className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs font-semibold"
+                     >
+                       Clear
+                     </button>
+                   )}
+                 </div>
+
                 {pendingRooms.length > 0 && (
                   <p className="text-amber-400 text-xs mb-1">{pendingRooms.length} room(s) awaiting approval</p>
                 )}
 
-                {rooms.length > 0 ? (
-                  rooms.map(room => {
+                {(() => {
+                  const filteredRooms = rooms.filter(room =>
+                    room.name?.toLowerCase().includes(roomSearch.toLowerCase()) ||
+                    room.roomType?.toLowerCase().includes(roomSearch.toLowerCase()) ||
+                    room.company?.name?.toLowerCase().includes(roomSearch.toLowerCase())
+                  )
+                  return filteredRooms.length > 0 ? (
+                    filteredRooms.map(room => {
                     const primaryImage = room.images?.find(i => i.isPrimary)?.imageUrl || room.images?.[0]?.imageUrl
                     return (
                       <div
@@ -642,7 +723,8 @@ export default function AdminDashboard() {
                   <div className="glass-card p-12 text-center border border-white/5 text-slate-400 text-sm">
                     No hotel room listings yet.
                   </div>
-                )}
+                )
+                })()}
               </motion.div>
             )}
 
@@ -752,9 +834,33 @@ export default function AdminDashboard() {
               >
                 <h3 className="font-heading font-bold text-slate-900 dark:text-white text-lg mb-2">Registered Accounts</h3>
 
+                <div className="relative mb-2">
+                   <input
+                     type="text"
+                     placeholder="Search accounts by name or email..."
+                     value={userSearch}
+                     onChange={(e) => setUserSearch(e.target.value)}
+                     className="w-full px-4 py-2.5 rounded-xl border border-white/10 glass text-white placeholder-slate-400 text-sm focus:outline-none focus:border-primary/50 transition-all"
+                   />
+                   {userSearch && (
+                     <button
+                       type="button"
+                       onClick={() => setUserSearch('')}
+                       className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs font-semibold"
+                     >
+                       Clear
+                     </button>
+                   )}
+                 </div>
+
                 {/* User cards grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {users.map(u => {
+                  {(() => {
+                    const filteredUsers = users.filter(u =>
+                      u.fullName?.toLowerCase().includes(userSearch.toLowerCase()) ||
+                      u.email?.toLowerCase().includes(userSearch.toLowerCase())
+                    )
+                    return filteredUsers.map(u => {
                     const roleColors: Record<string, string> = {
                       ADMIN: 'text-violet-500 bg-violet-500/10 border-violet-500/20',
                       SUPER_ADMIN: 'text-purple-500 bg-purple-500/10 border-purple-500/20',
