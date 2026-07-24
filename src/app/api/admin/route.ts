@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
@@ -194,14 +194,20 @@ export async function PATCH(request: NextRequest) {
       })
 
       const user = await db.getUserById(c.userId) as { email: string; phone: string } | null
+      console.log(`[Admin] Company action=${action} companyId=${id} userId=${c.userId} userFound=${!!user} userEmail=${(user as {email?:string})?.email}`)
       if (user) {
         if (action === 'approve') {
+          console.log(`[Admin] Sending approval email to ${(user as {email:string}).email}`)
           whatsAppUrl = await notifications.companyApproved(user.email, user.phone, c.name)
         } else if (action === 'reject') {
+          console.log(`[Admin] Sending rejection email to ${(user as {email:string}).email}`)
           whatsAppUrl = await notifications.companyRejected(user.email, user.phone, c.name)
         } else if (action === 'suspend') {
+          console.log(`[Admin] Sending suspension email to ${(user as {email:string}).email}`)
           whatsAppUrl = await notifications.companySuspended(user.email, user.phone, c.name)
         }
+      } else {
+        console.error(`[Admin] Could not find user for userId=${c.userId} — NO EMAIL SENT`)
       }
       return NextResponse.json({ success: true, data: company, whatsAppUrl })
     }

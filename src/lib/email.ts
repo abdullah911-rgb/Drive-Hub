@@ -10,23 +10,28 @@ function cleanEnv(val: string | undefined): string | undefined {
 function createTransporter() {
   const host = cleanEnv(process.env.SMTP_HOST) || 'mail.nexttripy.com'
   const rawPort = cleanEnv(process.env.SMTP_PORT)
-  const port = parseInt(rawPort || '465', 10)
+  // Default to 587 (STARTTLS) — port 465 is blocked on Vercel's serverless network
+  const port = parseInt(rawPort || '587', 10)
   const user = cleanEnv(process.env.SMTP_USER)
   const pass = cleanEnv(process.env.SMTP_PASS)
 
-  console.log(`[Email] Transporter config → host=${host} port=${port} secure=${port === 465} user=${user}`)
+  // secure:false + requireTLS:true = STARTTLS (connects plain, upgrades to TLS)
+  // This works on both Vercel (port 587) and local (port 465/587)
+  const secure = port === 465
+  console.log(`[Email] Transporter → host=${host} port=${port} secure=${secure} user=${user}`)
 
   return nodemailer.createTransport({
     host,
     port,
-    secure: port === 465,
+    secure,
+    requireTLS: !secure, // enforce TLS upgrade for STARTTLS (port 587)
     auth: { user, pass },
     tls: {
       rejectUnauthorized: false, // cPanel/shared-host self-signed certs
     },
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 15000,
+    connectionTimeout: 15000,
+    greetingTimeout: 15000,
+    socketTimeout: 20000,
   })
 }
 
