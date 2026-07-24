@@ -90,6 +90,7 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json()
     const { resource, id, action } = body
     let whatsAppUrl: string | null = null
+    let emailSent = false
 
     if (resource === 'user') {
       const statusMap: Record<string, string> = {
@@ -110,14 +111,20 @@ export async function PATCH(request: NextRequest) {
 
       const u = user as { email: string; phone: string; fullName?: string }
       if (action === 'approve') {
-        whatsAppUrl = await notifications.userApproved(u.email, u.phone, u.fullName)
+        const result = await notifications.userApproved(u.email, u.phone, u.fullName)
+        whatsAppUrl = result.whatsAppUrl
+        emailSent = result.emailSent
       } else if (action === 'reject') {
-        whatsAppUrl = await notifications.userRejected(u.email, u.phone)
+        const result = await notifications.userRejected(u.email, u.phone)
+        whatsAppUrl = result.whatsAppUrl
+        emailSent = result.emailSent
       } else if (action === 'suspend') {
-        whatsAppUrl = await notifications.userSuspended(u.email, u.phone)
+        const result = await notifications.userSuspended(u.email, u.phone)
+        whatsAppUrl = result.whatsAppUrl
+        emailSent = result.emailSent
       }
 
-      return NextResponse.json({ success: true, data: user, whatsAppUrl })
+      return NextResponse.json({ success: true, data: user, whatsAppUrl, emailSent })
     }
 
     if (resource === 'company') {
@@ -158,7 +165,8 @@ export async function PATCH(request: NextRequest) {
           const user = await db.getUserById(c.userId) as { email: string; phone: string } | null
           if (user) {
             const expiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-            whatsAppUrl = await notifications.subscriptionActivated(user.email, user.phone, c.name, expiry)
+            const result = await notifications.subscriptionActivated(user.email, user.phone, c.name, expiry)
+            whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
           }
         } else {
           if (sub) {
@@ -172,7 +180,8 @@ export async function PATCH(request: NextRequest) {
           })
           const user = await db.getUserById(c.userId) as { email: string; phone: string } | null
           if (user) {
-            whatsAppUrl = await notifications.subscriptionDeactivated(user.email, user.phone, c.name)
+            const result = await notifications.subscriptionDeactivated(user.email, user.phone, c.name)
+            whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
           }
         }
         return NextResponse.json({ success: true, data: sub, whatsAppUrl })
@@ -194,22 +203,22 @@ export async function PATCH(request: NextRequest) {
       })
 
       const user = await db.getUserById(c.userId) as { email: string; phone: string } | null
-      console.log(`[Admin] Company action=${action} companyId=${id} userId=${c.userId} userFound=${!!user} userEmail=${(user as {email?:string})?.email}`)
+      console.log(`[Admin] Company action=${action} userId=${c.userId} userFound=${!!user} email=${(user as {email?:string})?.email}`)
       if (user) {
         if (action === 'approve') {
-          console.log(`[Admin] Sending approval email to ${(user as {email:string}).email}`)
-          whatsAppUrl = await notifications.companyApproved(user.email, user.phone, c.name)
+          const result = await notifications.companyApproved(user.email, user.phone, c.name)
+          whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
         } else if (action === 'reject') {
-          console.log(`[Admin] Sending rejection email to ${(user as {email:string}).email}`)
-          whatsAppUrl = await notifications.companyRejected(user.email, user.phone, c.name)
+          const result = await notifications.companyRejected(user.email, user.phone, c.name)
+          whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
         } else if (action === 'suspend') {
-          console.log(`[Admin] Sending suspension email to ${(user as {email:string}).email}`)
-          whatsAppUrl = await notifications.companySuspended(user.email, user.phone, c.name)
+          const result = await notifications.companySuspended(user.email, user.phone, c.name)
+          whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
         }
       } else {
-        console.error(`[Admin] Could not find user for userId=${c.userId} — NO EMAIL SENT`)
+        console.error(`[Admin] Could not find user userId=${c.userId} — NO EMAIL SENT`)
       }
-      return NextResponse.json({ success: true, data: company, whatsAppUrl })
+      return NextResponse.json({ success: true, data: company, whatsAppUrl, emailSent })
     }
 
     if (resource === 'car') {
@@ -233,15 +242,18 @@ export async function PATCH(request: NextRequest) {
         const user = await db.getUserById(co.userId) as { email: string; phone: string } | null
         if (user) {
           if (action === 'approve') {
-            whatsAppUrl = await notifications.carApproved(user.email, user.phone, c.name)
+            const result = await notifications.carApproved(user.email, user.phone, c.name)
+            whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
           } else if (action === 'reject') {
-            whatsAppUrl = await notifications.carRejected(user.email, user.phone, c.name)
+            const result = await notifications.carRejected(user.email, user.phone, c.name)
+            whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
           } else if (action === 'suspend') {
-            whatsAppUrl = await notifications.carSuspended(user.email, user.phone, c.name)
+            const result = await notifications.carSuspended(user.email, user.phone, c.name)
+            whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
           }
         }
       }
-      return NextResponse.json({ success: true, data: car, whatsAppUrl })
+      return NextResponse.json({ success: true, data: car, whatsAppUrl, emailSent })
     }
 
     if (resource === 'room') {
@@ -265,15 +277,18 @@ export async function PATCH(request: NextRequest) {
         const user = await db.getUserById(co.userId) as { email: string; phone: string } | null
         if (user) {
           if (action === 'approve') {
-            whatsAppUrl = await notifications.carApproved(user.email, user.phone, r.name)
+            const result = await notifications.carApproved(user.email, user.phone, r.name)
+            whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
           } else if (action === 'reject') {
-            whatsAppUrl = await notifications.carRejected(user.email, user.phone, r.name)
+            const result = await notifications.carRejected(user.email, user.phone, r.name)
+            whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
           } else if (action === 'suspend') {
-            whatsAppUrl = await notifications.carSuspended(user.email, user.phone, r.name)
+            const result = await notifications.carSuspended(user.email, user.phone, r.name)
+            whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
           }
         }
       }
-      return NextResponse.json({ success: true, data: room, whatsAppUrl })
+      return NextResponse.json({ success: true, data: room, whatsAppUrl, emailSent })
     }
 
     if (resource === 'payment') {
@@ -304,9 +319,10 @@ export async function PATCH(request: NextRequest) {
         const user = await db.getUserById(companyRecord.userId) as { email: string; phone: string } | null
         if (user) {
           const expiry = endDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-          whatsAppUrl = await notifications.subscriptionActivated(user.email, user.phone, companyRecord.name, expiry)
+          const result = await notifications.subscriptionActivated(user.email, user.phone, companyRecord.name, expiry)
+          whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
         }
-        return NextResponse.json({ success: true, data: sub, whatsAppUrl })
+        return NextResponse.json({ success: true, data: sub, whatsAppUrl, emailSent })
       }
 
       if (action === 'reject') {
@@ -319,11 +335,12 @@ export async function PATCH(request: NextRequest) {
           message: 'Your subscription payment could not be verified. Please contact support or resubmit.',
           isRead: false,
         })
-        const user = await db.getUserById(companyRecord.userId) as { email: string; phone: string } | null
-        if (user) {
-          whatsAppUrl = await notifications.paymentRejected(user.email, user.phone, companyRecord.name)
+        const user2 = await db.getUserById(companyRecord.userId) as { email: string; phone: string } | null
+        if (user2) {
+          const result = await notifications.paymentRejected(user2.email, user2.phone, companyRecord.name)
+          whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
         }
-        return NextResponse.json({ success: true, data: sub, whatsAppUrl })
+        return NextResponse.json({ success: true, data: sub, whatsAppUrl, emailSent })
       }
 
       return NextResponse.json({ success: false, error: 'Unknown payment action' }, { status: 400 })

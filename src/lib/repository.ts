@@ -279,7 +279,7 @@ export const db = {
     if (filters?.brand) where.brand = { contains: filters.brand, mode: 'insensitive' }
     const list = await prisma.car.findMany({
       where,
-      include: { images: true },
+      include: { images: true, company: { select: { name: true } } },
     })
     return serializePrisma(list)
   },
@@ -599,7 +599,7 @@ export const db = {
     }
     const list = await prisma.room.findMany({
       where,
-      include: { images: true },
+      include: { images: true, company: { select: { name: true } } },
     })
     return serializePrisma(list)
   },

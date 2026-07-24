@@ -17,6 +17,10 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 's3.amazonaws.com' },
       { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: 'flagcdn.com' },
+      { protocol: 'https', hostname: 'upload.wikimedia.org' },
+      { protocol: 'https', hostname: 'cdn-icons-png.flaticon.com' },
+      { protocol: 'https', hostname: 'cdn-icons-png.freepik.com' },
+      { protocol: 'https', hostname: '**.cloudfront.net' },
     ],
   },
   experimental: {

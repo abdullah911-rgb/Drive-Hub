@@ -105,13 +105,13 @@ export async function sendEmail(opts: {
   bodyHtml: string
   ctaLabel?: string
   ctaUrl?: string
-}): Promise<void> {
+}): Promise<boolean> {
   const smtpUser = cleanEnv(process.env.SMTP_USER)
   const smtpPass = cleanEnv(process.env.SMTP_PASS)
 
   if (!smtpUser || !smtpPass) {
     console.warn('[Email] SMTP_USER / SMTP_PASS not configured — skipping email to', opts.to)
-    return
+    return false
   }
 
   try {
@@ -126,14 +126,16 @@ export async function sendEmail(opts: {
       html: buildHtml(opts.title, opts.bodyHtml, opts.ctaLabel, opts.ctaUrl),
     })
     console.log(`[Email] ✓ Sent "${opts.subject}" → ${opts.to}`)
+    return true
   } catch (err: unknown) {
     const e = err as { code?: string; response?: string; message?: string }
     console.error(`[Email] ✗ Failed — code=${e?.code} response=${e?.response} message=${e?.message}`)
-    console.error('[Email] Full error:', err)
+    return false
   }
 }
 
-async function getFormattedWhatsAppPhone(email: string, rawPhone: string): Promise<string> {
+async function getFormattedWhatsAppPhone(email: string, rawPhone: string | null | undefined): Promise<string> {
+  if (!rawPhone) return ''
   let cleanPhone = rawPhone.replace(/[\s\-().]/g, '')
 
   if (cleanPhone.startsWith('+')) {
@@ -180,7 +182,7 @@ export const notifications = {
 
   async userApproved(to: string, phone: string, fullName?: string) {
     const msg = `Hello ${fullName || 'there'} 👋\n\nYour NextTripy account has been approved! You can now browse and contact car rental companies directly.\n\nLogin at: ${APP_URL()}/auth`
-    await sendEmail({
+    const emailSent = await sendEmail({
       to,
       subject: '🎉 Your NextTripy Account Is Approved!',
       title: `Welcome to NextTripy, ${fullName || 'there'}!`,
@@ -189,36 +191,36 @@ export const notifications = {
       ctaUrl: `${APP_URL()}/marketplace`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
-    return buildWhatsAppNotificationUrl(formattedPhone, msg)
+    return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
   },
 
   async userRejected(to: string, phone: string) {
     const msg = `Hello,\n\nYour NextTripy account application was not approved at this time. For assistance please contact info@nexttripy.com`
-    await sendEmail({
+    const emailSent = await sendEmail({
       to,
       subject: 'NextTripy Account Application Update',
       title: 'Account Application — Update',
       bodyHtml: `After reviewing your application, we were unable to approve your account at this time. If you believe this is an error or would like to provide additional information, please reach out to <strong>info@nexttripy.com</strong>.`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
-    return buildWhatsAppNotificationUrl(formattedPhone, msg)
+    return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
   },
 
   async userSuspended(to: string, phone: string) {
     const msg = `Hello,\n\nYour NextTripy account has been suspended. For assistance please contact info@nexttripy.com`
-    await sendEmail({
+    const emailSent = await sendEmail({
       to,
       subject: 'NextTripy Account Suspended',
       title: 'Account Suspended',
       bodyHtml: `Your NextTripy account has been temporarily suspended by an administrator. Please contact <strong>info@nexttripy.com</strong> to resolve this.`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
-    return buildWhatsAppNotificationUrl(formattedPhone, msg)
+    return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
   },
 
   async companyApproved(to: string, phone: string, companyName: string) {
     const msg = `Hello ${companyName} 🎉\n\nYour company profile on NextTripy has been APPROVED! Log in to your dashboard to subscribe and start listing your vehicles.\n\nDashboard: ${APP_URL()}/dashboard/company`
-    await sendEmail({
+    const emailSent = await sendEmail({
       to,
       subject: `🎉 ${companyName} — NextTripy Profile Approved!`,
       title: `${companyName} — Approved!`,
@@ -232,36 +234,36 @@ export const notifications = {
       ctaUrl: `${APP_URL()}/dashboard/company`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
-    return buildWhatsAppNotificationUrl(formattedPhone, msg)
+    return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
   },
 
   async companyRejected(to: string, phone: string, companyName: string) {
     const msg = `Hello ${companyName},\n\nYour NextTripy company application was not approved at this time. Please contact info@nexttripy.com for details.`
-    await sendEmail({
+    const emailSent = await sendEmail({
       to,
       subject: `${companyName} — NextTripy Application Update`,
       title: 'Company Application Not Approved',
       bodyHtml: `Unfortunately, your company application for <strong>${companyName}</strong> was not approved at this time. This may be due to incomplete information or documentation issues.<br><br>Please contact <strong>info@nexttripy.com</strong> with your business license and CNIC/ID for assistance.`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
-    return buildWhatsAppNotificationUrl(formattedPhone, msg)
+    return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
   },
 
   async companySuspended(to: string, phone: string, companyName: string) {
     const msg = `Hello ${companyName},\n\nYour NextTripy company account has been suspended. Contact info@nexttripy.com for assistance.`
-    await sendEmail({
+    const emailSent = await sendEmail({
       to,
       subject: `${companyName} — NextTripy Account Suspended`,
       title: 'Company Account Suspended',
       bodyHtml: `Your company account for <strong>${companyName}</strong> has been temporarily suspended by an administrator. Your car listings are hidden until the suspension is lifted.<br><br>Contact <strong>info@nexttripy.com</strong> to resolve this.`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
-    return buildWhatsAppNotificationUrl(formattedPhone, msg)
+    return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
   },
 
   async carApproved(to: string, phone: string, carName: string) {
     const msg = `Great news! ✅\n\nYour vehicle listing for "${carName}" on NextTripy has been APPROVED and is now live on the marketplace!\n\nView it at: ${APP_URL()}/marketplace`
-    await sendEmail({
+    const emailSent = await sendEmail({
       to,
       subject: `✅ "${carName}" is now live on NextTripy!`,
       title: 'Car Listing Approved',
@@ -270,12 +272,12 @@ export const notifications = {
       ctaUrl: `${APP_URL()}/marketplace`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
-    return buildWhatsAppNotificationUrl(formattedPhone, msg)
+    return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
   },
 
   async carRejected(to: string, phone: string, carName: string) {
     const msg = `Hello,\n\nYour vehicle listing for "${carName}" on NextTripy was not approved. Please review the listing details and resubmit. Contact info@nexttripy.com for help.`
-    await sendEmail({
+    const emailSent = await sendEmail({
       to,
       subject: `NextTripy — Listing "${carName}" Not Approved`,
       title: 'Car Listing Not Approved',
@@ -288,24 +290,24 @@ export const notifications = {
       ctaUrl: `${APP_URL()}/dashboard/company`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
-    return buildWhatsAppNotificationUrl(formattedPhone, msg)
+    return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
   },
 
   async carSuspended(to: string, phone: string, carName: string) {
     const msg = `Hello,\n\nYour listing "${carName}" on NextTripy has been suspended. Contact info@nexttripy.com for assistance.`
-    await sendEmail({
+    const emailSent = await sendEmail({
       to,
       subject: `NextTripy — Listing "${carName}" Suspended`,
       title: 'Car Listing Suspended',
       bodyHtml: `Your vehicle listing for <strong>${carName}</strong> has been temporarily suspended by an admin. Please contact <strong>info@nexttripy.com</strong> for details.`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
-    return buildWhatsAppNotificationUrl(formattedPhone, msg)
+    return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
   },
 
   async subscriptionActivated(to: string, phone: string, companyName: string, endDate: string) {
     const msg = `Hello ${companyName} ✅\n\nYour NextTripy subscription has been activated! Your account is now active until ${endDate}. Start adding your cars now: ${APP_URL()}/dashboard/company`
-    await sendEmail({
+    const emailSent = await sendEmail({
       to,
       subject: '✅ NextTripy Subscription Activated',
       title: 'Subscription Activated',
@@ -314,12 +316,12 @@ export const notifications = {
       ctaUrl: `${APP_URL()}/dashboard/company`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
-    return buildWhatsAppNotificationUrl(formattedPhone, msg)
+    return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
   },
 
   async subscriptionDeactivated(to: string, phone: string, companyName: string) {
     const msg = `Hello ${companyName},\n\nYour NextTripy subscription has been deactivated. Your listings are currently hidden. Contact info@nexttripy.com for help.`
-    await sendEmail({
+    const emailSent = await sendEmail({
       to,
       subject: 'NextTripy Subscription Deactivated',
       title: 'Subscription Deactivated',
@@ -328,12 +330,12 @@ export const notifications = {
       ctaUrl: `${APP_URL()}/dashboard/company`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
-    return buildWhatsAppNotificationUrl(formattedPhone, msg)
+    return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
   },
 
   async paymentRejected(to: string, phone: string, companyName: string) {
     const msg = `Hello ${companyName},\n\nYour NextTripy subscription payment could not be verified. Please contact info@nexttripy.com or resubmit your payment from the dashboard.`
-    await sendEmail({
+    const emailSent = await sendEmail({
       to,
       subject: 'NextTripy — Payment Could Not Be Verified',
       title: 'Payment Verification Failed',
@@ -342,6 +344,6 @@ export const notifications = {
       ctaUrl: `${APP_URL()}/dashboard/company`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
-    return buildWhatsAppNotificationUrl(formattedPhone, msg)
+    return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
   },
 }

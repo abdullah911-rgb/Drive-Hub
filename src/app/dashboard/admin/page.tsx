@@ -15,6 +15,8 @@ interface Room {
   pricePerNight: number
   capacity: number
   status: string
+  amenities?: string[]
+  images?: { imageUrl: string; isPrimary: boolean }[]
   company?: { name: string }
 }
 
@@ -40,6 +42,8 @@ export default function AdminDashboard() {
   const [profileForm, setProfileForm] = useState({ fullName: '', email: '', currentPassword: '', newPassword: '', confirmPassword: '' })
   const [updatingProfile, setUpdatingProfile] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [selectedCar, setSelectedCar] = useState<Car | null>(null)
+  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)
   const [showAdminCurPw, setShowAdminCurPw] = useState(false)
   const [showAdminNewPw, setShowAdminNewPw] = useState(false)
   const [showAdminConfPw, setShowAdminConfPw] = useState(false)
@@ -109,16 +113,15 @@ export default function AdminDashboard() {
       })
       const data = await res.json()
       if (res.ok && data.success) {
-
-        toast.success(`✅ Action "${action}" applied — email notification sent!`)
+        const emailMsg = data.emailSent ? '✉️ Email sent!' : '⚠️ Action applied (email not sent — check SMTP config)'
+        toast.success(`✅ Action "${action}" applied. ${emailMsg}`)
 
         if (data.whatsAppUrl) {
-          // Show a proper in-page modal instead of a toast (toast links are not reliably clickable)
           const name = data.data?.name || data.data?.fullName || data.data?.email || 'User'
           setWhatsAppModal({ url: data.whatsAppUrl, name, action })
         }
 
-        loadData() 
+        loadData()
       } else {
         toast.error(data.error || 'Failed to execute action')
       }
@@ -255,25 +258,30 @@ export default function AdminDashboard() {
 
         <div className="lg:col-span-3 flex flex-col gap-2">
           {[
-            { id: 'stats', label: '📊 Stats & Performance' },
-            { id: 'companies', label: '🏢 Company Approvals' },
-            { id: 'cars', label: '🚗 Vehicle Listings' },
-            { id: 'rooms', label: '🏨 Hotel Rooms' },
-            { id: 'payments', label: '💳 Payment Verification' },
-            { id: 'users', label: '👥 User Management' },
-            { id: 'reviews', label: '⭐ Review Moderation' },
-            { id: 'profile', label: '👤 My Profile' },
+            { id: 'stats', label: '📊 Stats & Performance', badge: 0 },
+            { id: 'companies', label: '🏢 Company Approvals', badge: pendingCompanies.length },
+            { id: 'cars', label: '🚗 Vehicle Listings', badge: pendingCars.length },
+            { id: 'rooms', label: '🏨 Hotel Rooms', badge: pendingRooms.length },
+            { id: 'payments', label: '💳 Payment Verification', badge: 0 },
+            { id: 'users', label: '👥 User Management', badge: 0 },
+            { id: 'reviews', label: '⭐ Review Moderation', badge: 0 },
+            { id: 'profile', label: '👤 My Profile', badge: 0 },
           ].map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as AdminTab)}
-              className={`w-full text-left px-4 py-3 rounded-xl font-semibold text-sm transition-all ${
+              className={`w-full text-left px-4 py-3 rounded-xl font-semibold text-sm transition-all flex items-center justify-between ${
                 activeTab === tab.id
                   ? 'bg-primary/10 border border-primary/30 text-primary dark:text-white shadow-neon-violet/10'
                   : 'glass border border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
               }`}
             >
-              {tab.label}
+              <span>{tab.label}</span>
+              {tab.badge > 0 && (
+                <span className="bg-amber-500 text-white text-3xs font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                  {tab.badge}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -514,36 +522,59 @@ export default function AdminDashboard() {
                 exit={{ opacity: 0, y: -10 }}
                 className="flex flex-col gap-4"
               >
-                <h3 className="font-heading font-bold text-slate-900 dark:text-white text-lg mb-2">Pending Vehicle Listings</h3>
+                <h3 className="font-heading font-bold text-slate-900 dark:text-white text-lg mb-2">Vehicle Listings</h3>
 
-                {pendingCars.length > 0 ? (
-                  pendingCars.map(car => (
-                    <div key={car.id} className="glass-card p-5 border border-white/5 flex flex-col md:flex-row justify-between gap-4">
-                      <div>
-                        <h4 className="font-bold text-slate-900 dark:text-white text-sm mb-1">{car.brand} {car.model} ({car.year})</h4>
-                        <p className="text-slate-400 text-xs">Transmission: {car.transmission} • Fuel: {car.fuelType} • Seating: {car.seatingCapacity}</p>
-                        <p className="text-slate-400 text-xs">Reg #: {car.regNumber} • Engine: {car.engineNumber} • Mileage: {car.mileage.toLocaleString()} km</p>
-                        <p className="text-slate-500 text-xs mt-1">{car.description}</p>
+                {pendingCars.length > 0 && (
+                  <p className="text-amber-400 text-xs mb-1">{pendingCars.length} vehicle(s) awaiting approval</p>
+                )}
+
+                {cars.length > 0 ? (
+                  cars.map(car => {
+                    const primaryImage = (car as Car & { images?: { imageUrl: string; isPrimary: boolean }[] }).images?.find(i => i.isPrimary)?.imageUrl
+                      || (car as Car & { images?: { imageUrl: string }[] }).images?.[0]?.imageUrl
+                    return (
+                      <div
+                        key={car.id}
+                        className="glass-card border border-white/5 cursor-pointer hover:border-primary/30 transition-all"
+                        onClick={() => setSelectedCar(car)}
+                      >
+                        <div className="flex gap-4 p-4">
+                          {primaryImage ? (
+                            <img src={primaryImage} alt={`${car.brand} ${car.model}`} className="w-24 h-20 rounded-xl object-cover shrink-0" />
+                          ) : (
+                            <div className="w-24 h-20 rounded-xl bg-slate-700 flex items-center justify-center text-2xl shrink-0">🚗</div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-bold text-slate-900 dark:text-white text-sm">{car.brand} {car.model} ({car.year})</h4>
+                              <span className={`text-3xs px-2 py-0.5 rounded border font-semibold ${
+                                car.status === 'APPROVED' ? 'text-emerald-400 border-emerald-400/20 bg-emerald-400/5'
+                                : car.status === 'REJECTED' ? 'text-red-400 border-red-400/20 bg-red-400/5'
+                                : car.status === 'PENDING' ? 'text-amber-400 border-amber-400/20 bg-amber-400/5'
+                                : 'text-slate-400 border-slate-400/20'
+                              }`}>{car.status}</span>
+                            </div>
+                            <p className="text-slate-400 text-xs">{car.transmission} • {car.fuelType} • {car.seatingCapacity} seats • {car.mileage?.toLocaleString()} km</p>
+                            <p className="text-slate-500 text-xs mt-0.5 line-clamp-1">{car.description}</p>
+                          </div>
+                          {car.status === 'PENDING' && (
+                            <div className="flex flex-col gap-1.5 shrink-0" onClick={e => e.stopPropagation()}>
+                              <button onClick={() => handleAdminAction('car', car.id, 'approve')} className="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">Approve</button>
+                              <button onClick={() => handleAdminAction('car', car.id, 'reject')} className="bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">Reject</button>
+                            </div>
+                          )}
+                          {car.status === 'APPROVED' && (
+                            <div className="flex flex-col gap-1.5 shrink-0" onClick={e => e.stopPropagation()}>
+                              <button onClick={() => handleAdminAction('car', car.id, 'suspend')} className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">Suspend</button>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 mt-2 md:mt-0 flex-shrink-0">
-                        <button
-                          onClick={() => handleAdminAction('car', car.id, 'approve')}
-                          className="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold px-4 py-2 rounded-lg"
-                        >
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => handleAdminAction('car', car.id, 'reject')}
-                          className="bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-4 py-2 rounded-lg"
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    </div>
-                  ))
+                    )
+                  })
                 ) : (
                   <div className="glass-card p-12 text-center border border-white/5 text-slate-400 text-sm">
-                    No car listings awaiting approval.
+                    No vehicle listings yet.
                   </div>
                 )}
               </motion.div>
@@ -559,67 +590,59 @@ export default function AdminDashboard() {
               >
                 <h3 className="font-heading font-bold text-slate-900 dark:text-white text-lg mb-2">Hotel Room Listings</h3>
 
-                {pendingRooms.length > 0 ? (
-                  <>
-                    <p className="text-amber-400 text-xs mb-1">{pendingRooms.length} room(s) awaiting approval</p>
-                    {pendingRooms.map(room => (
-                      <div key={room.id} className="glass-card p-5 border border-white/5 flex flex-col md:flex-row justify-between gap-4">
-                        <div>
-                          <h4 className="font-bold text-slate-900 dark:text-white text-sm mb-1">{room.name}</h4>
-                          <p className="text-slate-400 text-xs">Type: {room.roomType} • Capacity: {room.capacity} • ${room.pricePerNight}/night</p>
-                          {room.company && <p className="text-primary text-xs">Hotel: {room.company.name}</p>}
-                          <p className="text-slate-500 text-xs mt-1 line-clamp-2">{room.description}</p>
-                        </div>
-                        <div className="flex items-center gap-2 mt-2 md:mt-0 flex-shrink-0">
-                          <button
-                            onClick={() => handleAdminAction('room', room.id, 'approve')}
-                            className="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold px-4 py-2 rounded-lg"
-                          >
-                            Approve
-                          </button>
-                          <button
-                            onClick={() => handleAdminAction('room', room.id, 'reject')}
-                            className="bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-4 py-2 rounded-lg"
-                          >
-                            Reject
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </>
-                ) : null}
+                {pendingRooms.length > 0 && (
+                  <p className="text-amber-400 text-xs mb-1">{pendingRooms.length} room(s) awaiting approval</p>
+                )}
 
-                <h4 className="font-bold text-slate-900 dark:text-white text-sm mt-2">All Rooms ({rooms.length})</h4>
-                {rooms.filter(r => r.status !== 'PENDING').length > 0 ? (
-                  rooms.filter(r => r.status !== 'PENDING').map(room => (
-                    <div key={room.id} className="glass-card p-4 border border-white/5 flex flex-col md:flex-row justify-between gap-3">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-bold text-slate-900 dark:text-white text-sm">{room.name}</h4>
-                          <span className={`text-3xs px-2 py-0.5 rounded border font-semibold ${
-                            room.status === 'APPROVED' ? 'text-emerald-400 border-emerald-400/20 bg-emerald-400/5'
-                            : room.status === 'REJECTED' ? 'text-red-400 border-red-400/20 bg-red-400/5'
-                            : 'text-slate-400 border-slate-400/20'
-                          }`}>{room.status}</span>
+                {rooms.length > 0 ? (
+                  rooms.map(room => {
+                    const primaryImage = room.images?.find(i => i.isPrimary)?.imageUrl || room.images?.[0]?.imageUrl
+                    return (
+                      <div
+                        key={room.id}
+                        className="glass-card border border-white/5 cursor-pointer hover:border-primary/30 transition-all"
+                        onClick={() => setSelectedRoom(room)}
+                      >
+                        <div className="flex gap-4 p-4">
+                          {primaryImage ? (
+                            <img src={primaryImage} alt={room.name} className="w-24 h-20 rounded-xl object-cover shrink-0" />
+                          ) : (
+                            <div className="w-24 h-20 rounded-xl bg-slate-700 flex items-center justify-center text-2xl shrink-0">🏨</div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-bold text-slate-900 dark:text-white text-sm">{room.name}</h4>
+                              <span className={`text-3xs px-2 py-0.5 rounded border font-semibold ${
+                                room.status === 'APPROVED' ? 'text-emerald-400 border-emerald-400/20 bg-emerald-400/5'
+                                : room.status === 'REJECTED' ? 'text-red-400 border-red-400/20 bg-red-400/5'
+                                : room.status === 'PENDING' ? 'text-amber-400 border-amber-400/20 bg-amber-400/5'
+                                : 'text-slate-400 border-slate-400/20'
+                              }`}>{room.status}</span>
+                            </div>
+                            <p className="text-slate-400 text-xs">{room.roomType} • Capacity: {room.capacity} • ${room.pricePerNight}/night</p>
+                            {room.company && <p className="text-primary text-xs">{room.company.name}</p>}
+                            <p className="text-slate-500 text-xs mt-0.5 line-clamp-1">{room.description}</p>
+                          </div>
+                          {room.status === 'PENDING' && (
+                            <div className="flex flex-col gap-1.5 shrink-0" onClick={e => e.stopPropagation()}>
+                              <button onClick={() => handleAdminAction('room', room.id, 'approve')} className="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">Approve</button>
+                              <button onClick={() => handleAdminAction('room', room.id, 'reject')} className="bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">Reject</button>
+                            </div>
+                          )}
+                          {room.status === 'APPROVED' && (
+                            <div className="flex flex-col gap-1.5 shrink-0" onClick={e => e.stopPropagation()}>
+                              <button onClick={() => handleAdminAction('room', room.id, 'suspend')} className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">Suspend</button>
+                            </div>
+                          )}
                         </div>
-                        <p className="text-slate-400 text-xs">{room.roomType} • Cap: {room.capacity} • ${room.pricePerNight}/night</p>
-                        {room.company && <p className="text-primary text-xs">{room.company.name}</p>}
                       </div>
-                      {room.status === 'APPROVED' && (
-                        <button
-                          onClick={() => handleAdminAction('room', room.id, 'suspend')}
-                          className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg self-center"
-                        >
-                          Suspend
-                        </button>
-                      )}
-                    </div>
-                  ))
-                ) : rooms.length === 0 ? (
+                    )
+                  })
+                ) : (
                   <div className="glass-card p-12 text-center border border-white/5 text-slate-400 text-sm">
                     No hotel room listings yet.
                   </div>
-                ) : null}
+                )}
               </motion.div>
             )}
 
@@ -1198,6 +1221,218 @@ export default function AdminDashboard() {
         )}
       </AnimatePresence>
 
+      {/* ── Car Detail Modal ───────────────────────────────── */}
+      <AnimatePresence>
+        {selectedCar && (() => {
+          const car = selectedCar as Car & { images?: { imageUrl: string; isPrimary: boolean }[], company?: { name: string } }
+          const images = car.images || []
+          return (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+              onClick={() => setSelectedCar(null)}
+            >
+              <motion.div
+                initial={{ scale: 0.92, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.92, opacity: 0, y: 20 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                className="glass-card border border-white/10 rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
+                onClick={e => e.stopPropagation()}
+              >
+                {/* Image Gallery */}
+                {images.length > 0 ? (
+                  <div className="flex gap-2 p-4 overflow-x-auto bg-black/20">
+                    {images.map((img, i) => (
+                      <img key={i} src={img.imageUrl} alt={`${car.brand} ${car.model} image ${i+1}`}
+                        className={`h-40 w-56 object-cover rounded-xl shrink-0 ${img.isPrimary ? 'ring-2 ring-primary' : ''}`} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="h-32 bg-slate-800 flex items-center justify-center text-4xl">🚗</div>
+                )}
+
+                <div className="p-6">
+                  <div className="flex items-start justify-between gap-4 mb-4">
+                    <div>
+                      <h2 className="font-heading font-black text-white text-xl">{car.brand} {car.model} ({car.year})</h2>
+                      {car.company && <p className="text-primary text-sm mt-0.5">{car.company.name}</p>}
+                    </div>
+                    <span className={`text-xs px-3 py-1.5 rounded-full border font-bold shrink-0 ${
+                      car.status === 'APPROVED' ? 'text-emerald-400 border-emerald-400/30 bg-emerald-400/10'
+                      : car.status === 'REJECTED' ? 'text-red-400 border-red-400/30 bg-red-400/10'
+                      : car.status === 'PENDING' ? 'text-amber-400 border-amber-400/30 bg-amber-400/10'
+                      : 'text-orange-400 border-orange-400/30 bg-orange-400/10'
+                    }`}>{car.status}</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    {[
+                      { label: 'Transmission', value: car.transmission },
+                      { label: 'Fuel Type', value: (car as Car & {fuelType?: string}).fuelType },
+                      { label: 'Seating', value: `${car.seatingCapacity} seats` },
+                      { label: 'Mileage', value: `${car.mileage?.toLocaleString()} km` },
+                      { label: 'Reg Number', value: car.regNumber },
+                      { label: 'Engine Number', value: (car as Car & {engineNumber?: string}).engineNumber },
+                      { label: 'Color', value: (car as Car & {color?: string}).color || 'N/A' },
+                    ].map(field => field.value && (
+                      <div key={field.label} className="glass rounded-xl p-3 border border-white/5">
+                        <p className="text-slate-500 text-2xs font-semibold uppercase tracking-wider mb-0.5">{field.label}</p>
+                        <p className="text-white text-sm font-semibold">{field.value}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {car.description && (
+                    <div className="glass rounded-xl p-4 border border-white/5 mb-4">
+                      <p className="text-slate-500 text-2xs font-semibold uppercase tracking-wider mb-1">Description</p>
+                      <p className="text-slate-300 text-sm leading-relaxed">{car.description}</p>
+                    </div>
+                  )}
+
+                  <div className="flex gap-3 flex-wrap">
+                    {car.status === 'PENDING' && (
+                      <>
+                        <button onClick={() => { handleAdminAction('car', car.id, 'approve'); setSelectedCar(null) }}
+                          className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-2.5 px-5 rounded-xl transition-all text-sm">
+                          ✅ Approve
+                        </button>
+                        <button onClick={() => { handleAdminAction('car', car.id, 'reject'); setSelectedCar(null) }}
+                          className="flex-1 bg-red-500 hover:bg-red-400 text-white font-bold py-2.5 px-5 rounded-xl transition-all text-sm">
+                          ❌ Reject
+                        </button>
+                      </>
+                    )}
+                    {car.status === 'APPROVED' && (
+                      <button onClick={() => { handleAdminAction('car', car.id, 'suspend'); setSelectedCar(null) }}
+                        className="flex-1 bg-orange-500 hover:bg-orange-400 text-white font-bold py-2.5 px-5 rounded-xl transition-all text-sm">
+                        ⏸ Suspend
+                      </button>
+                    )}
+                    <button onClick={() => setSelectedCar(null)}
+                      className="px-5 py-2.5 rounded-xl glass border border-white/10 text-slate-400 hover:text-white hover:border-white/30 transition-all text-sm font-semibold">
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )
+        })()}
+      </AnimatePresence>
+
+      {/* ── Room Detail Modal ───────────────────────────────── */}
+      <AnimatePresence>
+        {selectedRoom && (() => {
+          const room = selectedRoom
+          const images = room.images || []
+          return (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+              onClick={() => setSelectedRoom(null)}
+            >
+              <motion.div
+                initial={{ scale: 0.92, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.92, opacity: 0, y: 20 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                className="glass-card border border-white/10 rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
+                onClick={e => e.stopPropagation()}
+              >
+                {/* Image Gallery */}
+                {images.length > 0 ? (
+                  <div className="flex gap-2 p-4 overflow-x-auto bg-black/20">
+                    {images.map((img, i) => (
+                      <img key={i} src={img.imageUrl} alt={`${room.name} image ${i+1}`}
+                        className={`h-40 w-56 object-cover rounded-xl shrink-0 ${img.isPrimary ? 'ring-2 ring-primary' : ''}`} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="h-32 bg-slate-800 flex items-center justify-center text-4xl">🏨</div>
+                )}
+
+                <div className="p-6">
+                  <div className="flex items-start justify-between gap-4 mb-4">
+                    <div>
+                      <h2 className="font-heading font-black text-white text-xl">{room.name}</h2>
+                      {room.company && <p className="text-primary text-sm mt-0.5">{room.company.name}</p>}
+                    </div>
+                    <span className={`text-xs px-3 py-1.5 rounded-full border font-bold shrink-0 ${
+                      room.status === 'APPROVED' ? 'text-emerald-400 border-emerald-400/30 bg-emerald-400/10'
+                      : room.status === 'REJECTED' ? 'text-red-400 border-red-400/30 bg-red-400/10'
+                      : room.status === 'PENDING' ? 'text-amber-400 border-amber-400/30 bg-amber-400/10'
+                      : 'text-orange-400 border-orange-400/30 bg-orange-400/10'
+                    }`}>{room.status}</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    {[
+                      { label: 'Room Type', value: room.roomType },
+                      { label: 'Capacity', value: `${room.capacity} guests` },
+                      { label: 'Price Per Night', value: `$${room.pricePerNight}` },
+                    ].map(field => field.value && (
+                      <div key={field.label} className="glass rounded-xl p-3 border border-white/5">
+                        <p className="text-slate-500 text-2xs font-semibold uppercase tracking-wider mb-0.5">{field.label}</p>
+                        <p className="text-white text-sm font-semibold">{field.value}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {room.amenities && room.amenities.length > 0 && (
+                    <div className="glass rounded-xl p-4 border border-white/5 mb-4">
+                      <p className="text-slate-500 text-2xs font-semibold uppercase tracking-wider mb-2">Amenities</p>
+                      <div className="flex flex-wrap gap-2">
+                        {room.amenities.map(a => (
+                          <span key={a} className="text-xs bg-primary/10 border border-primary/20 text-primary px-2.5 py-1 rounded-full">{a}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {room.description && (
+                    <div className="glass rounded-xl p-4 border border-white/5 mb-4">
+                      <p className="text-slate-500 text-2xs font-semibold uppercase tracking-wider mb-1">Description</p>
+                      <p className="text-slate-300 text-sm leading-relaxed">{room.description}</p>
+                    </div>
+                  )}
+
+                  <div className="flex gap-3 flex-wrap">
+                    {room.status === 'PENDING' && (
+                      <>
+                        <button onClick={() => { handleAdminAction('room', room.id, 'approve'); setSelectedRoom(null) }}
+                          className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-2.5 px-5 rounded-xl transition-all text-sm">
+                          ✅ Approve
+                        </button>
+                        <button onClick={() => { handleAdminAction('room', room.id, 'reject'); setSelectedRoom(null) }}
+                          className="flex-1 bg-red-500 hover:bg-red-400 text-white font-bold py-2.5 px-5 rounded-xl transition-all text-sm">
+                          ❌ Reject
+                        </button>
+                      </>
+                    )}
+                    {room.status === 'APPROVED' && (
+                      <button onClick={() => { handleAdminAction('room', room.id, 'suspend'); setSelectedRoom(null) }}
+                        className="flex-1 bg-orange-500 hover:bg-orange-400 text-white font-bold py-2.5 px-5 rounded-xl transition-all text-sm">
+                        ⏸ Suspend
+                      </button>
+                    )}
+                    <button onClick={() => setSelectedRoom(null)}
+                      className="px-5 py-2.5 rounded-xl glass border border-white/10 text-slate-400 hover:text-white hover:border-white/30 transition-all text-sm font-semibold">
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )
+        })()}
+      </AnimatePresence>
+
     </div>
+
   )
 }
