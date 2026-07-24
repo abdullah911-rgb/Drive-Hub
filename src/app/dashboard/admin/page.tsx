@@ -249,6 +249,29 @@ export default function AdminDashboard() {
 
   const statsCards = [...baseCards, ...revenueCards]
 
+  // Search filters
+  const filteredCompanies = companies.filter(comp =>
+    comp.name?.toLowerCase().includes(companySearch.toLowerCase()) ||
+    comp.ownerName?.toLowerCase().includes(companySearch.toLowerCase())
+  )
+
+  const filteredCars = cars.filter(car =>
+    car.brand?.toLowerCase().includes(carSearch.toLowerCase()) ||
+    car.model?.toLowerCase().includes(carSearch.toLowerCase()) ||
+    car.name?.toLowerCase().includes(carSearch.toLowerCase())
+  )
+
+  const filteredRooms = rooms.filter(room =>
+    room.name?.toLowerCase().includes(roomSearch.toLowerCase()) ||
+    room.roomType?.toLowerCase().includes(roomSearch.toLowerCase()) ||
+    room.company?.name?.toLowerCase().includes(roomSearch.toLowerCase())
+  )
+
+  const filteredUsers = users.filter(u =>
+    u.fullName?.toLowerCase().includes(userSearch.toLowerCase()) ||
+    u.email?.toLowerCase().includes(userSearch.toLowerCase())
+  )
+
   return (
     <div className="container-app py-8">
 
@@ -371,13 +394,8 @@ export default function AdminDashboard() {
                    )}
                  </div>
 
-                 {(() => {
-                   const filteredCompanies = companies.filter(comp =>
-                     comp.name?.toLowerCase().includes(companySearch.toLowerCase()) ||
-                     comp.ownerName?.toLowerCase().includes(companySearch.toLowerCase())
-                   )
-                   return filteredCompanies.length > 0 ? (
-                     filteredCompanies.map(comp => {
+                 {filteredCompanies.length > 0 ? (
+                   filteredCompanies.map(comp => {
                      const companySub = subscriptions.find(s => s.companyId === comp.id)
                      const subStatus = companySub?.status || 'UNSUBSCRIBED'
  
@@ -539,8 +557,7 @@ export default function AdminDashboard() {
                   <div className="glass-card p-12 text-center border border-white/5 text-slate-400 text-sm">
                     No company accounts found.
                   </div>
-                )
-                 })()}
+                )}
               </motion.div>
             )}
 
@@ -577,14 +594,8 @@ export default function AdminDashboard() {
                   <p className="text-amber-400 text-xs mb-1">{pendingCars.length} vehicle(s) awaiting approval</p>
                 )}
 
-                {(() => {
-                  const filteredCars = cars.filter(car =>
-                    car.brand?.toLowerCase().includes(carSearch.toLowerCase()) ||
-                    car.model?.toLowerCase().includes(carSearch.toLowerCase()) ||
-                    car.name?.toLowerCase().includes(carSearch.toLowerCase())
-                  )
-                  return filteredCars.length > 0 ? (
-                    filteredCars.map(car => {
+                {filteredCars.length > 0 ? (
+                  filteredCars.map(car => {
                     const primaryImage = (car as Car & { images?: { imageUrl: string; isPrimary: boolean }[] }).images?.find(i => i.isPrimary)?.imageUrl
                       || (car as Car & { images?: { imageUrl: string }[] }).images?.[0]?.imageUrl
                     return (
@@ -631,8 +642,7 @@ export default function AdminDashboard() {
                   <div className="glass-card p-12 text-center border border-white/5 text-slate-400 text-sm">
                     No vehicle listings yet.
                   </div>
-                )
-                })()}
+                )}
               </motion.div>
             )}
 
@@ -669,14 +679,8 @@ export default function AdminDashboard() {
                   <p className="text-amber-400 text-xs mb-1">{pendingRooms.length} room(s) awaiting approval</p>
                 )}
 
-                {(() => {
-                  const filteredRooms = rooms.filter(room =>
-                    room.name?.toLowerCase().includes(roomSearch.toLowerCase()) ||
-                    room.roomType?.toLowerCase().includes(roomSearch.toLowerCase()) ||
-                    room.company?.name?.toLowerCase().includes(roomSearch.toLowerCase())
-                  )
-                  return filteredRooms.length > 0 ? (
-                    filteredRooms.map(room => {
+                {filteredRooms.length > 0 ? (
+                  filteredRooms.map(room => {
                     const primaryImage = room.images?.find(i => i.isPrimary)?.imageUrl || room.images?.[0]?.imageUrl
                     return (
                       <div
@@ -723,8 +727,7 @@ export default function AdminDashboard() {
                   <div className="glass-card p-12 text-center border border-white/5 text-slate-400 text-sm">
                     No hotel room listings yet.
                   </div>
-                )
-                })()}
+                )}
               </motion.div>
             )}
 
@@ -855,12 +858,7 @@ export default function AdminDashboard() {
 
                 {/* User cards grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {(() => {
-                    const filteredUsers = users.filter(u =>
-                      u.fullName?.toLowerCase().includes(userSearch.toLowerCase()) ||
-                      u.email?.toLowerCase().includes(userSearch.toLowerCase())
-                    )
-                    return filteredUsers.map(u => {
+                  {filteredUsers.map(u => {
                     const roleColors: Record<string, string> = {
                       ADMIN: 'text-violet-500 bg-violet-500/10 border-violet-500/20',
                       SUPER_ADMIN: 'text-purple-500 bg-purple-500/10 border-purple-500/20',
@@ -942,7 +940,7 @@ export default function AdminDashboard() {
                   })}
                 </div>
 
-                {users.length === 0 && (
+                {filteredUsers.length === 0 && (
                   <div className="glass-card p-12 text-center border border-white/5 text-slate-400 text-sm">No users found.</div>
                 )}
               </motion.div>
