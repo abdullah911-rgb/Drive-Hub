@@ -184,7 +184,7 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
       <ParticleBackground />
       <Navbar />
 
-      <div className="relative z-10 flex flex-col min-h-screen pt-16">
+      <div className="relative flex flex-col min-h-screen pt-16">
         {/* Top Ad (Navbar & Hero Gap) */}
         <GoogleAd className="mt-2 mb-0" />
 

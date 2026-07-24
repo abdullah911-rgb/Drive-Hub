@@ -235,7 +235,7 @@ function VisitContent() {
 
       <Navbar />
 
-      <div className="relative z-10 flex flex-grow flex-col">
+      <div className="relative flex flex-grow flex-col">
       <main className="flex-grow flex items-center justify-center px-4 py-16">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
