@@ -158,9 +158,6 @@ export default function Navbar() {
                       {user.fullName?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
                     </div>
                     <span className="text-sm text-slate-300 max-w-[120px] truncate">{user.fullName || user.email}</span>
-                    {notifications > 0 && (
-                      <span className="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold">{notifications}</span>
-                    )}
                     <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>

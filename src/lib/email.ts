@@ -1,19 +1,32 @@
 import nodemailer from 'nodemailer'
 import { prisma } from './prisma'
 
+/** Strip surrounding quotes that appear when .env values are copy-pasted into Vercel's dashboard */
+function cleanEnv(val: string | undefined): string | undefined {
+  if (!val) return val
+  return val.replace(/^["']|["']$/g, '').trim()
+}
+
 function createTransporter() {
-  const port = parseInt(process.env.SMTP_PORT || '587')
+  const host = cleanEnv(process.env.SMTP_HOST) || 'mail.nexttripy.com'
+  const rawPort = cleanEnv(process.env.SMTP_PORT)
+  const port = parseInt(rawPort || '465', 10)
+  const user = cleanEnv(process.env.SMTP_USER)
+  const pass = cleanEnv(process.env.SMTP_PASS)
+
+  console.log(`[Email] Transporter config → host=${host} port=${port} secure=${port === 465} user=${user}`)
+
   return nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: port,
+    host,
+    port,
     secure: port === 465,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
+    auth: { user, pass },
     tls: {
-      rejectUnauthorized: false, // Prevents certificate verification errors in serverless environments (common with cPanel self-signed certs)
+      rejectUnauthorized: false, // cPanel/shared-host self-signed certs
     },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
   })
 }
 
@@ -88,14 +101,19 @@ export async function sendEmail(opts: {
   ctaLabel?: string
   ctaUrl?: string
 }): Promise<void> {
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+  const smtpUser = cleanEnv(process.env.SMTP_USER)
+  const smtpPass = cleanEnv(process.env.SMTP_PASS)
+
+  if (!smtpUser || !smtpPass) {
     console.warn('[Email] SMTP_USER / SMTP_PASS not configured — skipping email to', opts.to)
     return
   }
 
   try {
     const transporter = createTransporter()
-    const fromAddress = process.env.SMTP_FROM || `"NextTripy" <${process.env.SMTP_USER}>`
+    const rawFrom = cleanEnv(process.env.SMTP_FROM)
+    const fromAddress = rawFrom || `"NextTripy" <${smtpUser}>`
+    console.log(`[Email] Sending "${opts.subject}" → ${opts.to} (from: ${fromAddress})`)
     await transporter.sendMail({
       from: fromAddress,
       to: opts.to,
@@ -103,8 +121,10 @@ export async function sendEmail(opts: {
       html: buildHtml(opts.title, opts.bodyHtml, opts.ctaLabel, opts.ctaUrl),
     })
     console.log(`[Email] ✓ Sent "${opts.subject}" → ${opts.to}`)
-  } catch (err) {
-    console.error('[Email] ✗ Failed to send notification:', err)
+  } catch (err: unknown) {
+    const e = err as { code?: string; response?: string; message?: string }
+    console.error(`[Email] ✗ Failed — code=${e?.code} response=${e?.response} message=${e?.message}`)
+    console.error('[Email] Full error:', err)
   }
 }
 
