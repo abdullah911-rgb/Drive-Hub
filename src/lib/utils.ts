@@ -1,4 +1,4 @@
-﻿import { clsx, type ClassValue } from 'clsx'
+import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
 export function cn(...inputs: ClassValue[]) {
@@ -41,8 +41,39 @@ export function slugify(str: string): string {
 }
 
 export function formatPhoneForWhatsApp(phone: string): string {
+  let clean = phone.replace(/\D/g, '')
 
-  return phone.replace(/\D/g, '')
+  if (clean.startsWith('00')) {
+    clean = clean.slice(2)
+  }
+
+  // If it starts with 0 (local format), strip it
+  if (clean.startsWith('0')) {
+    clean = clean.slice(1)
+  }
+
+  // If the number is already in international format (e.g. starts with 92, 966, 971, 91, 880, 1, 44), return it
+  const commonCountryCodes = ['92', '966', '971', '91', '880', '1', '44']
+  if (commonCountryCodes.some(cc => clean.startsWith(cc) && clean.length > cc.length + 7)) {
+    return clean
+  }
+
+  // Otherwise, default to Pakistan dial code (92) if it looks like a PK number (10 digits starting with 3)
+  if (clean.length === 10 && clean.startsWith('3')) {
+    return '92' + clean
+  }
+
+  // Saudi Arabia / UAE mobile format (9 digits starting with 5)
+  if (clean.length === 9 && clean.startsWith('5')) {
+    return '966' + clean
+  }
+
+  // Default fallback: if it has 10 digits, assume 92 (Pakistan)
+  if (clean.length === 10) {
+    return '92' + clean
+  }
+
+  return clean
 }
 
 export function buildWhatsAppUrl(phone: string, message: string): string {

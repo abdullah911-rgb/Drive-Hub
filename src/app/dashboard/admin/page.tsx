@@ -413,7 +413,10 @@ export default function AdminDashboard() {
                             </span>
                           </div>
                           <p className="text-slate-400 text-xs">Owner: {comp.ownerName} • CNIC: {comp.cnicOrId}</p>
-                          <p className="text-slate-400 text-xs">Phone: {comp.contactNumber} • WhatsApp: {comp.whatsAppNumber}</p>
+                          <p className="text-slate-400 text-xs">
+                            Phone: <a href={`tel:${comp.contactNumber}`} className="text-blue-400 hover:text-blue-300 hover:underline font-medium">{comp.contactNumber}</a> • 
+                            WhatsApp: <a href={`https://wa.me/${comp.whatsAppNumber.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:text-emerald-300 hover:underline font-medium">💬 {comp.whatsAppNumber}</a>
+                          </p>
                           <p className="text-slate-500 text-xs mt-1">Address: {comp.businessAddress}</p>
 
                           {/* Document count badge — click card to view full documents */}
@@ -898,7 +901,25 @@ export default function AdminDashboard() {
                           ].map(({ label, value }) => value && value !== 'Pending' ? (
                             <div key={label} className="glass p-3 rounded-xl border border-white/5">
                               <p className="text-slate-500 text-2xs">{label}</p>
-                              <p className="text-slate-900 dark:text-white text-xs font-semibold mt-0.5 break-all">{value}</p>
+                              {label === 'WhatsApp' ? (
+                                <a 
+                                  href={`https://wa.me/${value.replace(/\D/g, '')}`} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  className="text-emerald-400 hover:text-emerald-300 hover:underline text-xs font-semibold mt-0.5 block break-all"
+                                >
+                                  💬 {value}
+                                </a>
+                              ) : label === 'Contact' ? (
+                                <a 
+                                  href={`tel:${value}`} 
+                                  className="text-blue-400 hover:text-blue-300 hover:underline text-xs font-semibold mt-0.5 block break-all"
+                                >
+                                  📞 {value}
+                                </a>
+                              ) : (
+                                <p className="text-slate-900 dark:text-white text-xs font-semibold mt-0.5 break-all">{value}</p>
+                              )}
                             </div>
                           ) : null)}
                         </div>

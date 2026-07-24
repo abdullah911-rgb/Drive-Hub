@@ -1,4 +1,5 @@
-﻿import nodemailer from 'nodemailer'
+import nodemailer from 'nodemailer'
+import { prisma } from './prisma'
 
 function createTransporter() {
   return nodemailer.createTransport({
@@ -103,6 +104,42 @@ export async function sendEmail(opts: {
   }
 }
 
+async function getFormattedWhatsAppPhone(email: string, rawPhone: string): Promise<string> {
+  let cleanPhone = rawPhone.replace(/[\s\-().]/g, '')
+
+  if (cleanPhone.startsWith('+')) {
+    return cleanPhone.slice(1)
+  }
+  if (cleanPhone.startsWith('00')) {
+    return cleanPhone.slice(2)
+  }
+
+  try {
+    const user = await prisma.user.findFirst({
+      where: { email, deletedAt: null },
+      include: { country: true }
+    })
+    
+    const dialCode = user?.country?.dialCode?.replace('+', '') || '92'
+    
+    if (cleanPhone.startsWith('0')) {
+      cleanPhone = cleanPhone.slice(1)
+    }
+    
+    if (!cleanPhone.startsWith(dialCode)) {
+      return `${dialCode}${cleanPhone}`
+    }
+    
+    return cleanPhone
+  } catch (err) {
+    console.warn('[WhatsApp Format] Database lookup failed, using fallback:', err)
+    if (cleanPhone.startsWith('0')) {
+      return '92' + cleanPhone.slice(1)
+    }
+    return cleanPhone
+  }
+}
+
 export function buildWhatsAppNotificationUrl(phone: string, message: string): string {
   const digits = phone.replace(/[\s+\-().]/g, '')
   return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`
@@ -122,7 +159,8 @@ export const notifications = {
       ctaLabel: 'Start Browsing Cars',
       ctaUrl: `${APP_URL()}/marketplace`,
     })
-    return buildWhatsAppNotificationUrl(phone, msg)
+    const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
+    return buildWhatsAppNotificationUrl(formattedPhone, msg)
   },
 
   async userRejected(to: string, phone: string) {
@@ -133,7 +171,8 @@ export const notifications = {
       title: 'Account Application — Update',
       bodyHtml: `After reviewing your application, we were unable to approve your account at this time. If you believe this is an error or would like to provide additional information, please reach out to <strong>support@nexttripy.com</strong>.`,
     })
-    return buildWhatsAppNotificationUrl(phone, msg)
+    const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
+    return buildWhatsAppNotificationUrl(formattedPhone, msg)
   },
 
   async userSuspended(to: string, phone: string) {
@@ -144,7 +183,8 @@ export const notifications = {
       title: 'Account Suspended',
       bodyHtml: `Your NextTripy account has been temporarily suspended by an administrator. Please contact <strong>support@nexttripy.com</strong> to resolve this.`,
     })
-    return buildWhatsAppNotificationUrl(phone, msg)
+    const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
+    return buildWhatsAppNotificationUrl(formattedPhone, msg)
   },
 
   async companyApproved(to: string, phone: string, companyName: string) {
@@ -162,7 +202,8 @@ export const notifications = {
       ctaLabel: 'Go to Dashboard',
       ctaUrl: `${APP_URL()}/dashboard/company`,
     })
-    return buildWhatsAppNotificationUrl(phone, msg)
+    const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
+    return buildWhatsAppNotificationUrl(formattedPhone, msg)
   },
 
   async companyRejected(to: string, phone: string, companyName: string) {
@@ -173,7 +214,8 @@ export const notifications = {
       title: 'Company Application Not Approved',
       bodyHtml: `Unfortunately, your company application for <strong>${companyName}</strong> was not approved at this time. This may be due to incomplete information or documentation issues.<br><br>Please contact <strong>support@nexttripy.com</strong> with your business license and CNIC/ID for assistance.`,
     })
-    return buildWhatsAppNotificationUrl(phone, msg)
+    const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
+    return buildWhatsAppNotificationUrl(formattedPhone, msg)
   },
 
   async companySuspended(to: string, phone: string, companyName: string) {
@@ -184,7 +226,8 @@ export const notifications = {
       title: 'Company Account Suspended',
       bodyHtml: `Your company account for <strong>${companyName}</strong> has been temporarily suspended by an administrator. Your car listings are hidden until the suspension is lifted.<br><br>Contact <strong>support@nexttripy.com</strong> to resolve this.`,
     })
-    return buildWhatsAppNotificationUrl(phone, msg)
+    const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
+    return buildWhatsAppNotificationUrl(formattedPhone, msg)
   },
 
   async carApproved(to: string, phone: string, carName: string) {
@@ -197,7 +240,8 @@ export const notifications = {
       ctaLabel: 'View Marketplace',
       ctaUrl: `${APP_URL()}/marketplace`,
     })
-    return buildWhatsAppNotificationUrl(phone, msg)
+    const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
+    return buildWhatsAppNotificationUrl(formattedPhone, msg)
   },
 
   async carRejected(to: string, phone: string, carName: string) {
@@ -214,7 +258,8 @@ export const notifications = {
       ctaLabel: 'Go to Dashboard',
       ctaUrl: `${APP_URL()}/dashboard/company`,
     })
-    return buildWhatsAppNotificationUrl(phone, msg)
+    const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
+    return buildWhatsAppNotificationUrl(formattedPhone, msg)
   },
 
   async carSuspended(to: string, phone: string, carName: string) {
@@ -225,7 +270,8 @@ export const notifications = {
       title: 'Car Listing Suspended',
       bodyHtml: `Your vehicle listing for <strong>${carName}</strong> has been temporarily suspended by an admin. Please contact <strong>support@nexttripy.com</strong> for details.`,
     })
-    return buildWhatsAppNotificationUrl(phone, msg)
+    const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
+    return buildWhatsAppNotificationUrl(formattedPhone, msg)
   },
 
   async subscriptionActivated(to: string, phone: string, companyName: string, endDate: string) {
@@ -238,7 +284,8 @@ export const notifications = {
       ctaLabel: 'Manage Fleet',
       ctaUrl: `${APP_URL()}/dashboard/company`,
     })
-    return buildWhatsAppNotificationUrl(phone, msg)
+    const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
+    return buildWhatsAppNotificationUrl(formattedPhone, msg)
   },
 
   async subscriptionDeactivated(to: string, phone: string, companyName: string) {
@@ -251,7 +298,8 @@ export const notifications = {
       ctaLabel: 'Go to Dashboard',
       ctaUrl: `${APP_URL()}/dashboard/company`,
     })
-    return buildWhatsAppNotificationUrl(phone, msg)
+    const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
+    return buildWhatsAppNotificationUrl(formattedPhone, msg)
   },
 
   async paymentRejected(to: string, phone: string, companyName: string) {
@@ -264,6 +312,7 @@ export const notifications = {
       ctaLabel: 'Go to Dashboard',
       ctaUrl: `${APP_URL()}/dashboard/company`,
     })
-    return buildWhatsAppNotificationUrl(phone, msg)
+    const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
+    return buildWhatsAppNotificationUrl(formattedPhone, msg)
   },
 }
