@@ -69,7 +69,10 @@ export const getFeaturedCompanies = unstable_cache(
         country: { select: { name: true, code: true } },
         city: { select: { name: true } },
         reviews: { where: { isVisible: true }, select: { rating: true } },
-        _count: { select: { cars: { where: { status: 'APPROVED', deletedAt: null } } } },
+        _count: { select: {
+          cars: { where: { status: 'APPROVED', deletedAt: null } },
+          rooms: { where: { status: 'APPROVED', deletedAt: null } },
+        } },
       },
     })
     return serializePrisma(
@@ -83,6 +86,7 @@ export const getFeaturedCompanies = unstable_cache(
           averageRating: Math.round(avg * 10) / 10,
           totalReviews: reviews.length,
           totalCars: _count.cars,
+          totalRooms: _count.rooms,
         }
       })
     )

@@ -167,8 +167,13 @@ export function CompanyCard({ company }: CompanyCardProps) {
             ? `${company.totalRooms || 0} rooms`
             : `${company.totalCars || 0} cars`}
         </span>
-        <span className="text-slate-400 dark:text-slate-600">·</span>
-        <span className="truncate">{company.businessAddress}</span>
+        {(() => {
+          const loc = (company.city as { name?: string })?.name
+            || (company.country as { name?: string })?.name
+          return loc
+            ? <><span className="text-slate-400 dark:text-slate-600">·</span><span className="truncate">{loc}</span></>
+            : null
+        })()}
       </div>
 
       <div className="flex gap-2 mt-auto pt-2 border-t border-border/10">
