@@ -31,7 +31,7 @@
 ### Partner dashboards
 - Car rental fleet management (images, specs, documents)
 - Hotel room management (type, nightly price, amenities, images)
-- Monthly subscription with multi-currency display (base **PKR 8,500**)
+- Monthly subscription with multi-currency display (base **PKR 3,000**)
 - Bank-transfer payment proof + admin verification
 
 ### Admin portal

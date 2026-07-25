@@ -431,9 +431,9 @@ export default function HotelDashboardClient() {
                     {rooms.map(room => (
                       <div key={room.id} className="glass-card no-card-hover p-4 flex flex-col md:flex-row gap-4">
                         {/* Image */}
-                        <div className="w-full md:w-32 h-24 rounded-lg overflow-hidden bg-white/5 flex-shrink-0">
+                        <div className="relative w-full md:w-32 h-24 rounded-lg overflow-hidden bg-white/5 flex-shrink-0">
                           {room.images?.[0] ? (
-                            <Image src={room.images[0].imageUrl} alt={room.name} fill className="w-full h-full object-cover" />
+                            <Image src={room.images[0].imageUrl} alt={room.name} fill sizes="128px" className="object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-3xl">🛏️</div>
                           )}
@@ -726,7 +726,7 @@ export default function HotelDashboardClient() {
                     <input
                       type="number"
                       className="input-field text-sm"
-                      placeholder={currencyCode === 'PKR' ? 'e.g. 8500' : currencyCode === 'USD' ? 'e.g. 99' : 'e.g. 250'}
+                      placeholder={currencyCode === 'PKR' ? 'e.g. 5000' : currencyCode === 'USD' ? 'e.g. 99' : 'e.g. 250'}
                       min="1"
                       step={currencyCode === 'PKR' ? '1' : '0.01'}
                       value={roomForm.pricePerNight}
