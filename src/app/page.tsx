@@ -14,7 +14,7 @@ export default async function LandingPage() {
   try {
     const [fetchedCars, fetchedCompanies, fetchedStats] = await Promise.all([
       getFeaturedCars(6),
-      getFeaturedCompanies(4),
+      getFeaturedCompanies(8),
       getMarketplaceStats(),
     ])
     cars = fetchedCars as unknown as Car[]

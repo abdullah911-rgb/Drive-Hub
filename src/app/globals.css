@@ -484,8 +484,7 @@ h1, h2, h3, h4, h5, h6 {
 
   .btn-icon:hover {
     background: var(--elevated);
-    color: var(--text-primary);
-    transform: scale(1.08) rotate(90deg);
+    transform: scale(1.08);
   }
 
   .btn-icon:active {

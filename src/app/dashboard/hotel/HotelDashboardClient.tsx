@@ -472,13 +472,13 @@ export default function HotelDashboardClient() {
                           <div className="flex gap-2">
                             <button
                               onClick={() => handleOpenEditModal(room)}
-                              className="btn-icon text-xs px-2 py-1 rounded-lg text-slate-400 hover:text-white"
+                              className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all duration-150 font-medium"
                             >
                               ✏️ Edit
                             </button>
                             <button
                               onClick={() => handleDeleteRoom(room.id)}
-                              className="btn-icon text-xs px-2 py-1 rounded-lg text-red-400 hover:text-red-300"
+                              className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-red-500/5 border border-red-500/20 text-red-400 hover:text-red-300 hover:bg-red-500/15 hover:border-red-400/40 transition-all duration-150 font-medium"
                             >
                               🗑️ Delete
                             </button>

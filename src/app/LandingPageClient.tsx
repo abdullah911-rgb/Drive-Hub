@@ -71,10 +71,9 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
 
     async function loadData() {
       try {
-        const [carsRes, companiesRes, roomsRes] = await Promise.all([
+        const [carsRes, companiesRes] = await Promise.all([
           fetch('/api/cars?status=APPROVED&limit=6&lite=true'),
           fetch('/api/companies?status=APPROVED&limit=100&lite=true'),
-          fetch('/api/rooms?status=APPROVED&limit=3'),
         ])
         if (carsRes.ok) {
           const data = await carsRes.json()
@@ -92,10 +91,6 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
             setStats((prev) => ({ ...prev, companyCount: total }))
           }
         }
-        if (roomsRes.ok) {
-          const data = await roomsRes.json()
-          setRooms(data.data || [])
-        }
       } catch {
       } finally {
         setLoading(false)
@@ -103,6 +98,14 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
     }
     loadData()
   }, [initialCars.length, initialCompanies.length])
+
+  // Always fetch rooms on mount (rooms are never included in server-side props)
+  useEffect(() => {
+    fetch('/api/rooms?status=APPROVED&limit=3')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => { if (data?.data) setRooms(data.data) })
+      .catch(() => {})
+  }, [])
 
   const brands = [...new Set(cars.map(c => c.brand))].sort()
   const featuredCars = cars.slice(0, 6)

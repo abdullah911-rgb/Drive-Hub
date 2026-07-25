@@ -63,6 +63,7 @@ export const getFeaturedCompanies = unstable_cache(
         id: true,
         name: true,
         status: true,
+        companyType: true,
         whatsAppNumber: true,
         businessAddress: true,
         country: { select: { name: true, code: true } },

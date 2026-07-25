@@ -1,0 +1,37 @@
+NextTripy – Tech Stack
+⭐Frontend
+
+Next.js (React)
+TypeScript
+Tailwind CSS
+Framer Motion
+
+⭐Backend
+
+Next.js REST APIs
+JWT Authentication
+bcrypt Password Hashing
+Nodemailer
+
+⭐Database
+
+PostgreSQL
+Prisma ORM
+
+⭐Security
+
+HTTP-Only Cookies
+Role-Based Authentication
+Encrypted Password Storage
+
+⭐Integrations
+
+Currency Exchange API
+Google Fonts
+PWA Support
+Image Optimization
+
+⭐Deployment
+
+Vercel
+Neon
