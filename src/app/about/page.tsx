@@ -18,7 +18,7 @@ export default function AboutPage() {
     },
     {
       title: 'Verified partners',
-      desc: 'Every company goes through a review process before their listings go live, so you can browse with confidence.',
+      desc: 'Every company and hotel goes through a review process before they can list, so you can browse with confidence.',
     },
     {
       title: 'Honest reviews',

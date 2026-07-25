@@ -39,3 +39,12 @@ Thumbs.db
 
 # User-uploaded files
 public/uploads/
+
+# Junk / local artifacts
+*.zip
+*.tsbuildinfo
+scratch/
+scripts/
+.agents/
+.claude/
+

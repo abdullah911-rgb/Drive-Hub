@@ -1,116 +1,70 @@
-# DriveHub — Car & Hotel Rental Marketplace
+# NextTripy — Car Rentals & Hotel Rooms
 
-[![Next.js](https://img.shields.io/badge/Next.js-15.5-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-15-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Prisma](https://img.shields.io/badge/Prisma-5.22-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Prisma](https://img.shields.io/badge/Prisma-5-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 
-DriveHub is a full-stack marketplace for **car rentals** and **hotel rooms**. Customers browse verified listings, compare options, and contact providers directly on WhatsApp. Rental companies and hotels manage fleets, rooms, subscriptions, and approvals through role-based dashboards.
+**NextTripy** is a full-stack marketplace for **car rentals** and **hotel rooms**. Customers browse verified partners, filter by country and city, and contact providers directly on WhatsApp. Rental companies and hotels manage listings and subscriptions through role-based dashboards.
 
-> **Note:** DriveHub is a listing and discovery platform. Bookings, payments, and agreements happen directly between customers and providers.
-
----
-
-## Table of Contents
-
-- [Key Features](#-key-features)
-- [User Roles](#-user-roles)
-- [Tech Stack](#-tech-stack)
-- [Getting Started](#-getting-started)
-- [Environment Variables](#-environment-variables)
-- [Database Scripts](#-database-scripts)
-- [API Overview](#-api-overview)
-- [Project Structure](#-project-structure)
-- [Deployment](#-deployment)
-- [Security](#-security)
+> NextTripy is a listing and discovery platform. Bookings, payments, and rental agreements happen directly between customers and providers.
 
 ---
 
-## Key Features
+## Features
 
-### Marketplace (Public)
-- Browse **cars** and **hotel rooms** with filters (country, city, brand, fuel type, transmission, capacity)
-- Company directory with profiles, ratings, and reviews
-- Direct **WhatsApp** contact links for every listing
-- Landing page with featured cars, partners, and room listings
-- Light / dark theme toggle
-- **PWA** support — installable on mobile and desktop
-- SEO: sitemap, robots.txt, Open Graph images, JSON-LD structured data
+### Marketplace
+- Browse **cars** and **hotel rooms** with country, city, and listing filters
+- Company / hotel directory with profiles, ratings, and reviews
+- Direct **WhatsApp** contact for every listing
+- Room prices shown in the hotel’s **local currency** (e.g. PKR for Pakistan)
+- Light / dark theme, PWA install, SEO (sitemap, robots, Open Graph, JSON-LD)
 
-### Authentication & Authorization
-- JWT authentication via **HTTP-only cookies** (`jose` + `bcryptjs`)
-- Role-based access enforced in middleware and API routes
-- Customer, company, hotel, admin, and super-admin flows
-- Account approval workflow (`PENDING` → `APPROVED` / `REJECTED`)
+### Accounts & roles
+- JWT auth via HTTP-only cookies (`jose` + `bcryptjs`)
+- Roles: `CUSTOMER`, `COMPANY`, `HOTEL`, `ADMIN`, `SUPER_ADMIN`
+- Admin approval for **customer** and **company/hotel** accounts
+- Car and room listings go **live immediately** when an approved subscribed partner creates them (admin can still suspend)
 
-### Company & Hotel Management
-- Company registration with document uploads and license validation
-- **Car rental** fleet management (images, documents, specs)
-- **Hotel** room listings (type, price per night, amenities, images)
-- Company types: `CAR_RENTAL` and `HOTEL`
-- Customer-to-company upgrade (register a business from customer account)
+### Partner dashboards
+- Car rental fleet management (images, specs, documents)
+- Hotel room management (type, nightly price, amenities, images)
+- Monthly subscription with multi-currency display (base **PKR 8,500**)
+- Bank-transfer payment proof + admin verification
 
-### Admin Portal
-- Approve / reject / suspend users, companies, cars, and rooms
-- Subscription and payment verification
-- Platform bank details management
-- Admin action logs and audit trails
-- In-app notifications + email alerts (SMTP)
-- Dashboard stats (users, listings, revenue by currency)
+### Admin portal
+- Approve / reject / suspend users and companies
+- Suspend listings if needed
+- Verify subscription payments
+- Platform bank details
+- In-app notifications + SMTP email alerts
 
-### Subscriptions & Payments
-- Monthly company subscription (base price: **PKR 8,500** / month)
-- Multi-currency display via live conversion API
-- Bank transfer submission with admin verification
-- Payment provider hooks: `mock`, `rapid_gateway`, `moyasar`
-- Payment methods: JazzCash, EasyPaisa, card, Apple Pay, Mada (region-dependent)
-
-### Global Localization
-- **25+ countries** with cities, dial codes, flags, and currencies
-- Country-specific form validation (e.g. FBR NTN for Pakistan, CR for Saudi Arabia)
-- Currency conversion endpoint for subscription pricing
-
-### Notifications
-- In-app notification system (approvals, reviews, payments, subscriptions)
-- Gmail SMTP email notifications via Nodemailer
-- Pre-formatted WhatsApp deep links for admin outreach
+### Localization
+- 25+ countries with cities, dial codes, flags, and currencies
+- Country-specific business form validation
 
 ---
 
-## User Roles
-
-| Role | Access |
-|------|--------|
-| `CUSTOMER` | Browse marketplace, leave reviews, register a company |
-| `COMPANY` | Car rental dashboard — manage cars, subscriptions, profile |
-| `HOTEL` | Hotel dashboard — manage rooms, subscriptions, profile |
-| `ADMIN` | Admin portal — approvals, payments, platform settings |
-| `SUPER_ADMIN` | Full admin access (seeded on first deploy) |
-
----
-
-## Tech Stack
+## Tech stack
 
 | Layer | Technology |
 |-------|------------|
 | Framework | Next.js 15 (App Router), React 19 |
 | Language | TypeScript 5 |
-| Styling | Tailwind CSS 3, custom CSS variables, Framer Motion |
+| Styling | Tailwind CSS 3, Framer Motion |
 | Database | PostgreSQL |
 | ORM | Prisma 5 |
-| Auth | JWT (`jose`), bcrypt password hashing, cookie sessions |
-| Email | Nodemailer (Gmail SMTP) |
-| UI Feedback | Sonner toasts |
-| Theming | next-themes (light / dark) |
+| Auth | JWT (`jose`), bcrypt, cookie sessions |
+| Email | Nodemailer (SMTP — e.g. cPanel or Gmail) |
+| UI | Sonner toasts, next-themes |
 | Images | Next.js Image + Sharp |
-| PWA | Web manifest + service worker |
-| Deployment | Vercel (with Prisma generate in build) |
+| Deploy | Vercel (recommended) |
 
 ---
 
-## Getting Started
+## Getting started
 
 ### Prerequisites
 
@@ -118,37 +72,29 @@ DriveHub is a full-stack marketplace for **car rentals** and **hotel rooms**. Cu
 - PostgreSQL 14+ (local or cloud)
 - npm
 
-### 1. Clone and install
+### 1. Install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git
-cd "Car Rental"
+git clone <your-repo-url>
+cd nexttripy
 npm install
 ```
 
-### 2. Configure environment
+### 2. Environment
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` with your database URL, JWT secret, SMTP credentials, and admin seed values. See [Environment Variables](#-environment-variables) below.
+Fill in `DATABASE_URL`, `JWT_SECRET`, app URL, admin seed values, and SMTP settings.
 
-### 3. Set up the database
+### 3. Database
 
 ```bash
-# Push schema + seed roles, countries, cities, and admin user
 npm run db:setup
 ```
 
-Or step by step:
-
-```bash
-npm run db:push
-npm run db:seed
-```
-
-### 4. Run the dev server
+### 4. Develop
 
 ```bash
 npm run dev
@@ -158,144 +104,128 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ---
 
-## Environment Variables
+## Environment variables
 
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `DATABASE_URL` | Yes | PostgreSQL connection string |
-| `JWT_SECRET` | Yes | Secret for signing JWT tokens (32+ chars) |
-| `NEXT_PUBLIC_APP_URL` | Yes | Public site URL (e.g. `http://localhost:3000`) |
-| `NEXT_PUBLIC_APP_NAME` | No | Display name (default: `DriveHub Marketplace`) |
-| `ADMIN_EMAIL` | Seed | Email for the first super-admin account |
-| `ADMIN_PASSWORD` | Seed | Password for the first super-admin account |
-| `ADMIN_PHONE` | Seed | Phone number for the admin user |
-| `SMTP_HOST` | Email | SMTP host (e.g. `smtp.gmail.com`) |
-| `SMTP_PORT` | Email | SMTP port (e.g. `587`) |
+| `JWT_SECRET` | Yes | JWT signing secret (32+ characters) |
+| `NEXT_PUBLIC_APP_URL` | Yes | Public site URL |
+| `NEXT_PUBLIC_APP_NAME` | No | Display name (default: `NextTripy`) |
+| `ADMIN_EMAIL` | Seed | First super-admin email |
+| `ADMIN_PASSWORD` | Seed | First super-admin password |
+| `ADMIN_PHONE` | Seed | Admin phone |
+| `SMTP_HOST` | Email | e.g. `mail.nexttripy.com` or `smtp.gmail.com` |
+| `SMTP_PORT` | Email | Prefer `587` (STARTTLS) |
 | `SMTP_USER` | Email | SMTP username |
-| `SMTP_PASS` | Email | SMTP password / app password |
-| `SMTP_FROM` | Email | From address for outgoing mail |
-
-Example `.env`:
+| `SMTP_PASS` | Email | SMTP password |
+| `SMTP_FROM` | Email | e.g. `NextTripy <info@nexttripy.com>` |
 
 ```env
-DATABASE_URL="postgresql://postgres:password@localhost:5432/car_rental_db?schema=public"
-JWT_SECRET="your-long-random-secret-here"
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/nexttripy?schema=public"
+JWT_SECRET="replace-with-a-long-random-secret"
 
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
-NEXT_PUBLIC_APP_NAME="DriveHub Marketplace"
+NEXT_PUBLIC_APP_NAME="NextTripy"
 
+ADMIN_EMAIL="admin@nexttripy.com"
+ADMIN_PASSWORD="change-me"
+ADMIN_PHONE="+920000000000"
 
-SMTP_HOST="smtp.gmail.com"
+SMTP_HOST="mail.nexttripy.com"
 SMTP_PORT="587"
-SMTP_USER="your-email@gmail.com"
-SMTP_PASS="your-gmail-app-password"
-SMTP_FROM='"DriveHub Marketplace" <your-email@gmail.com>'
+SMTP_USER="info@nexttripy.com"
+SMTP_PASS="your-smtp-password"
+SMTP_FROM="NextTripy <info@nexttripy.com>"
+```
+
+> Wrap `SMTP_FROM` in one pair of quotes around the **whole** value. Do not use nested quotes like `"NextTripy" <email>`.
+
+---
+
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Development server |
+| `npm run build` | Production build |
+| `npm run start` | Run production server |
+| `npm run lint` | ESLint |
+| `npm run db:generate` | Generate Prisma client |
+| `npm run db:push` | Push schema to database |
+| `npm run db:migrate` | Create / apply migrations |
+| `npm run db:seed` | Seed roles, countries, cities, admin |
+| `npm run db:setup` | `db:push` + `db:seed` |
+| `npm run db:purge-demo` | Remove demo data |
+| `npm run db:studio` | Prisma Studio |
+
+Optional admin reset (if needed):
+
+```bash
+npx tsx prisma/ensure-admin.ts
 ```
 
 ---
 
-## Database Scripts
-
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Production build |
-| `npm run start` | Run production server |
-| `npm run lint` | Run ESLint |
-| `npm run db:generate` | Generate Prisma client |
-| `npm run db:push` | Push schema to database (no migration files) |
-| `npm run db:migrate` | Create and apply Prisma migrations |
-| `npm run db:seed` | Seed roles, countries, cities, admin user |
-| `npm run db:setup` | `db:push` + `db:seed` in one step |
-| `npm run db:purge-demo` | Remove demo / test data |
-| `npm run db:studio` | Open Prisma Studio GUI |
-
----
-
-## API Overview
+## API overview
 
 ### Auth
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/auth/register` | Register a customer |
-| POST | `/api/auth/register-company` | Register a company / hotel |
+| POST | `/api/auth/register` | Register customer |
+| POST | `/api/auth/register-company` | Register company / hotel |
 | POST | `/api/auth/login` | Login |
 | POST | `/api/auth/logout` | Logout |
-| GET | `/api/auth/me` | Current session user |
+| GET | `/api/auth/me` | Current user |
 
-### Marketplace (Public)
+### Marketplace
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/cars` | List cars (filters, pagination) |
-| GET | `/api/cars/[id]` | Car details |
-| POST | `/api/cars` | Create car (company) |
-| PATCH | `/api/cars/[id]` | Update car |
-| GET | `/api/rooms` | List hotel rooms |
-| GET | `/api/rooms/[id]` | Room details |
-| POST | `/api/rooms` | Create room (hotel) |
-| PATCH | `/api/rooms/[id]` | Update room |
-| DELETE | `/api/rooms/[id]` | Delete room |
+| GET/POST | `/api/cars` | List / create cars |
+| GET/PATCH | `/api/cars/[id]` | Car detail / update |
+| GET/POST | `/api/rooms` | List / create rooms |
+| GET/PATCH/DELETE | `/api/rooms/[id]` | Room detail / update / delete |
 | GET | `/api/companies` | List companies |
 | GET | `/api/companies/[id]` | Company profile |
-| GET | `/api/reviews` | List reviews |
-| POST | `/api/reviews` | Submit a review |
-| GET | `/api/countries` | List countries |
-| GET | `/api/cities` | List cities |
+| GET/POST | `/api/reviews` | Reviews |
+| GET | `/api/countries` | Countries |
+| GET | `/api/cities` | Cities |
 | GET | `/api/currency` | Currency conversion |
 
-### Authenticated
+### Admin & account
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/notifications` | User notifications |
-| PATCH | `/api/notifications` | Mark notifications read |
-| GET | `/api/subscriptions` | List subscriptions (admin) |
-| POST | `/api/subscriptions` | Create subscription (company) |
-| GET | `/api/bank-details` | Platform bank details |
-| PATCH | `/api/bank-details` | Update bank details (admin) |
-| GET | `/api/admin` | Admin stats and data |
-| PATCH | `/api/admin` | Admin actions (approve, reject, etc.) |
+| GET/PATCH | `/api/admin` | Admin data and actions |
+| GET/PATCH | `/api/notifications` | Notifications |
+| GET/POST | `/api/subscriptions` | Subscriptions |
+| GET/PATCH | `/api/bank-details` | Platform bank details |
+| GET | `/api/test-email` | Admin SMTP smoke test |
 
 ---
 
-## Project Structure
+## Project structure
 
 ```
 ├── prisma/
-│   ├── schema.prisma      # Database models and enums
-│   ├── seed.ts            # Roles, countries, cities, admin user
-│   └── purge-demo.ts      # Demo data cleanup script
-├── public/
-│   └── sw.js              # Service worker for PWA
+│   ├── schema.prisma
+│   ├── seed.ts
+│   ├── ensure-admin.ts
+│   └── purge-demo.ts
+├── public/                 # Static assets, PWA icons, service worker
 ├── src/
 │   ├── app/
-│   │   ├── api/           # REST API route handlers
-│   │   ├── auth/          # Login & registration pages
-│   │   ├── dashboard/
-│   │   │   ├── admin/     # Admin portal
-│   │   │   ├── company/   # Car rental company dashboard
-│   │   │   └── hotel/     # Hotel dashboard
-│   │   ├── marketplace/
-│   │   │   ├── cars/      # Car listings & detail pages
-│   │   │   ├── rooms/     # Hotel room listings
-│   │   │   └── companies/ # Company directory
-│   │   ├── about/         # About page
-│   │   ├── contact/       # Contact page
-│   │   ├── privacy/       # Privacy policy
-│   │   ├── terms/         # Terms & conditions
-│   │   ├── globals.css    # Global styles & design tokens
-│   │   ├── layout.tsx     # Root layout (theme, toasts, PWA)
-│   │   ├── page.tsx       # Landing page (server)
+│   │   ├── api/            # REST API routes
+│   │   ├── auth/
+│   │   ├── dashboard/      # admin, company, hotel, customer
+│   │   ├── marketplace/    # cars, rooms, companies
+│   │   ├── about|contact|privacy|terms|visit/
 │   │   └── LandingPageClient.tsx
-│   ├── components/
-│   │   ├── layout/        # Navbar, Footer
-│   │   ├── shared/        # Cards, forms, modals, uploads
-│   │   ├── seo/           # JSON-LD helpers
-│   │   └── ui/            # Reusable UI primitives
-│   ├── hooks/             # Custom React hooks (PWA install, etc.)
-│   ├── lib/               # Auth, DB, email, currency, validation
-│   ├── types/             # Shared TypeScript interfaces
-│   └── middleware.ts      # JWT route protection
-├── .env.example           # Environment variable template
+│   ├── components/         # layout, shared UI, SEO
+│   ├── hooks/
+│   ├── lib/                # auth, db, email, currency, validation
+│   ├── types/
+│   └── middleware.ts
+├── .env.example
 ├── next.config.ts
 ├── tailwind.config.ts
 ├── vercel.json
@@ -304,48 +234,38 @@ SMTP_FROM='"DriveHub Marketplace" <your-email@gmail.com>'
 
 ---
 
-## Deployment
+## Deployment (Vercel)
 
-### Vercel (recommended)
-
-1. **Create a PostgreSQL database** on [Neon](https://neon.tech), [Supabase](https://supabase.com), or [Railway](https://railway.app).
-2. **Import the repo** at [vercel.com/new](https://vercel.com/new).
-3. **Set environment variables** from `.env.example` in the Vercel dashboard.
-4. **Deploy** — `vercel.json` runs `prisma generate` before build.
-5. **Seed production database once:**
+1. Create PostgreSQL (Neon / Supabase / Railway). Prefer a **pooled** connection string; remove `channel_binding=require` if present.
+2. Import the repo on Vercel and set env vars from `.env.example`.
+3. Deploy (`vercel.json` runs `prisma generate` before build).
+4. Seed once:
 
 ```bash
 DATABASE_URL="your-production-url" npx prisma db push
 DATABASE_URL="your-production-url" npx prisma db seed
 ```
 
-### Post-deploy checklist
+Checklist:
 
-- [ ] `JWT_SECRET` is a strong random value
-- [ ] `NEXT_PUBLIC_APP_URL` matches your live domain
-- [ ] Admin credentials are set and seed has run
-- [ ] SMTP is configured for email notifications
-- [ ] Database is reachable from Vercel (use connection pooling if on Neon)
+- [ ] Strong `JWT_SECRET`
+- [ ] `NEXT_PUBLIC_APP_URL` matches the live domain
+- [ ] Admin seed completed
+- [ ] SMTP configured and tested (`/api/test-email` as admin)
+- [ ] DB reachable from Vercel
 
 ---
 
 ## Security
 
-- Passwords hashed with **bcrypt** (12 rounds)
-- JWT stored in **HttpOnly**, **SameSite** cookies
-- Role and account-status checks in middleware and API handlers
-- Banned / suspended accounts blocked at the middleware layer
-- Never commit `.env` files or secrets to version control
-- Use Vercel environment variables or a secrets manager in production
-
----
-
-## Supported Countries (seed data)
-
-Pakistan, India, Bangladesh, Saudi Arabia, UAE, Qatar, Kuwait, Bahrain, Oman, Egypt, Turkey, United States, Canada, Brazil, Mexico, United Kingdom, Germany, France, Italy, Spain, Netherlands, Australia, Malaysia, Singapore, Japan, South Africa — each with major cities.
+- Passwords hashed with bcrypt (12 rounds)
+- JWT in HttpOnly cookies
+- Role and status checks in middleware and APIs
+- Suspended / banned accounts blocked
+- Never commit `.env` or secrets
 
 ---
 
 ## License
 
-Private project — all rights reserved unless otherwise specified by the repository owner.
+Private project — all rights reserved unless otherwise specified by the owner.
