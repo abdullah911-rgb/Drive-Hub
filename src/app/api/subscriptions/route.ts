@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       maxCars: 10,
       price: localPrice,
       durationDays: 30,
-      features: ['Up to 10 car listings', 'WhatsApp integration', 'Company profile page', 'Customer reviews'],
+      features: ['Marketplace listings', 'WhatsApp integration', 'Company profile page', 'Customer reviews'],
       status: 'PENDING',
     })
 

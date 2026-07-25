@@ -214,13 +214,13 @@ const APP_URL = () => process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 export const notifications = {
 
   async userApproved(to: string, phone: string, fullName?: string) {
-    const msg = `Hello ${fullName || 'there'} 👋\n\nYour NextTripy account has been approved! You can now browse and contact car rental companies directly.\n\nLogin at: ${APP_URL()}/auth`
+    const msg = `Hello ${fullName || 'there'} 👋\n\nYour NextTripy account has been approved! You can now browse listings and contact providers directly.\n\nLogin at: ${APP_URL()}/auth`
     const emailSent = await sendEmail({
       to,
       subject: '🎉 Your NextTripy Account Is Approved!',
       title: `Welcome to NextTripy, ${fullName || 'there'}!`,
-      bodyHtml: `Your account has been reviewed and <strong style="color:#34d399;">approved</strong> by our team. You can now browse car listings, contact companies via WhatsApp, and enjoy a seamless rental experience.`,
-      ctaLabel: 'Start Browsing Cars',
+      bodyHtml: `Your account has been reviewed and <strong style="color:#34d399;">approved</strong> by our team. You can now browse car and hotel listings, contact providers via WhatsApp, and enjoy a seamless experience.`,
+      ctaLabel: 'Browse Marketplace',
       ctaUrl: `${APP_URL()}/marketplace`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
@@ -252,19 +252,19 @@ export const notifications = {
   },
 
   async companyApproved(to: string, phone: string, companyName: string) {
-    const msg = `Hello ${companyName} 🎉\n\nYour company profile on NextTripy has been APPROVED! Log in to your dashboard to subscribe and start listing your vehicles.\n\nDashboard: ${APP_URL()}/dashboard/company`
+    const msg = `Hello ${companyName} 🎉\n\nYour profile on NextTripy has been APPROVED! Log in to your dashboard to subscribe and start listing.\n\nLogin: ${APP_URL()}/auth`
     const emailSent = await sendEmail({
       to,
       subject: `🎉 ${companyName} — NextTripy Profile Approved!`,
       title: `${companyName} — Approved!`,
-      bodyHtml: `Congratulations! Your company profile has been <strong style="color:#34d399;">approved</strong> by our admin team.<br><br>
+      bodyHtml: `Congratulations! Your profile has been <strong style="color:#34d399;">approved</strong> by our admin team.<br><br>
         You can now:<br>
         ✅ Subscribe to the Standard Plan<br>
-        ✅ Add up to 10 car listings<br>
+        ✅ Start listing on the marketplace<br>
         ✅ Receive inquiries directly via WhatsApp<br>
         ✅ Build your customer review profile`,
       ctaLabel: 'Go to Dashboard',
-      ctaUrl: `${APP_URL()}/dashboard/company`,
+      ctaUrl: `${APP_URL()}/auth`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
     return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
@@ -283,12 +283,12 @@ export const notifications = {
   },
 
   async companySuspended(to: string, phone: string, companyName: string) {
-    const msg = `Hello ${companyName},\n\nYour NextTripy company account has been suspended. Contact info@nexttripy.com for assistance.`
+    const msg = `Hello ${companyName},\n\nYour NextTripy account has been suspended. Contact info@nexttripy.com for assistance.`
     const emailSent = await sendEmail({
       to,
       subject: `${companyName} — NextTripy Account Suspended`,
       title: 'Company Account Suspended',
-      bodyHtml: `Your company account for <strong>${companyName}</strong> has been temporarily suspended by an administrator. Your car listings are hidden until the suspension is lifted.<br><br>Contact <strong>info@nexttripy.com</strong> to resolve this.`,
+      bodyHtml: `Your account for <strong>${companyName}</strong> has been temporarily suspended by an administrator. Your listings are hidden until the suspension is lifted.<br><br>Contact <strong>info@nexttripy.com</strong> to resolve this.`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
     return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
@@ -320,7 +320,7 @@ export const notifications = {
         • Missing registration details<br><br>
         Please update the listing from your dashboard and resubmit.`,
       ctaLabel: 'Go to Dashboard',
-      ctaUrl: `${APP_URL()}/dashboard/company`,
+      ctaUrl: `${APP_URL()}/auth`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
     return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
@@ -364,7 +364,7 @@ export const notifications = {
         • Pricing mismatch<br><br>
         Please update the listing from your dashboard and resubmit.`,
       ctaLabel: 'Go to Dashboard',
-      ctaUrl: `${APP_URL()}/dashboard/company`,
+      ctaUrl: `${APP_URL()}/auth`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
     return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
@@ -384,14 +384,14 @@ export const notifications = {
 
 
   async subscriptionActivated(to: string, phone: string, companyName: string, endDate: string) {
-    const msg = `Hello ${companyName} ✅\n\nYour NextTripy subscription has been activated! Your account is now active until ${endDate}. Start adding your cars now: ${APP_URL()}/dashboard/company`
+    const msg = `Hello ${companyName} ✅\n\nYour NextTripy subscription has been activated! Your account is now active until ${endDate}. You can start listing from now: ${APP_URL()}/auth`
     const emailSent = await sendEmail({
       to,
       subject: '✅ NextTripy Subscription Activated',
       title: 'Subscription Activated',
-      bodyHtml: `Your payment has been verified and your NextTripy subscription for <strong>${companyName}</strong> is now <strong style="color:#34d399;">active until ${endDate}</strong>.<br><br>You can now list up to 10 vehicles and start receiving customer inquiries.`,
-      ctaLabel: 'Manage Fleet',
-      ctaUrl: `${APP_URL()}/dashboard/company`,
+      bodyHtml: `Your payment has been verified and your NextTripy subscription for <strong>${companyName}</strong> is now <strong style="color:#34d399;">active until ${endDate}</strong>.<br><br>You can start listing on the marketplace from now and receive customer inquiries.`,
+      ctaLabel: 'Go to Dashboard',
+      ctaUrl: `${APP_URL()}/auth`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
     return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
@@ -403,9 +403,9 @@ export const notifications = {
       to,
       subject: 'NextTripy Subscription Deactivated',
       title: 'Subscription Deactivated',
-      bodyHtml: `Your NextTripy subscription for <strong>${companyName}</strong> has been deactivated by an administrator. Your vehicle listings are currently hidden from customers.<br><br>Contact <strong>info@nexttripy.com</strong> to resolve this or renew your subscription from the dashboard.`,
+      bodyHtml: `Your NextTripy subscription for <strong>${companyName}</strong> has been deactivated by an administrator. Your listings are currently hidden from customers.<br><br>Contact <strong>info@nexttripy.com</strong> to resolve this or renew your subscription from the dashboard.`,
       ctaLabel: 'Go to Dashboard',
-      ctaUrl: `${APP_URL()}/dashboard/company`,
+      ctaUrl: `${APP_URL()}/auth`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
     return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
@@ -419,7 +419,7 @@ export const notifications = {
       title: 'Payment Verification Failed',
       bodyHtml: `The subscription payment submitted for <strong>${companyName}</strong> could not be verified. This may be due to an incorrect transaction ID or amount mismatch.<br><br>Please contact <strong>info@nexttripy.com</strong> or resubmit your payment from the dashboard.`,
       ctaLabel: 'Go to Dashboard',
-      ctaUrl: `${APP_URL()}/dashboard/company`,
+      ctaUrl: `${APP_URL()}/auth`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
     return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }

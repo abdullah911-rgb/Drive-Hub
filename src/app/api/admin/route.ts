@@ -156,14 +156,14 @@ export async function PATCH(request: NextRequest) {
             sub = await db.createSubscription({
               id: uuidv4(), companyId: c.id, planName: 'Standard Plan', maxCars: 10, price: localPrice,
               durationDays: 30,
-              features: ['Up to 10 car listings', 'WhatsApp integration', 'Company profile page', 'Customer reviews'],
+              features: ['Marketplace listings', 'WhatsApp integration', 'Company profile page', 'Customer reviews'],
               status: 'ACTIVE', startDate, endDate,
             })
           }
           await db.createNotification({
             id: uuidv4(), userId: c.userId, type: 'GENERAL',
             title: 'Subscription Activated',
-            message: 'Your company subscription has been activated. You can now list and manage your fleet!',
+            message: 'Your subscription has been activated. You can start listing on the marketplace from now!',
             isRead: false,
           })
 
@@ -205,7 +205,7 @@ export async function PATCH(request: NextRequest) {
         type: isApprovedAction ? 'ACCOUNT_APPROVED' : 'ACCOUNT_REJECTED',
         title: isApprovedAction ? 'Company Approved' : `Company ${action}ed`,
         message: isApprovedAction
-          ? 'Your company has been approved! You can now subscribe and list cars.'
+          ? 'Your profile has been approved! You can now subscribe and start listing.'
           : `Your company has been ${action}ed.`,
         isRead: false,
       })
@@ -330,7 +330,7 @@ export async function PATCH(request: NextRequest) {
         await db.createNotification({
           id: uuidv4(), userId: companyRecord.userId, type: 'GENERAL',
           title: 'Payment Verified — Subscription Active',
-          message: 'Your subscription payment has been verified. Your account is now active!',
+          message: 'Your subscription payment has been verified. You can start listing on the marketplace from now!',
           isRead: false,
         })
         const user = await db.getUserById(companyRecord.userId) as { email: string; phone: string } | null
