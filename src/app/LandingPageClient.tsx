@@ -11,6 +11,7 @@ import ParticleBackground from '@/components/shared/ParticleBackground'
 import RegisterCompanyModal from '@/components/shared/RegisterCompanyModal'
 import { CarCard, CompanyCard } from '@/components/shared/Cards'
 import { CarCardSkeleton } from '@/components/ui'
+import { formatMoney } from '@/lib/currency'
 import type { Car, Company } from '@/types'
 
 interface Room {
@@ -21,7 +22,8 @@ interface Room {
   pricePerNight: number
   capacity: number
   images?: { id: string; imageUrl: string; isPrimary?: boolean }[]
-  company?: { name: string }
+  country?: { currency?: string }
+  company?: { name: string; country?: { currency?: string } }
 }
 
 interface LandingPageClientProps {
@@ -499,7 +501,7 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
                           <div className="w-full h-full flex items-center justify-center text-slate-500 text-sm">No photo</div>
                         )}
                         <div className="absolute top-3 left-3">
-                          <span className="text-xs bg-primary text-white px-2 py-1 rounded font-medium">${room.pricePerNight}/night</span>
+                          <span className="text-xs bg-primary text-white px-2 py-1 rounded font-medium">{formatMoney(room.pricePerNight, room.country?.currency || room.company?.country?.currency || 'PKR')}/night</span>
                         </div>
                         <div className="absolute top-3 right-3">
                           <span className="text-xs bg-black/60 text-white px-2 py-1 rounded">{room.roomType}</span>

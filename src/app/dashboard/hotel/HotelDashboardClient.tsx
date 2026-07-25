@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { StatusBadge } from '@/components/ui'
 import { getPaymentGateways, formatDate } from '@/lib/utils'
-import { convertPKR, formatSubscriptionPrice } from '@/lib/currency'
+import { convertPKR, formatSubscriptionPrice, formatMoney, toMoneyNumber } from '@/lib/currency'
 import { SUBSCRIPTION_BASE_PKR } from '@/lib/subscription'
 import type { Company, Subscription } from '@/types'
 
@@ -139,7 +139,7 @@ export default function HotelDashboardClient() {
       name: room.name,
       roomType: room.roomType,
       description: room.description,
-      pricePerNight: room.pricePerNight.toString(),
+      pricePerNight: toMoneyNumber(room.pricePerNight).toString(),
       capacity: room.capacity.toString(),
       floor: room.floor || '',
       amenitiesInput: '',
@@ -216,13 +216,13 @@ export default function HotelDashboardClient() {
           capacity: parseInt(roomForm.capacity),
           amenities: allAmenities,
           images: imagesPayload,
-          status: 'PENDING',
+          status: 'APPROVED',
         }),
       })
 
       const data = await res.json()
       if (res.ok && data.success) {
-        toast.success(editingRoomId ? 'Room updated successfully!' : 'Room listing submitted for admin approval!')
+        toast.success(editingRoomId ? 'Room updated successfully!' : 'Room listed and live on the marketplace!')
         setShowAddRoomModal(false)
         setEditingRoomId(null)
         setUploadedImages([])
@@ -296,8 +296,8 @@ export default function HotelDashboardClient() {
   const countryCode = (company as Company & { country?: { code: string } }).country?.code || 'US'
   const paymentGateways = getPaymentGateways(countryCode)
   const hasActiveSub = subscription?.status === 'ACTIVE'
-  const pendingRooms = rooms.filter(r => r.status === 'PENDING').length
   const approvedRooms = rooms.filter(r => r.status === 'APPROVED').length
+  const currencyCode = (company as Company & { country?: { currency?: string } } | null)?.country?.currency || 'PKR'
 
   return (
     <div className="container-app py-8">
@@ -331,8 +331,8 @@ export default function HotelDashboardClient() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {[
           { label: 'Total Rooms', value: rooms.length, icon: '🛏️', color: 'text-primary' },
-          { label: 'Approved', value: approvedRooms, icon: '✅', color: 'text-emerald-400' },
-          { label: 'Pending', value: pendingRooms, icon: '⏳', color: 'text-amber-400' },
+          { label: 'Live', value: approvedRooms, icon: '✅', color: 'text-emerald-400' },
+          { label: 'Hidden / Other', value: rooms.length - approvedRooms, icon: '📋', color: 'text-amber-400' },
           { label: 'Subscription', value: hasActiveSub ? 'Active' : 'Inactive', icon: '💎', color: hasActiveSub ? 'text-emerald-400' : 'text-red-400' },
         ].map(stat => (
           <div key={stat.label} className="glass-card no-card-hover p-4">
@@ -466,7 +466,7 @@ export default function HotelDashboardClient() {
                         {/* Price & Actions */}
                         <div className="flex flex-col items-end gap-2 flex-shrink-0">
                           <div className="text-right">
-                            <div className="font-bold text-slate-900 dark:text-white text-sm">${room.pricePerNight}</div>
+                            <div className="font-bold text-slate-900 dark:text-white text-sm">{formatMoney(room.pricePerNight, currencyCode)}</div>
                             <div className="text-xs text-slate-400">per night</div>
                           </div>
                           <div className="flex gap-2">
@@ -722,17 +722,18 @@ export default function HotelDashboardClient() {
                 {/* Price & Floor */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs text-slate-400 mb-1 block">Price Per Night (USD) *</label>
+                    <label className="text-xs text-slate-400 mb-1 block">Price Per Night ({currencyCode}) *</label>
                     <input
                       type="number"
                       className="input-field text-sm"
-                      placeholder="99"
+                      placeholder={currencyCode === 'PKR' ? 'e.g. 8500' : currencyCode === 'USD' ? 'e.g. 99' : 'e.g. 250'}
                       min="1"
-                      step="0.01"
+                      step={currencyCode === 'PKR' ? '1' : '0.01'}
                       value={roomForm.pricePerNight}
                       onChange={e => setRoomForm(prev => ({ ...prev, pricePerNight: e.target.value }))}
                       required
                     />
+                    <p className="text-[10px] text-slate-500 mt-1">Enter the nightly rate in {currencyCode} (your hotel country currency).</p>
                   </div>
                   <div>
                     <label className="text-xs text-slate-400 mb-1 block">Floor / Level</label>

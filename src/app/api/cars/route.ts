@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
       transmission: body.transmission,
       description: body.description,
       features: body.features || [],
-      status: 'PENDING',
+      status: 'APPROVED',
       images: body.images || [],
     })
 
@@ -164,13 +164,13 @@ export async function POST(request: NextRequest) {
       await db.createNotification({
         userId: (admin as { id: string }).id,
         type: 'GENERAL',
-        title: 'New Car Submitted',
-        message: `${c.name} submitted ${(car as { name: string }).name} for approval.`,
+        title: 'New Car Listed',
+        message: `${c.name} listed ${(car as { name: string }).name} on the marketplace.`,
         isRead: false,
       })
     }
 
-    return NextResponse.json({ success: true, data: car })
+    return NextResponse.json({ success: true, data: serializePrisma(car) })
   } catch (error) {
     console.error('Car POST error:', error)
     return NextResponse.json({ success: false, error: 'Failed to add car' }, { status: 500 })

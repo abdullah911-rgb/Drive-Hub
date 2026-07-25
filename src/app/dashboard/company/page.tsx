@@ -174,13 +174,13 @@ export default function CompanyDashboard() {
           seatingCapacity: parseInt(carForm.seatingCapacity),
           features,
           images: imagesPayload,
-          status: 'PENDING', 
+          status: 'APPROVED',
         }),
       })
 
       const data = await res.json()
       if (res.ok && data.success) {
-        toast.success(editingCarId ? 'Vehicle details updated successfully!' : 'Vehicle listing submitted for admin approval!')
+        toast.success(editingCarId ? 'Vehicle details updated successfully!' : 'Vehicle listed and live on the marketplace!')
         setShowAddCarModal(false)
         setEditingCarId(null)
         setUploadedImages([])

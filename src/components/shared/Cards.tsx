@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import SafeImage from '@/components/shared/SafeImage'
 import { buildWhatsAppUrl, WHATSAPP_DEFAULT_MESSAGE } from '@/lib/utils'
+import { formatMoney } from '@/lib/currency'
 import { RatingStars, StatusBadge } from '@/components/ui'
 import type { Car, Company, Room } from '@/types'
 
@@ -211,7 +212,7 @@ export function RoomCard({ room, showStatus = false }: RoomCardProps) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <div className="absolute top-2 left-2 flex gap-1.5">
           <span className="bg-primary/90 text-white backdrop-blur-md px-2 py-0.5 rounded-md text-2xs font-bold uppercase tracking-wider border border-primary/20">
-            ${room.pricePerNight}/night
+            {formatMoney(room.pricePerNight, room.country?.currency || room.company?.country?.currency || 'PKR')}/night
           </span>
         </div>
         <div className="absolute top-2 right-2">

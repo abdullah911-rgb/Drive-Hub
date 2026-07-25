@@ -5,7 +5,7 @@ import { getCurrentUser } from '@/lib/auth'
 
 const listInclude = {
   images: { take: 1, orderBy: { isPrimary: 'desc' as const } },
-  country: { select: { id: true, name: true, code: true } },
+  country: { select: { id: true, name: true, code: true, currency: true } },
   city: { select: { id: true, name: true } },
   company: {
     select: {
@@ -13,7 +13,7 @@ const listInclude = {
       name: true,
       whatsAppNumber: true,
       status: true,
-      country: { select: { name: true } },
+      country: { select: { name: true, currency: true, code: true } },
     },
   },
 }
@@ -166,7 +166,7 @@ export async function POST(request: NextRequest) {
       floor: body.floor,
       description: body.description,
       amenities: body.amenities || [],
-      status: 'PENDING',
+      status: 'APPROVED',
       images: body.images || [],
     })
 
@@ -175,13 +175,13 @@ export async function POST(request: NextRequest) {
       await db.createNotification({
         userId: (admin as { id: string }).id,
         type: 'GENERAL',
-        title: 'New Room Submitted',
-        message: `${c.name} submitted room "${(room as { name: string }).name}" for approval.`,
+        title: 'New Room Listed',
+        message: `${c.name} listed room "${(room as { name: string }).name}" on the marketplace.`,
         isRead: false,
       })
     }
 
-    return NextResponse.json({ success: true, data: room })
+    return NextResponse.json({ success: true, data: serializePrisma(room) })
   } catch (error) {
     console.error('Room POST error:', error)
     return NextResponse.json({ success: false, error: 'Failed to add room' }, { status: 500 })

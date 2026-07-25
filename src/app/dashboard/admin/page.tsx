@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/utils'
+import { formatMoney } from '@/lib/currency'
 import { COUNTRIES } from '@/lib/countries'
 import type { AdminStats, User, Company, Car, Payment, Review, Notification, Subscription } from '@/types'
 
@@ -17,7 +18,8 @@ interface Room {
   status: string
   amenities?: string[]
   images?: { imageUrl: string; isPrimary: boolean }[]
-  company?: { name: string }
+  country?: { currency?: string }
+  company?: { name: string; country?: { currency?: string } }
 }
 
 type AdminTab = 'stats' | 'notifications' | 'companies' | 'cars' | 'rooms' | 'payments' | 'users' | 'reviews' | 'profile'
@@ -709,7 +711,7 @@ export default function AdminDashboard() {
                                 : 'text-slate-400 border-slate-400/20'
                               }`}>{room.status}</span>
                             </div>
-                            <p className="text-slate-400 text-xs">{room.roomType} • Capacity: {room.capacity} • ${room.pricePerNight}/night</p>
+                            <p className="text-slate-400 text-xs">{room.roomType} • Capacity: {room.capacity} • {formatMoney(room.pricePerNight, room.country?.currency || room.company?.country?.currency || 'PKR')}/night</p>
                             {room.company && <p className="text-primary text-xs">{room.company.name}</p>}
                             <p className="text-slate-500 text-xs mt-0.5 line-clamp-1">{room.description}</p>
                           </div>
@@ -1483,7 +1485,7 @@ export default function AdminDashboard() {
                     {[
                       { label: 'Room Type', value: room.roomType },
                       { label: 'Capacity', value: `${room.capacity} guests` },
-                      { label: 'Price Per Night', value: `$${room.pricePerNight}` },
+                      { label: 'Price Per Night', value: formatMoney(room.pricePerNight, room.country?.currency || room.company?.country?.currency || 'PKR') },
                     ].map(field => field.value && (
                       <div key={field.label} className="glass rounded-xl p-3 border border-white/5">
                         <p className="text-slate-500 text-2xs font-semibold uppercase tracking-wider mb-0.5">{field.label}</p>

@@ -64,3 +64,27 @@ export function formatSubscriptionPrice(amount: number, currency: string): strin
   }
   return `${amount.toLocaleString(undefined, { maximumFractionDigits: 0 })} ${code}`
 }
+
+/** Coerce Prisma Decimal / string / number to a finite number (avoids React #31). */
+export function toMoneyNumber(value: unknown): number {
+  if (typeof value === 'number' && Number.isFinite(value)) return value
+  if (typeof value === 'string') {
+    const n = parseFloat(value)
+    return Number.isFinite(n) ? n : 0
+  }
+  if (value && typeof value === 'object') {
+    const o = value as { toNumber?: () => number; toString?: () => string }
+    if (typeof o.toNumber === 'function') {
+      const n = o.toNumber()
+      if (Number.isFinite(n)) return n
+    }
+    const n = Number(typeof o.toString === 'function' ? o.toString() : value)
+    if (Number.isFinite(n)) return n
+  }
+  return 0
+}
+
+/** Format a room/listing price in the hotel's local currency (e.g. PKR for Pakistan). */
+export function formatMoney(amount: unknown, currency = 'PKR'): string {
+  return formatSubscriptionPrice(toMoneyNumber(amount), currency || 'PKR')
+}

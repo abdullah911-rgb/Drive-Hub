@@ -1,3 +1,4 @@
+/** Convert Prisma Decimal / Date trees into JSON-safe plain values. */
 export function serializePrisma<T>(obj: T): T {
   if (obj === null || obj === undefined) return obj
   if (Array.isArray(obj)) {
@@ -6,8 +7,8 @@ export function serializePrisma<T>(obj: T): T {
   if (obj instanceof Date) {
     return obj.toISOString() as T
   }
-  if (obj && typeof obj === 'object' && obj.constructor?.name === 'Decimal') {
-    return Number((obj as { toString(): string }).toString()) as T
+  if (isDecimalLike(obj)) {
+    return toPlainNumber(obj) as T
   }
   if (typeof obj === 'object') {
     const res: Record<string, unknown> = {}
@@ -17,4 +18,26 @@ export function serializePrisma<T>(obj: T): T {
     return res as T
   }
   return obj
+}
+
+/** Prisma Decimal / decimal.js — often has keys { s, e, d } */
+function isDecimalLike(obj: unknown): boolean {
+  if (!obj || typeof obj !== 'object') return false
+  const name = (obj as { constructor?: { name?: string } }).constructor?.name
+  if (name === 'Decimal' || name === 'PrismaDecimal') return true
+  const o = obj as { s?: unknown; e?: unknown; d?: unknown; toNumber?: unknown; toFixed?: unknown }
+  if (typeof o.toNumber === 'function' && typeof o.toFixed === 'function') return true
+  // Plain serialized Decimal shape (React error #31: object with keys {s, e, d})
+  if ('s' in o && 'e' in o && 'd' in o && Array.isArray(o.d)) return true
+  return false
+}
+
+function toPlainNumber(obj: unknown): number {
+  const o = obj as { toNumber?: () => number; toString?: () => string }
+  if (typeof o.toNumber === 'function') {
+    const n = o.toNumber()
+    if (Number.isFinite(n)) return n
+  }
+  const n = Number(typeof o.toString === 'function' ? o.toString() : obj)
+  return Number.isFinite(n) ? n : 0
 }

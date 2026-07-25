@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { formatMoney } from '@/lib/currency'
 
 interface Room {
   id: string
@@ -15,6 +16,7 @@ interface Room {
   amenities?: string[]
   status: string
   images?: { id: string; imageUrl: string; isPrimary?: boolean }[]
+  country?: { name: string; currency?: string; code?: string }
   company?: {
     id: string
     name: string
@@ -22,7 +24,7 @@ interface Room {
     whatsAppNumber?: string
     email?: string
     businessAddress?: string
-    country?: { name: string; code: string }
+    country?: { name: string; code: string; currency?: string }
     city?: { name: string }
   }
 }
@@ -197,7 +199,7 @@ export default function RoomDetailClient({ id }: { id: string }) {
             className="glass-card no-card-hover p-6 border border-primary/20 sticky top-24"
           >
             <div className="text-center mb-4">
-              <div className="font-black text-3xl text-white">${room.pricePerNight}</div>
+              <div className="font-black text-3xl text-white">{formatMoney(room.pricePerNight, room.country?.currency || room.company?.country?.currency || 'PKR')}</div>
               <div className="text-xs text-slate-400">per night</div>
             </div>
 

@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { getFlagEmoji } from '@/lib/utils'
+import { formatMoney } from '@/lib/currency'
 import type { Country } from '@/types'
 
 interface Room {
@@ -17,7 +18,8 @@ interface Room {
   amenities?: string[]
   status: string
   images?: { id: string; imageUrl: string; isPrimary?: boolean }[]
-  company?: { name: string; countryId?: string; country?: { name: string } }
+  country?: { name: string; currency?: string }
+  company?: { name: string; countryId?: string; country?: { name: string; currency?: string } }
 }
 
 interface City { id: string; name: string }
@@ -160,15 +162,18 @@ export default function RoomsMarketplaceClient() {
 
       {/* Max Price */}
       <div>
-        <label className="text-slate-400 text-xs font-semibold mb-2 block">Max Price / Night (USD)</label>
+        <label className="text-slate-400 text-xs font-semibold mb-2 block">Max Price / Night</label>
         <input
           type="number"
           className="input w-full bg-dark-900/60 dark:bg-dark-900/60 text-slate-800 dark:text-white"
-          placeholder="e.g. 200"
+          placeholder={selectedCountry?.currency === 'PKR' ? 'e.g. 15000' : 'e.g. 200'}
           value={maxPrice}
           onChange={e => setMaxPrice(e.target.value)}
           min="0"
         />
+        {selectedCountry?.currency && (
+          <p className="text-[10px] text-slate-500 mt-1">Filter uses {selectedCountry.currency} (hotel local currency)</p>
+        )}
       </div>
 
       {/* Min Guests */}
@@ -381,7 +386,7 @@ export default function RoomsMarketplaceClient() {
                         </div>
                         <div className="absolute top-3 left-3">
                           <span className="text-xs bg-primary/90 text-white px-2 py-1 rounded-lg font-bold">
-                            ${room.pricePerNight}/night
+                            {formatMoney(room.pricePerNight, room.country?.currency || room.company?.country?.currency || selectedCountry?.currency || 'PKR')}/night
                           </span>
                         </div>
                       </div>
@@ -415,7 +420,7 @@ export default function RoomsMarketplaceClient() {
 
                         <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/5">
                           <div>
-                            <span className="font-bold text-white text-base">${room.pricePerNight}</span>
+                            <span className="font-bold text-white text-base">{formatMoney(room.pricePerNight, room.country?.currency || room.company?.country?.currency || selectedCountry?.currency || 'PKR')}</span>
                             <span className="text-xs text-slate-400"> / night</span>
                           </div>
                           <span className="text-xs text-primary font-bold group-hover:underline">View Details →</span>

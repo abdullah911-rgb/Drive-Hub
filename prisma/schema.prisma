@@ -307,7 +307,7 @@ model Car {
   transmission    TransmissionType
   description     String
   features        String[]
-  status          ApprovalStatus   @default(PENDING)
+  status          ApprovalStatus   @default(APPROVED)
   images          CarImage[]
   documents       CarDocument[]
   favorites       Favorite[]
@@ -481,7 +481,7 @@ model Room {
   floor           String?
   description     String
   amenities       String[]
-  status          ApprovalStatus   @default(PENDING)
+  status          ApprovalStatus   @default(APPROVED)
   images          RoomImage[]
   createdAt       DateTime         @default(now()) @map("created_at")
   updatedAt       DateTime         @updatedAt @map("updated_at")

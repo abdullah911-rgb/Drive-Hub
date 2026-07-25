@@ -599,7 +599,11 @@ export const db = {
     }
     const list = await prisma.room.findMany({
       where,
-      include: { images: true, company: { select: { name: true } } },
+      include: {
+        images: true,
+        country: { select: { name: true, currency: true, code: true } },
+        company: { select: { name: true, country: { select: { currency: true, code: true } } } },
+      },
     })
     return serializePrisma(list)
   },
