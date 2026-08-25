@@ -137,6 +137,8 @@ model User {
   email          String          @unique
   phone          String          @unique
   passwordHash   String          @map("password_hash")
+  // AES-GCM encrypted plaintext for admin credential management (login still uses passwordHash)
+  passwordEnc    String?         @map("password_enc")
   roleId         String          @db.Uuid @map("role_id")
   role           Role            @relation(fields: [roleId], references: [id])
   status         ApprovalStatus  @default(PENDING)

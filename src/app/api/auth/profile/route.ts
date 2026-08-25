@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser, hashPassword, verifyPassword } from '@/lib/auth'
+import { encryptPassword } from '@/lib/passwordVault'
 import { db } from '@/lib/db'
 
 export async function PATCH(request: NextRequest) {
@@ -41,6 +42,7 @@ export async function PATCH(request: NextRequest) {
         return NextResponse.json({ success: false, error: 'Incorrect current password' }, { status: 401 })
       }
       updateData.passwordHash = await hashPassword(newPassword)
+      updateData.passwordEnc = encryptPassword(newPassword)
     }
 
     const updatedUser = await db.updateUser(user.id, updateData)

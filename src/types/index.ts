@@ -34,6 +34,8 @@ export interface User {
   id: string
   email: string
   phone: string
+  /** Admin-only: decrypted account password when available */
+  password?: string | null
   roleId: string
   roleName: RoleName
   status: ApprovalStatus

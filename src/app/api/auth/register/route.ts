@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { hashPassword } from '@/lib/auth'
+import { encryptPassword } from '@/lib/passwordVault'
 import { v4 as uuidv4 } from 'uuid'
 
 export async function POST(request: NextRequest) {
@@ -46,6 +47,7 @@ async function registerCustomer(data: {
     if (existingPhone) return NextResponse.json({ success: false, error: 'This phone number is already registered.' }, { status: 409 })
 
     const passwordHash = await hashPassword(data.password)
+    const passwordEnc = encryptPassword(data.password)
 
     // Resolve cityId from countryId (pick first city for that country)
     let cityId: string | undefined
@@ -59,6 +61,7 @@ async function registerCustomer(data: {
       email: data.email,
       phone: data.phone,
       passwordHash,
+      passwordEnc,
       roleName: 'CUSTOMER',
       status: 'PENDING',
       emailVerified: false,
@@ -144,6 +147,7 @@ async function registerCompany(data: {
     }
 
     const passwordHash = await hashPassword(data.password)
+    const passwordEnc = encryptPassword(data.password)
     const userId = uuidv4()
     const companyId = uuidv4()
 
@@ -152,6 +156,7 @@ async function registerCompany(data: {
       email: data.email,
       phone: data.contactNumber,
       passwordHash,
+      passwordEnc,
       roleName: assignedRole,
       status: 'PENDING',
       emailVerified: false,

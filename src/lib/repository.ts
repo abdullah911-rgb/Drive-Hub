@@ -7,6 +7,7 @@ export type DbUser = {
   email: string
   phone: string
   passwordHash: string
+  passwordEnc?: string | null
   roleId: string
   roleName: string
   status: string
@@ -117,6 +118,7 @@ export const db = {
     email: string
     phone: string
     passwordHash: string
+    passwordEnc?: string | null
     roleId?: string
     roleName?: string
     status: string
@@ -172,6 +174,73 @@ export const db = {
       include: { role: true },
     })
     return withRoleName(u)
+  },
+
+  /**
+   * Permanently remove a user and all related data so email/phone can be re-registered.
+   * Does not allow deleting ADMIN / SUPER_ADMIN accounts.
+   */
+  async hardDeleteUser(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { role: true, company: true },
+    })
+    if (!user) return { ok: false as const, error: 'User not found' }
+    if (user.role.name === 'ADMIN' || user.role.name === 'SUPER_ADMIN') {
+      return { ok: false as const, error: 'Admin accounts cannot be deleted' }
+    }
+
+    await prisma.$transaction(async (tx) => {
+      const companyId = user.company?.id
+
+      if (companyId) {
+        const cars = await tx.car.findMany({ where: { companyId }, select: { id: true } })
+        const carIds = cars.map((c) => c.id)
+        const rooms = await tx.room.findMany({ where: { companyId }, select: { id: true } })
+        const roomIds = rooms.map((r) => r.id)
+        const subs = await tx.subscription.findMany({ where: { companyId }, select: { id: true } })
+        const subIds = subs.map((s) => s.id)
+
+        if (roomIds.length) {
+          await tx.roomImage.deleteMany({ where: { roomId: { in: roomIds } } })
+          await tx.room.deleteMany({ where: { id: { in: roomIds } } })
+        }
+        if (carIds.length) {
+          await tx.carImage.deleteMany({ where: { carId: { in: carIds } } })
+          await tx.carDocument.deleteMany({ where: { carId: { in: carIds } } })
+          await tx.favorite.deleteMany({ where: { carId: { in: carIds } } })
+          await tx.car.deleteMany({ where: { id: { in: carIds } } })
+        }
+        if (subIds.length) {
+          await tx.payment.deleteMany({ where: { subscriptionId: { in: subIds } } })
+          await tx.subscription.deleteMany({ where: { id: { in: subIds } } })
+        }
+        await tx.companyDocument.deleteMany({ where: { companyId } })
+        await tx.review.deleteMany({ where: { companyId } })
+        await tx.company.delete({ where: { id: companyId } })
+      }
+
+      await tx.favorite.deleteMany({ where: { userId } })
+      await tx.review.deleteMany({ where: { userId } })
+      await tx.notification.deleteMany({ where: { userId } })
+      await tx.adminLog.deleteMany({ where: { adminId: userId } })
+      await tx.auditLog.deleteMany({ where: { userId } })
+      await tx.activityLog.deleteMany({ where: { userId } })
+      await tx.supportTicket.deleteMany({ where: { userId } })
+      await tx.user.delete({ where: { id: userId } })
+    })
+
+    return { ok: true as const }
+  },
+
+  async hardDeleteCompany(companyId: string) {
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+      select: { id: true, userId: true },
+    })
+    if (!company) return { ok: false as const, error: 'Company not found' }
+    // Deleting the owning user cascades company + listings and frees email/phone
+    return this.hardDeleteUser(company.userId)
   },
 
   async getCompanies(filters?: { countryId?: string; cityId?: string; status?: string }) {

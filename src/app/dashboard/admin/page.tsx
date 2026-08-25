@@ -49,6 +49,9 @@ export default function AdminDashboard() {
   const [showAdminCurPw, setShowAdminCurPw] = useState(false)
   const [showAdminNewPw, setShowAdminNewPw] = useState(false)
   const [showAdminConfPw, setShowAdminConfPw] = useState(false)
+  const [showUserPassword, setShowUserPassword] = useState(false)
+  const [credForm, setCredForm] = useState({ email: '', password: '', confirmPassword: '' })
+  const [updatingCreds, setUpdatingCreds] = useState(false)
   const [whatsAppModal, setWhatsAppModal] = useState<{ url: string; name: string; action: string } | null>(null)
   
   const [companySearch, setCompanySearch] = useState('')
@@ -111,6 +114,11 @@ export default function AdminDashboard() {
   }, [loadData])
 
   const handleAdminAction = async (resource: string, id: string, action: string) => {
+    if (action === 'delete') {
+      const label = resource === 'user' ? 'user account and all related data' : 'company account and all related data'
+      const ok = window.confirm(`Permanently delete this ${label}? This cannot be undone. The person will be able to register again with the same email/phone.`)
+      if (!ok) return
+    }
     try {
       const res = await fetch('/api/admin', {
         method: 'PATCH',
@@ -133,12 +141,67 @@ export default function AdminDashboard() {
           setWhatsAppModal({ url: data.whatsAppUrl, name, action })
         }
 
+        if (action === 'delete' && resource === 'user') setSelectedUser(null)
         loadData()
       } else {
         toast.error(data.error || 'Failed to execute action')
       }
     } catch (err) {
       toast.error('Error executing admin action')
+    }
+  }
+
+  const openUserDetails = (u: User) => {
+    setSelectedUser(u)
+    setShowUserPassword(false)
+    setCredForm({ email: u.email || '', password: '', confirmPassword: '' })
+  }
+
+  const handleUpdateUserCredentials = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedUser) return
+    if (credForm.password && credForm.password !== credForm.confirmPassword) {
+      toast.error('New passwords do not match')
+      return
+    }
+    if (credForm.password && credForm.password.length < 8) {
+      toast.error('Password must be at least 8 characters')
+      return
+    }
+    if (!credForm.email && !credForm.password) {
+      toast.error('Enter a new email and/or password')
+      return
+    }
+    setUpdatingCreds(true)
+    try {
+      const res = await fetch('/api/admin', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          resource: 'user',
+          id: selectedUser.id,
+          action: 'update_credentials',
+          email: credForm.email || undefined,
+          password: credForm.password || undefined,
+        }),
+      })
+      const data = await res.json()
+      if (res.ok && data.success) {
+        toast.success('Credentials updated')
+        setCredForm(prev => ({ ...prev, password: '', confirmPassword: '' }))
+        if (data.data) {
+          setSelectedUser(data.data)
+          setCredForm({ email: data.data.email || '', password: '', confirmPassword: '' })
+        }
+        loadData()
+      } else {
+        toast.error(data.error || 'Failed to update credentials')
+      }
+    } catch {
+      toast.error('Error updating credentials')
+    } finally {
+      setUpdatingCreds(false)
     }
   }
 
@@ -537,6 +600,13 @@ export default function AdminDashboard() {
                             </button>
                           )}
 
+                          <button
+                            onClick={() => handleAdminAction('company', comp.id, 'delete')}
+                            className="bg-red-600 hover:bg-red-700 text-white text-2xs font-semibold px-3 py-1.5 rounded-lg"
+                          >
+                            Delete Permanently
+                          </button>
+
                           {comp.status === 'APPROVED' && (
                             <div className="flex gap-2 border-t md:border-t-0 md:border-l border-white/5 pt-2 md:pt-0 md:pl-2">
                               {subStatus !== 'ACTIVE' ? (
@@ -883,7 +953,7 @@ export default function AdminDashboard() {
                     return (
                       <button
                         key={u.id}
-                        onClick={() => setSelectedUser(u)}
+                        onClick={() => openUserDetails(u)}
                         className="glass-card p-5 border border-white/5 hover:border-primary/30 text-left transition-all hover:shadow-neon-violet/10 hover:scale-[1.01] group"
                       >
                         {/* Avatar + name */}
@@ -916,6 +986,7 @@ export default function AdminDashboard() {
                         </div>
 
                         <p className="text-slate-500 text-xs">📱 {u.phone || '—'}</p>
+                        <p className="text-slate-500 text-xs mt-1 truncate">🔑 {u.password || 'Set password in details'}</p>
 
                         {/* Actions row */}
                         <div className="flex gap-2 mt-3 pt-3 border-t border-white/5" onClick={e => e.stopPropagation()}>
@@ -939,6 +1010,12 @@ export default function AdminDashboard() {
                             <button onClick={() => handleAdminAction('user', u.id, 'restore')}
                               className="flex-1 bg-primary hover:bg-primary/80 text-white text-xs font-semibold py-1.5 rounded-lg transition-colors">
                               Restore
+                            </button>
+                          )}
+                          {u.roleName !== 'ADMIN' && u.roleName !== 'SUPER_ADMIN' && (
+                            <button onClick={() => handleAdminAction('user', u.id, 'delete')}
+                              className="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
+                              Delete
                             </button>
                           )}
                         </div>
@@ -1004,7 +1081,72 @@ export default function AdminDashboard() {
                             <p className="text-slate-900 dark:text-white text-xs font-semibold mt-0.5 break-all">{value}</p>
                           </div>
                         ) : null)}
+                        <div className="glass p-3 rounded-xl border border-white/5 col-span-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-slate-500 text-2xs">Password</p>
+                            <button
+                              type="button"
+                              onClick={() => setShowUserPassword(v => !v)}
+                              className="text-2xs text-primary font-semibold"
+                            >
+                              {showUserPassword ? 'Hide' : 'Show'}
+                            </button>
+                          </div>
+                          <p className="text-slate-900 dark:text-white text-xs font-semibold mt-0.5 break-all font-mono">
+                            {selectedUser.password
+                              ? (showUserPassword ? selectedUser.password : '••••••••')
+                              : 'Unavailable for older accounts — set a new password below'}
+                          </p>
+                        </div>
                       </div>
+                    </div>
+
+                    {/* Update email / password */}
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Update Credentials</h4>
+                      <form onSubmit={handleUpdateUserCredentials} className="glass p-4 rounded-xl border border-white/5 space-y-3">
+                        <div>
+                          <label className="text-2xs text-slate-500 block mb-1">Email</label>
+                          <input
+                            type="email"
+                            value={credForm.email}
+                            onChange={e => setCredForm(p => ({ ...p, email: e.target.value }))}
+                            className="w-full px-3 py-2 rounded-lg border border-white/10 bg-white/5 text-sm text-slate-900 dark:text-white"
+                            required
+                          />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-2xs text-slate-500 block mb-1">New Password</label>
+                            <input
+                              type="text"
+                              value={credForm.password}
+                              onChange={e => setCredForm(p => ({ ...p, password: e.target.value }))}
+                              placeholder="Leave blank to keep current"
+                              className="w-full px-3 py-2 rounded-lg border border-white/10 bg-white/5 text-sm text-slate-900 dark:text-white"
+                              minLength={8}
+                            />
+                          </div>
+                          <div>
+                            <label className="text-2xs text-slate-500 block mb-1">Confirm Password</label>
+                            <input
+                              type="text"
+                              value={credForm.confirmPassword}
+                              onChange={e => setCredForm(p => ({ ...p, confirmPassword: e.target.value }))}
+                              placeholder="Repeat if changing"
+                              className="w-full px-3 py-2 rounded-lg border border-white/10 bg-white/5 text-sm text-slate-900 dark:text-white"
+                              minLength={8}
+                            />
+                          </div>
+                        </div>
+                        <button
+                          type="submit"
+                          disabled={updatingCreds}
+                          className="w-full bg-primary hover:bg-primary/80 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors disabled:opacity-50"
+                        >
+                          {updatingCreds ? 'Saving…' : 'Save Email / Password'}
+                        </button>
+                      </form>
                     </div>
 
                     {/* Company info (if applicable) */}
@@ -1085,7 +1227,7 @@ export default function AdminDashboard() {
                     )}
 
                     {/* Action buttons */}
-                    <div className="flex gap-3 pt-2 border-t border-white/5">
+                    <div className="flex flex-wrap gap-3 pt-2 border-t border-white/5">
                       {selectedUser.status === 'PENDING' ? (
                         <>
                           <button onClick={() => { handleAdminAction('user', selectedUser.id, 'approve'); setSelectedUser(null) }}
@@ -1106,6 +1248,14 @@ export default function AdminDashboard() {
                         <button onClick={() => { handleAdminAction('user', selectedUser.id, 'restore'); setSelectedUser(null) }}
                           className="flex-1 bg-primary hover:bg-primary/80 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors">
                           Restore Account
+                        </button>
+                      )}
+                      {selectedUser.roleName !== 'ADMIN' && selectedUser.roleName !== 'SUPER_ADMIN' && (
+                        <button
+                          onClick={() => handleAdminAction('user', selectedUser.id, 'delete')}
+                          className="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
+                        >
+                          Delete Permanently
                         </button>
                       )}
                     </div>

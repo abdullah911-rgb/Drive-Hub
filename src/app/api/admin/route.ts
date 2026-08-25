@@ -1,11 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { prisma } from '@/lib/prisma'
-import { getCurrentUser } from '@/lib/auth'
+import { getCurrentUser, hashPassword } from '@/lib/auth'
+import { decryptPassword, encryptPassword } from '@/lib/passwordVault'
 import { notifications } from '@/lib/email'
 import { convertPKR } from '@/lib/currency'
 import { SUBSCRIPTION_BASE_PKR } from '@/lib/subscription'
 import { v4 as uuidv4 } from 'uuid'
+
+function sanitizeUserForAdmin(user: Record<string, unknown>) {
+  const { passwordHash, passwordEnc, ...rest } = user
+  return {
+    ...rest,
+    password: decryptPassword(passwordEnc as string | null | undefined) || null,
+  }
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -33,7 +42,7 @@ export async function GET(request: NextRequest) {
         success: true,
         data: {
           stats,
-          users,
+          users: (users as Record<string, unknown>[]).map(sanitizeUserForAdmin),
           companies,
           cars,
           rooms,
@@ -52,7 +61,10 @@ export async function GET(request: NextRequest) {
     }
     if (resource === 'users') {
       const users = await db.getUsers()
-      return NextResponse.json({ success: true, data: users })
+      return NextResponse.json({
+        success: true,
+        data: (users as Record<string, unknown>[]).map(sanitizeUserForAdmin),
+      })
     }
     if (resource === 'companies') {
       const companies = await db.getCompanies()
@@ -94,8 +106,57 @@ export async function PATCH(request: NextRequest) {
     let emailAttempted = false
 
     if (resource === 'user') {
+      if (action === 'delete') {
+        const result = await db.hardDeleteUser(id)
+        if (!result.ok) {
+          return NextResponse.json({ success: false, error: result.error }, { status: result.error === 'User not found' ? 404 : 400 })
+        }
+        return NextResponse.json({ success: true, data: { id, deleted: true } })
+      }
+
+      if (action === 'update_credentials') {
+        const { email, password } = body as { email?: string; password?: string }
+        const existing = await db.getUserById(id) as { id: string; email: string; roleName?: string } | null
+        if (!existing) return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 })
+
+        const updateData: Record<string, string> = {}
+        if (email && email !== existing.email) {
+          const taken = await db.getUserByEmail(email)
+          if (taken && (taken as { id: string }).id !== id) {
+            return NextResponse.json({ success: false, error: 'Email already in use' }, { status: 409 })
+          }
+          updateData.email = email
+        }
+        if (password) {
+          if (password.length < 8) {
+            return NextResponse.json({ success: false, error: 'Password must be at least 8 characters' }, { status: 400 })
+          }
+          updateData.passwordHash = await hashPassword(password)
+          updateData.passwordEnc = encryptPassword(password)
+        }
+        if (Object.keys(updateData).length === 0) {
+          return NextResponse.json({ success: false, error: 'No changes provided' }, { status: 400 })
+        }
+
+        const user = await db.updateUser(id, updateData)
+        // Keep company email in sync when account email changes
+        if (updateData.email) {
+          const company = await prisma.company.findUnique({ where: { userId: id } })
+          if (company) {
+            await db.updateCompany(company.id, { email: updateData.email })
+          }
+        }
+        return NextResponse.json({
+          success: true,
+          data: sanitizeUserForAdmin(user as unknown as Record<string, unknown>),
+        })
+      }
+
       const statusMap: Record<string, string> = {
         approve: 'APPROVED', reject: 'REJECTED', suspend: 'SUSPENDED', ban: 'BANNED', restore: 'APPROVED',
+      }
+      if (!statusMap[action]) {
+        return NextResponse.json({ success: false, error: 'Unknown user action' }, { status: 400 })
       }
       const user = await db.updateUser(id, { status: statusMap[action] })
       if (!user) return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 })
@@ -133,6 +194,14 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (resource === 'company') {
+      if (action === 'delete') {
+        const result = await db.hardDeleteCompany(id)
+        if (!result.ok) {
+          return NextResponse.json({ success: false, error: result.error }, { status: result.error === 'Company not found' || result.error === 'User not found' ? 404 : 400 })
+        }
+        return NextResponse.json({ success: true, data: { id, deleted: true } })
+      }
+
       const statusMap: Record<string, string> = {
         approve: 'APPROVED', reject: 'REJECTED', suspend: 'SUSPENDED', restore: 'APPROVED',
       }

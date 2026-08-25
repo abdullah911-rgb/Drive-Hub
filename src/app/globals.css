@@ -180,10 +180,22 @@ body {
   background-color: var(--bg);
   color: var(--text-primary);
   min-height: 100vh;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Safari: prevent flex/grid children from overflowing and collapsing layouts */
+html {
+  height: -webkit-fill-available;
+}
+
+img, video, canvas, svg {
+  max-width: 100%;
+  height: auto;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -321,7 +333,7 @@ h1, h2, h3, h4, h5, h6 {
   .btn-icon {
     position: relative;
     overflow: hidden;
-    isolation: isolate;
+    /* isolation:isolate breaks some Safari paint layers with transforms */
     -webkit-tap-highlight-color: transparent;
   }
 
