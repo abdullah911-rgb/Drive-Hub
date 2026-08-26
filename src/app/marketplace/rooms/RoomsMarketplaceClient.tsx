@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { getFlagEmoji } from '@/lib/utils'
 import { formatMoney } from '@/lib/currency'
+import SearchableSelect from '@/components/ui/SearchableSelect'
 import type { Country } from '@/types'
 
 interface Room {
@@ -39,7 +40,6 @@ export default function RoomsMarketplaceClient() {
   const [countries, setCountries] = useState<Country[]>([])
   const [cities, setCities] = useState<City[]>([])
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null)
-  const [countryDropdownOpen, setCountryDropdownOpen] = useState(false)
 
   // Fetch countries
   useEffect(() => {
@@ -118,7 +118,6 @@ export default function RoomsMarketplaceClient() {
   const handleCountrySwitch = (country: Country) => {
     setSelectedCountry(country)
     sessionStorage.setItem('selectedCountry', country.code)
-    setCountryDropdownOpen(false)
   }
 
   const handleResetFilters = () => {
@@ -134,30 +133,32 @@ export default function RoomsMarketplaceClient() {
       {/* City */}
       <div>
         <label className="text-slate-400 text-xs font-semibold mb-2 block">Location / City</label>
-        <select
+        <SearchableSelect
+          size="sm"
           value={selectedCityId}
-          onChange={e => setSelectedCityId(e.target.value)}
-          className="input w-full bg-dark-900/60 dark:bg-dark-900/60 text-slate-800 dark:text-white"
-        >
-          <option value="">All Cities</option>
-          {cities.map(c => (
-            <option key={c.id} value={c.id}>{c.name}</option>
-          ))}
-        </select>
+          onChange={setSelectedCityId}
+          allowClear
+          clearLabel="All Cities"
+          placeholder="All Cities"
+          searchPlaceholder="Type a letter…"
+          options={cities.map(c => ({ value: c.id, label: c.name }))}
+        />
       </div>
 
       {/* Room Type */}
       <div>
         <label className="text-slate-400 text-xs font-semibold mb-2 block">Room Type</label>
-        <select
+        <SearchableSelect
+          size="sm"
           value={selectedType}
-          onChange={e => setSelectedType(e.target.value)}
-          className="input w-full bg-dark-900/60 dark:bg-dark-900/60 text-slate-800 dark:text-white"
-        >
-          {ROOM_TYPES.map(t => (
-            <option key={t} value={t}>{t === 'ALL' ? 'All Types' : t}</option>
-          ))}
-        </select>
+          onChange={setSelectedType}
+          placeholder="All Types"
+          searchPlaceholder="Type a letter…"
+          options={ROOM_TYPES.map(t => ({
+            value: t,
+            label: t === 'ALL' ? 'All Types' : t,
+          }))}
+        />
       </div>
 
       {/* Max Price */}
@@ -179,17 +180,21 @@ export default function RoomsMarketplaceClient() {
       {/* Min Guests */}
       <div>
         <label className="text-slate-400 text-xs font-semibold mb-2 block">Min Guests</label>
-        <select
+        <SearchableSelect
+          size="sm"
           value={minCapacity}
-          onChange={e => setMinCapacity(e.target.value)}
-          className="input w-full bg-dark-900/60 dark:bg-dark-900/60 text-slate-800 dark:text-white"
-        >
-          <option value="">Any</option>
-          <option value="1">1+</option>
-          <option value="2">2+</option>
-          <option value="4">4+</option>
-          <option value="6">6+</option>
-        </select>
+          onChange={setMinCapacity}
+          allowClear
+          clearLabel="Any"
+          placeholder="Any"
+          searchPlaceholder="Type a number…"
+          options={[
+            { value: '1', label: '1+' },
+            { value: '2', label: '2+' },
+            { value: '4', label: '4+' },
+            { value: '6', label: '6+' },
+          ]}
+        />
       </div>
     </div>
   )
@@ -207,54 +212,28 @@ export default function RoomsMarketplaceClient() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             {/* Country Dropdown */}
-            <div className="relative mb-3">
-              <button
-                type="button"
-                onClick={() => setCountryDropdownOpen(!countryDropdownOpen)}
-                className="flex items-center justify-between gap-3 bg-white dark:bg-dark-900 border border-slate-200 dark:border-white/10 hover:border-primary/50 rounded-xl px-4 py-2 text-xs text-slate-800 dark:text-white font-semibold transition-all shadow-lg min-w-[220px] text-left group"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-lg leading-none">{getFlagEmoji(selectedCountry?.code || '')}</span>
-                  <span className="text-slate-800 dark:text-white">{selectedCountry?.name || 'Select Country'}</span>
-                  <span className="text-2xs bg-primary/10 text-primary px-1.5 py-0.5 rounded font-mono uppercase border border-primary/20">{selectedCountry?.currency}</span>
-                </div>
-                <span className={`text-slate-400 dark:text-slate-300 transition-transform duration-200 ${countryDropdownOpen ? 'rotate-180' : ''}`}>▼</span>
-              </button>
-
-              <AnimatePresence>
-                {countryDropdownOpen && (
-                  <>
-                    <div className="fixed inset-0 z-[998]" onClick={() => setCountryDropdownOpen(false)} />
-                    <motion.div
-                      initial={{ opacity: 0, y: 8, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                      className="absolute left-0 mt-2 w-64 rounded-2xl shadow-2xl z-[999] max-h-64 overflow-y-auto bg-white dark:bg-dark-955 border border-slate-200 dark:border-white/10"
-                    >
-                      <div className="p-1 flex flex-col gap-0.5">
-                        {countries.map((c) => (
-                          <button
-                            key={c.code}
-                            type="button"
-                            onClick={() => handleCountrySwitch(c)}
-                            className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all text-left ${
-                              selectedCountry?.code === c.code
-                                ? 'bg-primary/20 text-primary border border-primary/30'
-                                : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/8 border border-transparent hover:text-slate-900 dark:hover:text-white'
-                            }`}
-                          >
-                            <div className="flex items-center gap-2">
-                              <span className="text-base leading-none">{getFlagEmoji(c.code)}</span>
-                              <span>{c.name}</span>
-                            </div>
-                            <span className="text-2xs text-slate-400 font-mono uppercase">{c.currency}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </motion.div>
-                  </>
-                )}
-              </AnimatePresence>
+            <div className="relative mb-3 w-full max-w-xs">
+              <SearchableSelect
+                size="sm"
+                value={selectedCountry?.code || ''}
+                onChange={code => {
+                  const match = countries.find(c => c.code === code)
+                  if (match) handleCountrySwitch(match)
+                }}
+                placeholder="Select Country"
+                searchPlaceholder="Type a letter… e.g. P"
+                options={countries.map(c => ({
+                  value: c.code,
+                  label: c.name,
+                  prefix: getFlagEmoji(c.code),
+                  keywords: `${c.code} ${c.currency}`,
+                  suffix: (
+                    <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-mono uppercase border border-primary/20">
+                      {c.currency}
+                    </span>
+                  ),
+                }))}
+              />
             </div>
 
             <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 text-primary text-xs font-bold px-4 py-1.5 rounded-full mb-3">

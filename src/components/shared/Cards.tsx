@@ -15,7 +15,14 @@ function useIsLoggedIn() {
 
   useEffect(() => {
     fetch('/api/auth/me', { credentials: 'include' })
-      .then(r => setIsLoggedIn(r.ok))
+      .then(async r => {
+        if (!r.ok) {
+          setIsLoggedIn(false)
+          return
+        }
+        const data = await r.json()
+        setIsLoggedIn(Boolean(data?.data))
+      })
       .catch(() => setIsLoggedIn(false))
   }, [])
 

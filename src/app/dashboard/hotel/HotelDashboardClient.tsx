@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { StatusBadge } from '@/components/ui'
+import SearchableSelect from '@/components/ui/SearchableSelect'
 import { getPaymentGateways, formatDate } from '@/lib/utils'
 import { convertPKR, formatSubscriptionPrice, formatMoney, toMoneyNumber } from '@/lib/currency'
 import { SUBSCRIPTION_BASE_PKR } from '@/lib/subscription'
@@ -70,7 +71,12 @@ export default function HotelDashboardClient() {
       }
 
       const userData = await res.json()
-      if (userData.data?.roleName !== 'HOTEL') {
+      if (!userData.data) {
+        toast.error('Session expired')
+        router.push('/auth')
+        return
+      }
+      if (userData.data.roleName !== 'HOTEL') {
         toast.error('Unauthorized access')
         router.push('/')
         return
@@ -691,18 +697,18 @@ export default function HotelDashboardClient() {
                 </div>
 
                 {/* Room Type & Capacity */}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs text-slate-400 mb-1 block">Room Type *</label>
-                    <select
-                      className="input-field text-sm"
+                    <SearchableSelect
                       value={roomForm.roomType}
-                      onChange={e => setRoomForm(prev => ({ ...prev, roomType: e.target.value }))}
-                    >
-                      {ROOM_TYPES.map(t => (
-                        <option key={t} value={t}>{t}</option>
-                      ))}
-                    </select>
+                      onChange={v => setRoomForm(prev => ({ ...prev, roomType: v }))}
+                      placeholder="Select Room Type"
+                      options={ROOM_TYPES.map(t => ({
+                        value: t,
+                        label: t,
+                      }))}
+                    />
                   </div>
                   <div>
                     <label className="text-xs text-slate-400 mb-1 block">Capacity *</label>
@@ -720,7 +726,7 @@ export default function HotelDashboardClient() {
                 </div>
 
                 {/* Price & Floor */}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs text-slate-400 mb-1 block">Price Per Night ({currencyCode}) *</label>
                     <input

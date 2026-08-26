@@ -37,20 +37,35 @@ export async function verifyToken(token: string): Promise<JWTPayload | null> {
   }
 }
 
+const AUTH_COOKIE = 'auth_token'
+
+/** Prefer Secure cookies on HTTPS (Vercel/Safari). Fall back for local HTTP. */
+function cookieSecure(): boolean {
+  if (process.env.NODE_ENV !== 'production') return false
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || ''
+  if (appUrl.startsWith('http://')) return false
+  return true
+}
+
+function authCookieOptions(maxAge?: number) {
+  return {
+    httpOnly: true,
+    secure: cookieSecure(),
+    sameSite: 'lax' as const,
+    path: '/',
+    ...(maxAge !== undefined ? { maxAge } : {}),
+  }
+}
+
 export async function setAuthCookie(token: string) {
   const cookieStore = await cookies()
-  cookieStore.set('auth_token', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 7, 
-    path: '/',
-  })
+  cookieStore.set(AUTH_COOKIE, token, authCookieOptions(60 * 60 * 24 * 7))
 }
 
 export async function clearAuthCookie() {
   const cookieStore = await cookies()
-  cookieStore.delete('auth_token')
+  // Mirror set attributes so Safari/Chrome actually clear the cookie
+  cookieStore.set(AUTH_COOKIE, '', { ...authCookieOptions(0) })
 }
 
 export async function getAuthToken(): Promise<string | null> {

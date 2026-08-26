@@ -289,7 +289,7 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
               </div>
 
               {/* Floating Badge 1: Ratings */}
-              <div className="absolute top-1/2 -right-2 transform -translate-y-1/2 bg-card/90 backdrop-blur-lg border border-border rounded-2xl p-3 shadow-xl flex items-center gap-2.5 animate-float">
+              <div className="absolute top-1/2 right-0 sm:-right-2 transform -translate-y-1/2 bg-card/90 backdrop-blur-lg border border-border rounded-2xl p-3 shadow-xl hidden sm:flex items-center gap-2.5 animate-float">
                 <span className="text-xl">⭐</span>
                 <div>
                   <div className="text-xs font-extrabold text-slate-900 dark:text-white">4.9/5 Rating</div>
@@ -298,7 +298,7 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
               </div>
 
               {/* Floating Badge 2: Support */}
-              <div className="absolute bottom-1/3 -left-6 bg-card/90 backdrop-blur-lg border border-border rounded-2xl p-3 shadow-xl flex items-center gap-2.5 animate-float" style={{ animationDelay: '2s' }}>
+              <div className="absolute bottom-1/3 left-0 sm:-left-6 bg-card/90 backdrop-blur-lg border border-border rounded-2xl p-3 shadow-xl hidden sm:flex items-center gap-2.5 animate-float" style={{ animationDelay: '2s' }}>
                 <span className="text-xl">💬</span>
                 <div>
                   <div className="text-xs font-extrabold text-slate-900 dark:text-white">WhatsApp Booking</div>

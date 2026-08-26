@@ -44,14 +44,19 @@ export default function Navbar() {
 
   const fetchUser = useCallback(async () => {
     try {
-      const res = await fetch('/api/auth/me', { credentials: 'include' })
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), 12000)
+      const res = await fetch('/api/auth/me', { credentials: 'include', signal: controller.signal })
+      clearTimeout(timer)
       if (res.ok) {
         const data = await res.json()
-        setUser(data.data)
-        const nRes = await fetch('/api/notifications', { credentials: 'include' })
-        if (nRes.ok) {
-          const nData = await nRes.json()
-          setNotifications(nData.data?.filter((n: { isRead: boolean }) => !n.isRead).length || 0)
+        setUser(data.data || null)
+        if (data.data) {
+          const nRes = await fetch('/api/notifications', { credentials: 'include' })
+          if (nRes.ok) {
+            const nData = await nRes.json()
+            setNotifications(nData.data?.filter((n: { isRead: boolean }) => !n.isRead).length || 0)
+          }
         }
       } else {
         setUser(null)

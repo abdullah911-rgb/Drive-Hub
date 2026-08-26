@@ -50,23 +50,25 @@ function createTransporter() {
   const pass = cleanEnv(process.env.SMTP_PASS)
 
   // secure:false + requireTLS:true = STARTTLS (connects plain, upgrades to TLS)
-  // This works on both Vercel (port 587) and local (port 465/587)
+  // pool:false — serverless functions must not keep SMTP sockets across invocations
   const secure = port === 465
-  console.log(`[Email] Transporter → host=${host} port=${port} secure=${secure} user=${user}`)
+  console.log(`[Email] Transporter → host=${host} port=${port} secure=${secure} user=${user} passLen=${pass?.length ?? 0}`)
 
   return nodemailer.createTransport({
     host,
     port,
     secure,
-    requireTLS: !secure, // enforce TLS upgrade for STARTTLS (port 587)
-    auth: { user, pass },
+    requireTLS: !secure,
+    auth: user && pass ? { user, pass } : undefined,
     tls: {
       rejectUnauthorized: false, // cPanel/shared-host self-signed certs
+      minVersion: 'TLSv1.2',
     },
-    connectionTimeout: 15000,
-    greetingTimeout: 15000,
-    socketTimeout: 20000,
-  })
+    pool: false,
+    connectionTimeout: 20000,
+    greetingTimeout: 20000,
+    socketTimeout: 25000,
+  } as nodemailer.TransportOptions)
 }
 
 function buildHtml(title: string, bodyHtml: string, ctaLabel?: string, ctaUrl?: string): string {
@@ -152,17 +154,22 @@ export async function sendEmail(opts: {
     const transporter = createTransporter()
     const fromAddress = normalizeFromAddress(process.env.SMTP_FROM, smtpUser)
     console.log(`[Email] Sending "${opts.subject}" → ${opts.to} (from: ${fromAddress})`)
-    await transporter.sendMail({
+    const info = await transporter.sendMail({
       from: fromAddress,
       to: opts.to,
       subject: opts.subject,
       html: buildHtml(opts.title, opts.bodyHtml, opts.ctaLabel, opts.ctaUrl),
+      replyTo: smtpUser,
     })
-    console.log(`[Email] ✓ Sent "${opts.subject}" → ${opts.to}`)
+    // Close the connection so serverless runtimes don't leak sockets
+    transporter.close()
+    console.log(`[Email] ✓ Sent "${opts.subject}" → ${opts.to} messageId=${info.messageId}`)
     return true
   } catch (err: unknown) {
-    const e = err as { code?: string; response?: string; message?: string }
-    console.error(`[Email] ✗ Failed — code=${e?.code} response=${e?.response} message=${e?.message}`)
+    const e = err as { code?: string; response?: string; message?: string; command?: string }
+    console.error(
+      `[Email] ✗ Failed — code=${e?.code} command=${e?.command} response=${e?.response} message=${e?.message}`
+    )
     return false
   }
 }

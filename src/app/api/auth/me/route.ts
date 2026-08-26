@@ -5,13 +5,15 @@ import { db } from '@/lib/db'
 export async function GET() {
   try {
     const currentUser = await getCurrentUser()
+    // 200 + null avoids noisy 401s for anonymous visitors (Navbar/landing poll this on every page)
     if (!currentUser) {
-      return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 })
+      return NextResponse.json({ success: true, data: null })
     }
 
     const user = await db.getUserById(currentUser.userId)
     if (!user) {
-      return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 })
+      // Stale JWT pointing at a deleted user — treat as logged out
+      return NextResponse.json({ success: true, data: null })
     }
 
     let companyId: string | null = null
@@ -40,6 +42,6 @@ export async function GET() {
     })
   } catch (error) {
     console.error('Me error:', error)
-    return NextResponse.json({ success: false, error: 'Session check failed' }, { status: 500 })
+    return NextResponse.json({ success: false, error: 'Session check failed', data: null }, { status: 500 })
   }
 }

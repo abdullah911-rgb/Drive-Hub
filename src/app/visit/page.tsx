@@ -9,6 +9,7 @@ import ParticleBackground from '@/components/shared/ParticleBackground'
 import { getFlagEmoji } from '@/lib/utils'
 import Image from 'next/image'
 import { validateCompanyDocumentFile } from '@/lib/companyDocuments'
+import SearchableSelect from '@/components/ui/SearchableSelect'
 
 interface Country { id: string; name: string; code: string; currency: string; dialCode: string }
 
@@ -286,12 +287,21 @@ function VisitContent() {
                     </div>
                     <div>
                       <label className={labelClass}>Country *</label>
-                      <select className={inputClass} value={custForm.countryId} onChange={e => setCustForm(p => ({ ...p, countryId: e.target.value }))} required>
-                        <option value="">Select Country</option>
-                        {countries.map(c => <option key={c.id} value={c.id}>{getFlagEmoji(c.code)} {c.name}</option>)}
-                      </select>
+                      <SearchableSelect
+                        value={custForm.countryId}
+                        onChange={v => setCustForm(p => ({ ...p, countryId: v }))}
+                        required
+                        placeholder="Select Country"
+                        searchPlaceholder="Type a letter… e.g. P"
+                        options={countries.map(c => ({
+                          value: c.id,
+                          label: c.name,
+                          prefix: getFlagEmoji(c.code),
+                          keywords: c.code,
+                        }))}
+                      />
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className={labelClass}>Emergency Contact Name *</label>
                         <input className={inputClass} placeholder="Emergency person name"
@@ -306,7 +316,7 @@ function VisitContent() {
                   </motion.div>
                 ) : (
                   <motion.div key="comp" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className={labelClass}>Owner Full Name *</label>
                         <input className={inputClass} placeholder="Owner name"
@@ -328,7 +338,7 @@ function VisitContent() {
                       <input className={inputClass} placeholder="Full business address"
                         value={compForm.businessAddress} onChange={e => setCompForm(p => ({ ...p, businessAddress: e.target.value }))} required />
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className={labelClass}>WhatsApp Number *</label>
                         <input className={inputClass} type="tel" placeholder={getPhonePlaceholder(compForm.countryId)}
@@ -336,17 +346,26 @@ function VisitContent() {
                       </div>
                       <div>
                         <label className={labelClass}>Country *</label>
-                        <select className={inputClass} value={compForm.countryId} onChange={e => setCompForm(p => ({ ...p, countryId: e.target.value }))} required>
-                          <option value="">Select Country</option>
-                          {countries.map(c => <option key={c.id} value={c.id}>{getFlagEmoji(c.code)} {c.name}</option>)}
-                        </select>
+                        <SearchableSelect
+                          value={compForm.countryId}
+                          onChange={v => setCompForm(p => ({ ...p, countryId: v }))}
+                          required
+                          placeholder="Select Country"
+                          searchPlaceholder="Type a letter… e.g. P"
+                          options={countries.map(c => ({
+                            value: c.id,
+                            label: c.name,
+                            prefix: getFlagEmoji(c.code),
+                            keywords: c.code,
+                          }))}
+                        />
                       </div>
                     </div>
 
                     {/* Documents */}
                     <div className="pt-2 border-t border-white/5">
                       <p className="text-xs font-semibold text-slate-400 mb-3">📁 Upload Documents</p>
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <FileUploadBox label={userRole === 'HOTEL' ? 'Hotel License' : 'Business License'} file={licenseFile} onChange={setLicenseFile} id="upload-license" />
                         <FileUploadBox label="ID / CNIC Front" file={cnicFrontFile} onChange={setCnicFrontFile} id="upload-cnic-front" />
                         <FileUploadBox label="ID / CNIC Back" file={cnicBackFile} onChange={setCnicBackFile} id="upload-cnic-back" />

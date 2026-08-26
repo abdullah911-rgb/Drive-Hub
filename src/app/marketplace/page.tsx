@@ -4,6 +4,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CarCard } from '@/components/shared/Cards'
 import { CarCardSkeleton } from '@/components/ui'
+import SearchableSelect from '@/components/ui/SearchableSelect'
 import { getFlagEmoji } from '@/lib/utils'
 import type { Car, Country } from '@/types'
 
@@ -26,7 +27,6 @@ function MarketplaceContent() {
   const [selectedSeating, setSelectedSeating] = useState('')
   const [selectedCityId, setSelectedCityId] = useState('')
   const [showMobileFilters, setShowMobileFilters] = useState(false)
-  const [countryDropdownOpen, setCountryDropdownOpen] = useState(false)
 
   // Fetch countries
   useEffect(() => {
@@ -128,64 +128,90 @@ function MarketplaceContent() {
   // Sidebar filter panel (shared between desktop & mobile)
   const FilterPanel = () => (
     <div className="flex flex-col gap-5">
-      {/* Location / City */}
       <div>
         <label className="text-slate-400 text-xs font-semibold mb-2 block">Location / City</label>
-        <select
+        <SearchableSelect
+          size="sm"
           value={selectedCityId}
-          onChange={(e) => setSelectedCityId(e.target.value)}
-          className="input w-full bg-dark-900/60 dark:bg-dark-900/60 text-slate-800 dark:text-white"
-        >
-          <option value="">All Cities</option>
-          {cities.map(c => (
-            <option key={c.id} value={c.id}>{c.name}</option>
-          ))}
-        </select>
+          onChange={setSelectedCityId}
+          allowClear
+          clearLabel="All Cities"
+          placeholder="All Cities"
+          searchPlaceholder="Type a letter…"
+          options={cities.map(c => ({ value: c.id, label: c.name }))}
+        />
       </div>
 
-      {/* Brand */}
       <div>
         <label className="text-slate-400 text-xs font-semibold mb-2 block">Brand</label>
-        <select value={selectedBrand} onChange={(e) => setSelectedBrand(e.target.value)} className="input w-full bg-dark-900/60 dark:bg-dark-900/60 text-slate-800 dark:text-white">
-          <option value="">All Brands</option>
-          {['Toyota','Honda','Hyundai','Suzuki','Nissan','Kia','Ford','BMW','Mercedes','Audi','Lexus','Chevrolet','Jeep','Mitsubishi','Mazda'].map(b => (
-            <option key={b} value={b}>{b}</option>
-          ))}
-        </select>
+        <SearchableSelect
+          size="sm"
+          value={selectedBrand}
+          onChange={setSelectedBrand}
+          allowClear
+          clearLabel="All Brands"
+          placeholder="All Brands"
+          searchPlaceholder="Type a letter… e.g. T"
+          options={['Toyota','Honda','Hyundai','Suzuki','Nissan','Kia','Ford','BMW','Mercedes','Audi','Lexus','Chevrolet','Jeep','Mitsubishi','Mazda'].map(b => ({
+            value: b,
+            label: b,
+          }))}
+        />
       </div>
 
-      {/* Transmission */}
       <div>
         <label className="text-slate-400 text-xs font-semibold mb-2 block">Transmission</label>
-        <select value={selectedTransmission} onChange={(e) => setSelectedTransmission(e.target.value)} className="input w-full bg-dark-900/60 dark:bg-dark-900/60 text-slate-800 dark:text-white">
-          <option value="">Any Transmission</option>
-          <option value="AUTOMATIC">Automatic</option>
-          <option value="MANUAL">Manual</option>
-        </select>
+        <SearchableSelect
+          size="sm"
+          value={selectedTransmission}
+          onChange={setSelectedTransmission}
+          allowClear
+          clearLabel="Any Transmission"
+          placeholder="Any Transmission"
+          searchPlaceholder="Type a letter…"
+          options={[
+            { value: 'AUTOMATIC', label: 'Automatic' },
+            { value: 'MANUAL', label: 'Manual' },
+          ]}
+        />
       </div>
 
-      {/* Fuel Type */}
       <div>
         <label className="text-slate-400 text-xs font-semibold mb-2 block">Fuel Type</label>
-        <select value={selectedFuelType} onChange={(e) => setSelectedFuelType(e.target.value)} className="input w-full bg-dark-900/60 dark:bg-dark-900/60 text-slate-800 dark:text-white">
-          <option value="">Any Fuel</option>
-          <option value="PETROL">Petrol</option>
-          <option value="DIESEL">Diesel</option>
-          <option value="HYBRID">Hybrid</option>
-          <option value="ELECTRIC">Electric</option>
-        </select>
+        <SearchableSelect
+          size="sm"
+          value={selectedFuelType}
+          onChange={setSelectedFuelType}
+          allowClear
+          clearLabel="Any Fuel"
+          placeholder="Any Fuel"
+          searchPlaceholder="Type a letter…"
+          options={[
+            { value: 'PETROL', label: 'Petrol' },
+            { value: 'DIESEL', label: 'Diesel' },
+            { value: 'HYBRID', label: 'Hybrid' },
+            { value: 'ELECTRIC', label: 'Electric' },
+          ]}
+        />
       </div>
 
-      {/* Min Seating */}
       <div>
         <label className="text-slate-400 text-xs font-semibold mb-2 block">Min Seating</label>
-        <select value={selectedSeating} onChange={(e) => setSelectedSeating(e.target.value)} className="input w-full bg-dark-900/60 dark:bg-dark-900/60 text-slate-800 dark:text-white">
-          <option value="">Any Capacity</option>
-          <option value="2">2+ Seats</option>
-          <option value="4">4+ Seats</option>
-          <option value="5">5+ Seats</option>
-          <option value="7">7+ Seats</option>
-        </select>
+        <SearchableSelect
+          size="sm"
+          value={selectedSeating}
+          onChange={setSelectedSeating}
+          allowClear
+          clearLabel="Any Capacity"
+          placeholder="Any Capacity"
+          searchPlaceholder="Type a number…"
+          options={[
+            { value: '2', label: '2+ Seats' },
+            { value: '4', label: '4+ Seats' },
+            { value: '5', label: '5+ Seats' },
+            { value: '7', label: '7+ Seats' },
+          ]}
+        />
       </div>
     </div>
   )
@@ -196,59 +222,28 @@ function MarketplaceContent() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
         <div>
           {/* Country Dropdown */}
-          <div className="relative mb-3 flex items-center gap-3">
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setCountryDropdownOpen(!countryDropdownOpen)}
-                className="flex items-center justify-between gap-3 bg-white dark:bg-dark-900 border border-slate-200 dark:border-white/10 hover:border-primary/50 rounded-xl px-4 py-2 text-xs text-slate-800 dark:text-white font-semibold transition-all shadow-lg min-w-[220px] text-left group"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-lg leading-none">{getFlagEmoji(selectedCountry?.code || '')}</span>
-                  <span className="text-slate-800 dark:text-white">{selectedCountry?.name || 'Select Country'}</span>
-                  <span className="text-2xs bg-primary/10 text-primary px-1.5 py-0.5 rounded font-mono uppercase border border-primary/20">{selectedCountry?.currency}</span>
-                </div>
-                <span className={`text-slate-400 dark:text-slate-300 transition-transform duration-200 ${countryDropdownOpen ? 'rotate-180' : ''}`}>▼</span>
-              </button>
-
-              <AnimatePresence>
-                {countryDropdownOpen && (
-                  <>
-                    <div className="fixed inset-0 z-[998]" onClick={() => setCountryDropdownOpen(false)} />
-                    <motion.div
-                      initial={{ opacity: 0, y: 8, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                      className="absolute left-0 mt-2 w-64 rounded-2xl shadow-2xl z-[999] max-h-64 overflow-y-auto bg-white dark:bg-dark-955 border border-slate-200 dark:border-white/10"
-                    >
-                      <div className="p-1 flex flex-col gap-0.5">
-                        {countries.map((c) => (
-                          <button
-                            key={c.code}
-                            type="button"
-                            onClick={() => {
-                              handleCountrySwitch(c)
-                              setCountryDropdownOpen(false)
-                            }}
-                            className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all text-left ${
-                              selectedCountry?.code === c.code
-                                ? 'bg-primary/20 text-primary border border-primary/30'
-                                : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/8 border border-transparent hover:text-slate-900 dark:hover:text-white'
-                            }`}
-                          >
-                            <div className="flex items-center gap-2">
-                              <span className="text-base leading-none">{getFlagEmoji(c.code)}</span>
-                              <span>{c.name}</span>
-                            </div>
-                            <span className="text-2xs text-slate-400 font-mono uppercase">{c.currency}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </motion.div>
-                  </>
-                )}
-              </AnimatePresence>
-            </div>
+          <div className="relative mb-3 w-full max-w-xs">
+            <SearchableSelect
+              size="sm"
+              value={selectedCountry?.code || ''}
+              onChange={code => {
+                const match = countries.find(c => c.code === code)
+                if (match) handleCountrySwitch(match)
+              }}
+              placeholder="Select Country"
+              searchPlaceholder="Type a letter… e.g. P"
+              options={countries.map(c => ({
+                value: c.code,
+                label: c.name,
+                prefix: getFlagEmoji(c.code),
+                keywords: `${c.code} ${c.currency}`,
+                suffix: (
+                  <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-mono uppercase border border-primary/20">
+                    {c.currency}
+                  </span>
+                ),
+              }))}
+            />
           </div>
           <h1 className="font-heading font-black text-3xl md:text-4xl text-white">
             Available Rental <span className="gradient-text">Rides</span>

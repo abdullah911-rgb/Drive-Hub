@@ -125,7 +125,7 @@ function CompaniesContent() {
         <div>
           <div className="flex items-center gap-3 mb-2">
             <span className="text-3xl">{getFlagEmoji(selectedCountry?.code || '')}</span>
-            <div className="flex gap-1.5">
+            <div className="flex flex-wrap gap-1.5">
               {countries.map((c) => (
                 <button
                   key={c.code}

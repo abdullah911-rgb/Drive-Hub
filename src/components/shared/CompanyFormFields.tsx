@@ -3,6 +3,7 @@ import { useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getFlagEmoji } from '@/lib/utils'
 import ValidatedInput from '@/components/shared/ValidatedInput'
+import SearchableSelect from '@/components/ui/SearchableSelect'
 import { validateRequiredText } from '@/lib/liveValidation'
 import {
   getCountryFormConfigById,
@@ -87,17 +88,19 @@ export default function CompanyFormFields({
   const countrySelect = (
     <div>
       <label className={labelClass}>Country *</label>
-      <select
-        className="input-dark text-sm"
+      <SearchableSelect
         value={form.countryId}
-        onChange={e => handleCountrySelect(e.target.value)}
+        onChange={handleCountrySelect}
         required
-      >
-        <option value="">Select Country</option>
-        {countries.map(c => (
-          <option key={c.id} value={c.id}>{getFlagEmoji(c.code)} {c.name}</option>
-        ))}
-      </select>
+        placeholder="Select Country"
+        searchPlaceholder="Type a letter… e.g. P for Pakistan"
+        options={countries.map(c => ({
+          value: c.id,
+          label: c.name,
+          prefix: getFlagEmoji(c.code),
+          keywords: c.code,
+        }))}
+      />
     </div>
   )
 
@@ -124,7 +127,7 @@ export default function CompanyFormFields({
         </AnimatePresence>
       )}
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <ValidatedInput
           label="Company Name"
           value={form.companyName}
@@ -148,7 +151,7 @@ export default function CompanyFormFields({
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: 12 }}
           transition={{ duration: 0.3 }}
-          className={companyType === 'HOTEL' ? 'grid grid-cols-1' : 'grid grid-cols-2 gap-3'}
+          className={companyType === 'HOTEL' ? 'grid grid-cols-1' : 'grid grid-cols-1 sm:grid-cols-2 gap-3'}
         >
           <ValidatedInput
             key={`${countryCode}-nationalId`}
@@ -184,7 +187,7 @@ export default function CompanyFormFields({
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: 12 }}
           transition={{ duration: 0.3, delay: 0.05 }}
-          className="grid grid-cols-2 gap-3"
+          className="grid grid-cols-1 sm:grid-cols-2 gap-3"
         >
           <ValidatedInput
             key={`${countryCode}-contact`}

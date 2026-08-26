@@ -65,12 +65,15 @@ export default function AdminDashboard() {
     try {
       const meRes = await fetch('/api/auth/me', { credentials: 'include' })
       if (!meRes.ok) {
-        // Not authenticated — redirect silently without showing toast (may be a normal logout)
         router.push('/auth')
         return
       }
       const meData = await meRes.json()
-      if (meData.data?.roleName !== 'ADMIN' && meData.data?.roleName !== 'SUPER_ADMIN') {
+      if (!meData.data) {
+        router.push('/auth')
+        return
+      }
+      if (meData.data.roleName !== 'ADMIN' && meData.data.roleName !== 'SUPER_ADMIN') {
         router.push('/')
         return
       }
@@ -1061,7 +1064,7 @@ export default function AdminDashboard() {
                     {/* Basic info */}
                     <div>
                       <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Account Info</h4>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {[
                           { label: 'Full Name', value: selectedUser.fullName },
                           { label: 'Email', value: selectedUser.email },
@@ -1529,7 +1532,7 @@ export default function AdminDashboard() {
                     }`}>{car.status}</span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 mb-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                     {[
                       { label: 'Transmission', value: car.transmission },
                       { label: 'Fuel Type', value: (car as Car & {fuelType?: string}).fuelType },
@@ -1631,7 +1634,7 @@ export default function AdminDashboard() {
                     }`}>{room.status}</span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 mb-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                     {[
                       { label: 'Room Type', value: room.roomType },
                       { label: 'Capacity', value: `${room.capacity} guests` },

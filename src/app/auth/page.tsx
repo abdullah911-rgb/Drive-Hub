@@ -11,6 +11,7 @@ import { getFlagEmoji } from '@/lib/utils'
 import { validateEmail } from '@/lib/liveValidation'
 import { SUBSCRIPTION_BASE_PKR } from '@/lib/subscription'
 import { formatSubscriptionPrice } from '@/lib/currency'
+import SearchableSelect from '@/components/ui/SearchableSelect'
 
 type AuthTab = 'login' | 'signup'
 type SignupRole = 'CUSTOMER' | 'COMPANY'
@@ -285,13 +286,21 @@ function AuthContent() {
                       </div>
                       <div>
                         <label className={labelClass}>Country *</label>
-                        <select className={inputClass} value={custData.countryId}
-                          onChange={e => setCustData(p => ({ ...p, countryId: e.target.value }))} required>
-                          <option value="">Select Country</option>
-                          {countries.map(c => <option key={c.id} value={c.id}>{getFlagEmoji(c.code)} {c.name}</option>)}
-                        </select>
+                        <SearchableSelect
+                          value={custData.countryId}
+                          onChange={v => setCustData(p => ({ ...p, countryId: v }))}
+                          required
+                          placeholder="Select Country"
+                          searchPlaceholder="Type a letter… e.g. P"
+                          options={countries.map(c => ({
+                            value: c.id,
+                            label: c.name,
+                            prefix: getFlagEmoji(c.code),
+                            keywords: c.code,
+                          }))}
+                        />
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                           <label className={labelClass}>Password *</label>
                           <div className="relative">
@@ -336,7 +345,7 @@ function AuthContent() {
                         ))}
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                           <label className={labelClass}>{compData.companyType === 'HOTEL' ? 'Hotel' : 'Company'} Name *</label>
                           <input className={inputClass} placeholder="My Business" value={compData.companyName}
@@ -360,14 +369,22 @@ function AuthContent() {
                       </div>
                       <div>
                         <label className={labelClass}>Country *</label>
-                        <select className={inputClass} value={compData.countryId}
-                          onChange={e => setCompData(p => ({ ...p, countryId: e.target.value }))} required>
-                          <option value="">Select Country</option>
-                          {countries.map(c => <option key={c.id} value={c.id}>{getFlagEmoji(c.code)} {c.name}</option>)}
-                        </select>
+                        <SearchableSelect
+                          value={compData.countryId}
+                          onChange={v => setCompData(p => ({ ...p, countryId: v }))}
+                          required
+                          placeholder="Select Country"
+                          searchPlaceholder="Type a letter… e.g. P"
+                          options={countries.map(c => ({
+                            value: c.id,
+                            label: c.name,
+                            prefix: getFlagEmoji(c.code),
+                            keywords: c.code,
+                          }))}
+                        />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                           <label className={labelClass}>Password *</label>
                           <div className="relative">

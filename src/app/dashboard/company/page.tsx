@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { StatusBadge } from '@/components/ui'
+import SearchableSelect from '@/components/ui/SearchableSelect'
 import { getPaymentGateways, formatDate } from '@/lib/utils'
 import { convertPKR, formatSubscriptionPrice } from '@/lib/currency'
 import { SUBSCRIPTION_BASE_PKR } from '@/lib/subscription'
@@ -84,7 +85,12 @@ export default function CompanyDashboard() {
       }
 
       const userData = await res.json()
-      if (userData.data?.roleName !== 'COMPANY') {
+      if (!userData.data) {
+        toast.error('Session expired')
+        router.push('/auth')
+        return
+      }
+      if (userData.data.roleName !== 'COMPANY') {
         toast.error('Unauthorized access')
         router.push('/')
         return
@@ -697,45 +703,45 @@ export default function CompanyDashboard() {
 
                   <div>
                     <label className="text-slate-400 text-xs font-semibold mb-1 block">Seating Capacity *</label>
-                    <select
+                    <SearchableSelect
                       value={carForm.seatingCapacity}
-                      onChange={(e) => setCarForm({ ...carForm, seatingCapacity: e.target.value })}
-                      className="input w-full"
-                      required
-                    >
-                      <option value="2">2 Passengers</option>
-                      <option value="4">4 Passengers</option>
-                      <option value="5">5 Passengers</option>
-                      <option value="7">7 Passengers</option>
-                    </select>
+                      onChange={(v) => setCarForm({ ...carForm, seatingCapacity: v })}
+                      placeholder="Select Seating Capacity"
+                      options={[
+                        { value: '2', label: '2 Passengers' },
+                        { value: '4', label: '4 Passengers' },
+                        { value: '5', label: '5 Passengers' },
+                        { value: '7', label: '7 Passengers' },
+                      ]}
+                    />
                   </div>
 
                   <div>
                     <label className="text-slate-400 text-xs font-semibold mb-1 block">Fuel Type *</label>
-                    <select
+                    <SearchableSelect
                       value={carForm.fuelType}
-                      onChange={(e) => setCarForm({ ...carForm, fuelType: e.target.value })}
-                      className="input w-full"
-                      required
-                    >
-                      <option value="PETROL">Petrol</option>
-                      <option value="DIESEL">Diesel</option>
-                      <option value="HYBRID">Hybrid</option>
-                      <option value="ELECTRIC">Electric</option>
-                    </select>
+                      onChange={(v) => setCarForm({ ...carForm, fuelType: v })}
+                      placeholder="Select Fuel Type"
+                      options={[
+                        { value: 'PETROL', label: 'Petrol' },
+                        { value: 'DIESEL', label: 'Diesel' },
+                        { value: 'HYBRID', label: 'Hybrid' },
+                        { value: 'ELECTRIC', label: 'Electric' },
+                      ]}
+                    />
                   </div>
 
                   <div>
                     <label className="text-slate-400 text-xs font-semibold mb-1 block">Transmission *</label>
-                    <select
+                    <SearchableSelect
                       value={carForm.transmission}
-                      onChange={(e) => setCarForm({ ...carForm, transmission: e.target.value })}
-                      className="input w-full"
-                      required
-                    >
-                      <option value="AUTOMATIC">Automatic</option>
-                      <option value="MANUAL">Manual</option>
-                    </select>
+                      onChange={(v) => setCarForm({ ...carForm, transmission: v })}
+                      placeholder="Select Transmission"
+                      options={[
+                        { value: 'AUTOMATIC', label: 'Automatic' },
+                        { value: 'MANUAL', label: 'Manual' },
+                      ]}
+                    />
                   </div>
                 </div>
 
