@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     const sub = await db.createSubscription({
       companyId: c.id,
       planName: 'Standard Plan',
-      maxCars: 10,
+      maxCars: 9999,
       price: localPrice,
       durationDays: 30,
       features: ['Marketplace listings', 'WhatsApp integration', 'Company profile page', 'Customer reviews'],

@@ -41,7 +41,7 @@ function normalizeFromAddress(rawFrom: string | undefined, smtpUser: string): st
   return fallback
 }
 
-function createTransporter(options?: { port?: number; secure?: boolean; requireTLS?: boolean }) {
+function createTransporter(options?: { port?: number; secure?: boolean; requireTLS?: boolean; ignoreTLS?: boolean }) {
   const host = cleanEnv(process.env.SMTP_HOST) || 'mail.nexttripy.com'
   const rawPort = cleanEnv(process.env.SMTP_PORT)
   const port = options?.port ?? parseInt(rawPort || '587', 10)
@@ -49,14 +49,17 @@ function createTransporter(options?: { port?: number; secure?: boolean; requireT
   const pass = cleanEnv(process.env.SMTP_PASS)
 
   const secure = options?.secure ?? (port === 465)
-  const requireTLS = options?.requireTLS ?? (!secure)
-  console.log(`[Email] Transporter → host=${host} port=${port} secure=${secure} requireTLS=${requireTLS} user=${user} passLen=${pass?.length ?? 0}`)
+  const requireTLS = options?.requireTLS ?? (!secure && !options?.ignoreTLS)
+  const ignoreTLS = options?.ignoreTLS ?? false
+  console.log(`[Email] Transporter → host=${host} port=${port} secure=${secure} requireTLS=${requireTLS} ignoreTLS=${ignoreTLS} user=${user} passLen=${pass?.length ?? 0}`)
 
   return nodemailer.createTransport({
     host,
     port,
     secure,
     requireTLS,
+    ignoreTLS,
+    name: 'nexttripy.com', // EHLO/HELO hostname required by cPanel Exim
     auth: user && pass ? { user, pass } : undefined,
     tls: {
       rejectUnauthorized: false, // cPanel/shared-host self-signed certs
@@ -119,7 +122,7 @@ function buildHtml(title: string, bodyHtml: string, ctaLabel?: string, ctaUrl?: 
 
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:40px;">
               <tr><td style="border-top:1px solid rgba(255,255,255,0.07);padding-top:24px;">
-                <p style="color:#475569;font-size:12px;margin:0;">NextTripy &bull; Car Rentals & Hotel Rooms</p>
+                <p style="color:#475569;font-size:12px;margin:0;">NextTripy &bull; Rental Cars & Hotel Stays</p>
                 <p style="color:#334155;font-size:11px;margin:6px 0 0;">This is an automated message, please do not reply directly. For support: <a href="mailto:info@nexttripy.com" style="color:#6366f1;">info@nexttripy.com</a></p>
                 <p style="color:#1e293b;font-size:11px;margin:6px 0 0;"><a href="${appUrl}" style="color:#334155;">${appUrl}</a></p>
               </td></tr>
@@ -162,12 +165,20 @@ export async function sendEmailDetailed(opts: {
   const fromAddress = normalizeFromAddress(process.env.SMTP_FROM, smtpUser)
   const html = buildHtml(opts.title, opts.bodyHtml, opts.ctaLabel, opts.ctaUrl)
 
-  // Configure attempt cascade: configured port first, followed by alternate port
+  // Configure attempt cascade: configured port first, followed by alternate ports
   const configurations = [
-    { port: rawPort, secure: rawPort === 465, requireTLS: rawPort !== 465 },
+    { port: rawPort, secure: rawPort === 465, requireTLS: rawPort !== 465, ignoreTLS: false },
     ...(rawPort === 587
-      ? [{ port: 465, secure: true, requireTLS: false }]
-      : [{ port: 587, secure: false, requireTLS: true }]),
+      ? [
+          { port: 465, secure: true, requireTLS: false, ignoreTLS: false },
+          { port: 587, secure: false, requireTLS: false, ignoreTLS: false },
+          { port: 2525, secure: false, requireTLS: true, ignoreTLS: false },
+        ]
+      : [
+          { port: 587, secure: false, requireTLS: true, ignoreTLS: false },
+          { port: 587, secure: false, requireTLS: false, ignoreTLS: false },
+          { port: 2525, secure: false, requireTLS: true, ignoreTLS: false },
+        ]),
   ]
 
   const attempts: Array<{ port: number; secure: boolean; error?: string; ok: boolean }> = []
@@ -261,15 +272,26 @@ const APP_URL = () => process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
 export const notifications = {
 
-  async userApproved(to: string, phone: string, fullName?: string) {
-    const msg = `Hello ${fullName || 'there'} 👋\n\nYour NextTripy account has been approved! You can now browse listings and contact providers directly.\n\nLogin at: ${APP_URL()}/auth`
+  async userApproved(to: string, phone: string, fullName?: string, plainPassword?: string | null) {
+    const passLine = plainPassword ? `\n🔑 Password: ${plainPassword}` : ''
+    const msg = `Hello ${fullName || 'there'} 👋\n\nYour NextTripy account has been APPROVED!\n\n📧 Login Email: ${to}${passLine}\n\nYou can now browse listings, contact partners directly on WhatsApp, and manage your profile.\n\nSign In: ${APP_URL()}/auth`
+    
+    const credsHtml = plainPassword ? `
+      <table cellpadding="10" cellspacing="0" style="background:#0f172a;border-radius:10px;border:1px solid rgba(255,255,255,0.1);width:100%;margin:20px 0;">
+        <tr><td style="color:#94a3b8;font-size:13px;">Login Email:</td><td style="color:#fff;font-weight:700;font-size:13px;">${to}</td></tr>
+        <tr><td style="color:#94a3b8;font-size:13px;">Password:</td><td style="color:#34d399;font-weight:700;font-size:13px;font-family:monospace;">${plainPassword}</td></tr>
+      </table>` : `
+      <p style="margin:16px 0;color:#cbd5e1;">Your login email is: <strong>${to}</strong></p>`
+
     const emailSent = await sendEmail({
       to,
       subject: '🎉 Your NextTripy Account Is Approved!',
       title: `Welcome to NextTripy, ${fullName || 'there'}!`,
-      bodyHtml: `Your account has been reviewed and <strong style="color:#34d399;">approved</strong> by our team. You can now browse car and hotel listings, contact providers via WhatsApp, and enjoy a seamless experience.`,
-      ctaLabel: 'Browse Marketplace',
-      ctaUrl: `${APP_URL()}/marketplace`,
+      bodyHtml: `Your account has been reviewed and <strong style="color:#34d399;">approved</strong> by our team.<br><br>
+        ${credsHtml}
+        You can now browse car and hotel listings, contact providers via WhatsApp, and enjoy a seamless travel booking experience.`,
+      ctaLabel: 'Sign In to NextTripy',
+      ctaUrl: `${APP_URL()}/auth`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
     return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
@@ -299,19 +321,29 @@ export const notifications = {
     return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
   },
 
-  async companyApproved(to: string, phone: string, companyName: string) {
-    const msg = `Hello ${companyName} 🎉\n\nYour profile on NextTripy has been APPROVED! Log in to your dashboard to subscribe and start listing.\n\nLogin: ${APP_URL()}/auth`
+  async companyApproved(to: string, phone: string, companyName: string, plainPassword?: string | null) {
+    const passLine = plainPassword ? `\n🔑 Password: ${plainPassword}` : ''
+    const msg = `Hello ${companyName} 🎉\n\nYour partner profile on NextTripy has been APPROVED!\n\n📧 Login Email: ${to}${passLine}\n\nYou can now log in to your partner portal and start listing your rental cars and hotel rooms on the marketplace.\n\nLogin: ${APP_URL()}/auth`
+    
+    const credsHtml = plainPassword ? `
+      <table cellpadding="10" cellspacing="0" style="background:#0f172a;border-radius:10px;border:1px solid rgba(255,255,255,0.1);width:100%;margin:20px 0;">
+        <tr><td style="color:#94a3b8;font-size:13px;">Login Email:</td><td style="color:#fff;font-weight:700;font-size:13px;">${to}</td></tr>
+        <tr><td style="color:#94a3b8;font-size:13px;">Password:</td><td style="color:#34d399;font-weight:700;font-size:13px;font-family:monospace;">${plainPassword}</td></tr>
+      </table>` : `
+      <p style="margin:16px 0;color:#cbd5e1;">Your login email is: <strong>${to}</strong></p>`
+
     const emailSent = await sendEmail({
       to,
-      subject: `🎉 ${companyName} — NextTripy Profile Approved!`,
+      subject: `🎉 ${companyName} — NextTripy Partner Profile Approved!`,
       title: `${companyName} — Approved!`,
-      bodyHtml: `Congratulations! Your profile has been <strong style="color:#34d399;">approved</strong> by our admin team.<br><br>
+      bodyHtml: `Congratulations! Your business profile has been <strong style="color:#34d399;">approved</strong> by our team.<br><br>
+        ${credsHtml}
         You can now:<br>
-        ✅ Subscribe to the Standard Plan<br>
-        ✅ Start listing on the marketplace<br>
-        ✅ Receive inquiries directly via WhatsApp<br>
-        ✅ Build your customer review profile`,
-      ctaLabel: 'Go to Dashboard',
+        ✅ Activate your Partner Subscription from the dashboard<br>
+        ✅ Start listing your rental cars and hotel rooms on the marketplace<br>
+        ✅ Receive direct inquiries via WhatsApp<br>
+        ✅ Build your verified customer review profile`,
+      ctaLabel: 'Go to Partner Dashboard',
       ctaUrl: `${APP_URL()}/auth`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
@@ -387,14 +419,14 @@ export const notifications = {
   },
 
   async roomApproved(to: string, phone: string, roomName: string) {
-    const msg = `Great news! ✅\n\nYour hotel room listing for "${roomName}" on NextTripy has been APPROVED and is now live on the marketplace!\n\nView it at: ${APP_URL()}/marketplace`
+    const msg = `Great news! ✅\n\nYour hotel room listing for "${roomName}" on NextTripy has been APPROVED and is now live on the marketplace!\n\nView it at: ${APP_URL()}/marketplace/rooms`
     const emailSent = await sendEmail({
       to,
       subject: `✅ Room "${roomName}" is now live on NextTripy!`,
       title: 'Room Listing Approved',
       bodyHtml: `Your hotel room listing for <strong>${roomName}</strong> has been approved and is now <strong style="color:#34d399;">live on the NextTripy Marketplace</strong>. Customers can now find and book your room directly.`,
-      ctaLabel: 'View Marketplace',
-      ctaUrl: `${APP_URL()}/marketplace`,
+      ctaLabel: 'View Hotel Rooms',
+      ctaUrl: `${APP_URL()}/marketplace/rooms`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
     return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
@@ -431,14 +463,25 @@ export const notifications = {
   },
 
 
-  async subscriptionActivated(to: string, phone: string, companyName: string, endDate: string) {
-    const msg = `Hello ${companyName} ✅\n\nYour NextTripy subscription has been activated! Your account is now active until ${endDate}. You can start listing from now: ${APP_URL()}/auth`
+  async subscriptionActivated(to: string, phone: string, companyName: string, endDate: string, plainPassword?: string | null) {
+    const passLine = plainPassword ? `\n🔑 Password: ${plainPassword}` : ''
+    const msg = `Hello ${companyName} ✅\n\nYour NextTripy subscription is now ACTIVE until ${endDate}!\n\n📧 Login Email: ${to}${passLine}\n\nYou can now start listing your rental cars and hotel rooms on the marketplace and partner portal.\n\nSign In: ${APP_URL()}/auth`
+    
+    const credsHtml = plainPassword ? `
+      <table cellpadding="10" cellspacing="0" style="background:#0f172a;border-radius:10px;border:1px solid rgba(255,255,255,0.1);width:100%;margin:20px 0;">
+        <tr><td style="color:#94a3b8;font-size:13px;">Login Email:</td><td style="color:#fff;font-weight:700;font-size:13px;">${to}</td></tr>
+        <tr><td style="color:#94a3b8;font-size:13px;">Password:</td><td style="color:#34d399;font-weight:700;font-size:13px;font-family:monospace;">${plainPassword}</td></tr>
+      </table>` : `
+      <p style="margin:16px 0;color:#cbd5e1;">Your login email is: <strong>${to}</strong></p>`
+
     const emailSent = await sendEmail({
       to,
       subject: '✅ NextTripy Subscription Activated',
       title: 'Subscription Activated',
-      bodyHtml: `Your payment has been verified and your NextTripy subscription for <strong>${companyName}</strong> is now <strong style="color:#34d399;">active until ${endDate}</strong>.<br><br>You can start listing on the marketplace from now and receive customer inquiries.`,
-      ctaLabel: 'Go to Dashboard',
+      bodyHtml: `Your payment has been verified and your NextTripy subscription for <strong>${companyName}</strong> is now <strong style="color:#34d399;">active until ${endDate}</strong>.<br><br>
+        ${credsHtml}
+        You can now start listing your rental cars and hotel rooms on the marketplace and receive customer inquiries directly via WhatsApp.`,
+      ctaLabel: 'Go to Partner Dashboard',
       ctaUrl: `${APP_URL()}/auth`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
@@ -473,3 +516,4 @@ export const notifications = {
     return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
   },
 }
+

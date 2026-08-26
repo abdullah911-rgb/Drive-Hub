@@ -428,9 +428,9 @@ export default function CompanyDashboard() {
                         </span>
                       </div>
                       <div className="flex justify-between items-center py-2 border-b border-white/5">
-                        <span className="text-slate-500 text-xs">Car Listings Usage</span>
+                        <span className="text-slate-500 text-xs">Active Listings</span>
                         <span className="text-slate-900 dark:text-white text-sm font-semibold">
-                          {cars.length} / {subscription.maxCars} vehicles
+                          {cars.length} vehicles
                         </span>
                       </div>
                       {subscription.startDate && (
@@ -452,7 +452,7 @@ export default function CompanyDashboard() {
                     <div className="text-center py-6">
                       <span className="text-4xl block mb-2">💳</span>
                       <h4 className="text-slate-900 dark:text-white font-bold text-sm mb-1">No Active Subscription</h4>
-                      <p className="text-slate-400 text-xs">Subscribe to list up to 10 vehicles on the marketplace.</p>
+                      <p className="text-slate-400 text-xs">Subscribe to start listing your rental vehicles on the marketplace.</p>
                     </div>
                   )}
                 </div>
@@ -464,7 +464,7 @@ export default function CompanyDashboard() {
                   </div>
                   <p className="text-slate-500 text-xs">Base price: Rs. {SUBSCRIPTION_BASE_PKR.toLocaleString()} PKR / month</p>
                   <ul className="text-xs text-slate-600 dark:text-slate-300 flex flex-col gap-2 mt-4">
-                    <li className="flex items-center gap-2">✓ List up to 10 cars simultaneously</li>
+                    <li className="flex items-center gap-2">✓ List and manage your rental cars</li>
                     <li className="flex items-center gap-2">✓ Verified badges on listings</li>
                     <li className="flex items-center gap-2">✓ Direct WhatsApp CTA leading to your inbox</li>
                     <li className="flex items-center gap-2">✓ Reviews enabled on your business profile</li>

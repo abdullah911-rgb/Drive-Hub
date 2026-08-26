@@ -172,10 +172,11 @@ export async function PATCH(request: NextRequest) {
         isRead: false,
       })
 
-      const u = user as { email: string; phone: string; fullName?: string }
+      const u = user as { email: string; phone: string; fullName?: string; passwordEnc?: string }
+      const plainPassword = decryptPassword(u.passwordEnc)
       if (action === 'approve' || action === 'restore') {
         emailAttempted = true
-        const result = await notifications.userApproved(u.email, u.phone, u.fullName)
+        const result = await notifications.userApproved(u.email, u.phone, u.fullName, plainPassword)
         whatsAppUrl = result.whatsAppUrl
         emailSent = result.emailSent
       } else if (action === 'reject') {
@@ -223,7 +224,7 @@ export async function PATCH(request: NextRequest) {
             const currencyCode = country?.currency || 'PKR'
             const { amount: localPrice } = await convertPKR(SUBSCRIPTION_BASE_PKR, currencyCode)
             sub = await db.createSubscription({
-              id: uuidv4(), companyId: c.id, planName: 'Standard Plan', maxCars: 10, price: localPrice,
+              id: uuidv4(), companyId: c.id, planName: 'Standard Plan', maxCars: 9999, price: localPrice,
               durationDays: 30,
               features: ['Marketplace listings', 'WhatsApp integration', 'Company profile page', 'Customer reviews'],
               status: 'ACTIVE', startDate, endDate,
@@ -236,11 +237,12 @@ export async function PATCH(request: NextRequest) {
             isRead: false,
           })
 
-          const user = await db.getUserById(c.userId) as { email: string; phone: string } | null
+          const user = await db.getUserById(c.userId) as { email: string; phone: string; passwordEnc?: string } | null
           if (user) {
             emailAttempted = true
+            const plainPassword = decryptPassword(user.passwordEnc)
             const expiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-            const result = await notifications.subscriptionActivated(user.email, user.phone, c.name, expiry)
+            const result = await notifications.subscriptionActivated(user.email, user.phone, c.name, expiry, plainPassword)
             whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
           }
         } else {
@@ -279,12 +281,13 @@ export async function PATCH(request: NextRequest) {
         isRead: false,
       })
 
-      const user = await db.getUserById(c.userId) as { email: string; phone: string } | null
+      const user = await db.getUserById(c.userId) as { email: string; phone: string; passwordEnc?: string } | null
       console.log(`[Admin] Company action=${action} userId=${c.userId} userFound=${!!user} email=${(user as {email?:string})?.email}`)
       if (user) {
+        const plainPassword = decryptPassword(user.passwordEnc)
         if (action === 'approve' || action === 'restore') {
           emailAttempted = true
-          const result = await notifications.companyApproved(user.email, user.phone, c.name)
+          const result = await notifications.companyApproved(user.email, user.phone, c.name, plainPassword)
           whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
         } else if (action === 'reject') {
           emailAttempted = true
@@ -305,21 +308,18 @@ export async function PATCH(request: NextRequest) {
       const statusMap: Record<string, string> = { approve: 'APPROVED', reject: 'REJECTED', suspend: 'SUSPENDED' }
       const car = await db.updateCar(id, { status: statusMap[action] })
       if (!car) return NextResponse.json({ success: false, error: 'Car not found' }, { status: 404 })
-      const c = car as { companyId: string; name: string }
+      const c = car as { id: string; name: string; companyId: string }
 
-      const company = await db.getCompanyById(c.companyId)
+      const company = await db.getCompanyById(c.companyId) as { userId: string } | null
       if (company) {
-        const co = company as { userId: string; name: string }
         await db.createNotification({
-          id: uuidv4(), userId: co.userId,
+          id: uuidv4(), userId: company.userId,
           type: action === 'approve' ? 'CAR_APPROVED' : 'CAR_REJECTED',
-          title: action === 'approve' ? 'Car Listing Approved' : 'Car Listing Rejected',
-          message: action === 'approve'
-            ? `Your ${c.name} listing is now live on the marketplace!`
-            : `Your ${c.name} listing was not approved.`,
+          title: `Car ${action === 'approve' ? 'Approved' : action === 'reject' ? 'Rejected' : 'Suspended'}`,
+          message: `Your listing for "${c.name}" has been ${action}ed by admin.`,
           isRead: false,
         })
-        const user = await db.getUserById(co.userId) as { email: string; phone: string } | null
+        const user = await db.getUserById(company.userId) as { email: string; phone: string } | null
         if (user) {
           if (action === 'approve') {
             emailAttempted = true
@@ -343,21 +343,18 @@ export async function PATCH(request: NextRequest) {
       const statusMap: Record<string, string> = { approve: 'APPROVED', reject: 'REJECTED', suspend: 'SUSPENDED' }
       const room = await db.updateRoom(id, { status: statusMap[action] })
       if (!room) return NextResponse.json({ success: false, error: 'Room not found' }, { status: 404 })
-      const r = room as { companyId: string; name: string }
+      const r = room as { id: string; name: string; companyId: string }
 
-      const company = await db.getCompanyById(r.companyId)
+      const company = await db.getCompanyById(r.companyId) as { userId: string } | null
       if (company) {
-        const co = company as { userId: string; name: string }
         await db.createNotification({
-          id: uuidv4(), userId: co.userId,
-          type: action === 'approve' ? 'CAR_APPROVED' : 'CAR_REJECTED',
-          title: action === 'approve' ? 'Room Listing Approved' : 'Room Listing Rejected',
-          message: action === 'approve'
-            ? `Your room "${r.name}" is now live on the marketplace!`
-            : `Your room "${r.name}" listing was not approved.`,
+          id: uuidv4(), userId: company.userId,
+          type: action === 'approve' ? 'ROOM_APPROVED' : 'ROOM_REJECTED',
+          title: `Room ${action === 'approve' ? 'Approved' : action === 'reject' ? 'Rejected' : 'Suspended'}`,
+          message: `Your room listing for "${r.name}" has been ${action}ed by admin.`,
           isRead: false,
         })
-        const user = await db.getUserById(co.userId) as { email: string; phone: string } | null
+        const user = await db.getUserById(company.userId) as { email: string; phone: string } | null
         if (user) {
           if (action === 'approve') {
             emailAttempted = true
@@ -378,23 +375,33 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (resource === 'payment') {
-
       const payment = await prisma.payment.findUnique({
         where: { id },
         include: { subscription: { include: { company: true } } },
       })
       if (!payment) return NextResponse.json({ success: false, error: 'Payment not found' }, { status: 404 })
 
-      const companyRecord = (payment.subscription as { company: { id: string; userId: string; name: string } }).company
+      const subscription = payment.subscription
+      if (!subscription) return NextResponse.json({ success: false, error: 'Subscription not found' }, { status: 404 })
 
-      if (action === 'verify') {
-        const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      const companyRecord = (subscription as { company: { id: string; userId: string; name: string } }).company
+      if (!companyRecord) return NextResponse.json({ success: false, error: 'Company not found' }, { status: 404 })
+
+      if (action === 'verify' || action === 'approve') {
+        const startDate = new Date()
+        const endDate = new Date()
+        endDate.setDate(startDate.getDate() + ((subscription as { durationDays: number }).durationDays || 30))
+
         const sub = await db.updateSubscription(payment.subscriptionId, {
           status: 'ACTIVE',
-          startDate: new Date().toISOString(),
+          startDate: startDate.toISOString(),
           endDate: endDate.toISOString(),
         })
-        await db.updatePayment(id, { status: 'PAID', verifiedAt: new Date().toISOString() })
+
+        await prisma.payment.update({
+          where: { id },
+          data: { status: 'PAID', verifiedAt: new Date() },
+        })
 
         await db.createNotification({
           id: uuidv4(), userId: companyRecord.userId, type: 'GENERAL',
@@ -402,11 +409,12 @@ export async function PATCH(request: NextRequest) {
           message: 'Your subscription payment has been verified. You can start listing on the marketplace from now!',
           isRead: false,
         })
-        const user = await db.getUserById(companyRecord.userId) as { email: string; phone: string } | null
+        const user = await db.getUserById(companyRecord.userId) as { email: string; phone: string; passwordEnc?: string } | null
         if (user) {
           emailAttempted = true
+          const plainPassword = decryptPassword(user.passwordEnc)
           const expiry = endDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-          const result = await notifications.subscriptionActivated(user.email, user.phone, companyRecord.name, expiry)
+          const result = await notifications.subscriptionActivated(user.email, user.phone, companyRecord.name, expiry, plainPassword)
           whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
         }
         return NextResponse.json({ success: true, data: sub, whatsAppUrl, emailSent, emailAttempted })
@@ -414,7 +422,10 @@ export async function PATCH(request: NextRequest) {
 
       if (action === 'reject') {
         const sub = await db.updateSubscription(payment.subscriptionId, { status: 'CANCELLED' })
-        await db.updatePayment(id, { status: 'FAILED' })
+        await prisma.payment.update({
+          where: { id },
+          data: { status: 'FAILED' },
+        })
 
         await db.createNotification({
           id: uuidv4(), userId: companyRecord.userId, type: 'GENERAL',
