@@ -41,33 +41,33 @@ function normalizeFromAddress(rawFrom: string | undefined, smtpUser: string): st
   return fallback
 }
 
-function createTransporter() {
+function createTransporter(options?: { port?: number; secure?: boolean; requireTLS?: boolean }) {
   const host = cleanEnv(process.env.SMTP_HOST) || 'mail.nexttripy.com'
   const rawPort = cleanEnv(process.env.SMTP_PORT)
-  // Default to 587 (STARTTLS) — port 465 is blocked on Vercel's serverless network
-  const port = parseInt(rawPort || '587', 10)
+  const port = options?.port ?? parseInt(rawPort || '587', 10)
   const user = cleanEnv(process.env.SMTP_USER)
   const pass = cleanEnv(process.env.SMTP_PASS)
 
-  // secure:false + requireTLS:true = STARTTLS (connects plain, upgrades to TLS)
-  // pool:false — serverless functions must not keep SMTP sockets across invocations
-  const secure = port === 465
-  console.log(`[Email] Transporter → host=${host} port=${port} secure=${secure} user=${user} passLen=${pass?.length ?? 0}`)
+  const secure = options?.secure ?? (port === 465)
+  const requireTLS = options?.requireTLS ?? (!secure)
+  console.log(`[Email] Transporter → host=${host} port=${port} secure=${secure} requireTLS=${requireTLS} user=${user} passLen=${pass?.length ?? 0}`)
 
   return nodemailer.createTransport({
     host,
     port,
     secure,
-    requireTLS: !secure,
+    requireTLS,
     auth: user && pass ? { user, pass } : undefined,
     tls: {
       rejectUnauthorized: false, // cPanel/shared-host self-signed certs
       minVersion: 'TLSv1.2',
     },
+    // Force IPv4 to prevent IPv6 timeouts on serverless (AWS Lambda / Vercel)
+    family: 4,
     pool: false,
-    connectionTimeout: 20000,
-    greetingTimeout: 20000,
-    socketTimeout: 25000,
+    connectionTimeout: 12000,
+    greetingTimeout: 12000,
+    socketTimeout: 15000,
   } as nodemailer.TransportOptions)
 }
 
@@ -134,6 +134,75 @@ function buildHtml(title: string, bodyHtml: string, ctaLabel?: string, ctaUrl?: 
 </html>`
 }
 
+export interface SendEmailResult {
+  success: boolean
+  messageId?: string
+  error?: string
+  attempts?: Array<{ port: number; secure: boolean; error?: string; ok: boolean }>
+}
+
+export async function sendEmailDetailed(opts: {
+  to: string
+  subject: string
+  title: string
+  bodyHtml: string
+  ctaLabel?: string
+  ctaUrl?: string
+}): Promise<SendEmailResult> {
+  const smtpUser = cleanEnv(process.env.SMTP_USER)
+  const smtpPass = cleanEnv(process.env.SMTP_PASS)
+
+  if (!smtpUser || !smtpPass) {
+    const msg = 'SMTP_USER or SMTP_PASS is missing in environment variables'
+    console.warn(`[Email] ${msg} — skipping email to`, opts.to)
+    return { success: false, error: msg }
+  }
+
+  const rawPort = parseInt(cleanEnv(process.env.SMTP_PORT) || '587', 10)
+  const fromAddress = normalizeFromAddress(process.env.SMTP_FROM, smtpUser)
+  const html = buildHtml(opts.title, opts.bodyHtml, opts.ctaLabel, opts.ctaUrl)
+
+  // Configure attempt cascade: configured port first, followed by alternate port
+  const configurations = [
+    { port: rawPort, secure: rawPort === 465, requireTLS: rawPort !== 465 },
+    ...(rawPort === 587
+      ? [{ port: 465, secure: true, requireTLS: false }]
+      : [{ port: 587, secure: false, requireTLS: true }]),
+  ]
+
+  const attempts: Array<{ port: number; secure: boolean; error?: string; ok: boolean }> = []
+
+  for (const config of configurations) {
+    let transporter: nodemailer.Transporter | null = null
+    try {
+      console.log(`[Email] Sending "${opts.subject}" → ${opts.to} via port ${config.port} (secure: ${config.secure})...`)
+      transporter = createTransporter(config)
+      const info = await transporter.sendMail({
+        from: fromAddress,
+        to: opts.to,
+        subject: opts.subject,
+        html,
+        replyTo: smtpUser,
+      })
+      transporter.close()
+      console.log(`[Email] ✓ Sent "${opts.subject}" → ${opts.to} (port: ${config.port}) messageId=${info.messageId}`)
+      attempts.push({ port: config.port, secure: config.secure, ok: true })
+      return { success: true, messageId: info.messageId, attempts }
+    } catch (err: unknown) {
+      if (transporter) {
+        try { (transporter as nodemailer.Transporter).close() } catch {}
+      }
+      const e = err as { code?: string; response?: string; message?: string; command?: string }
+      const errSummary = `${e?.code || 'ERROR'}: ${e?.message || String(err)}${e?.response ? ` [${e.response}]` : ''}`
+      console.error(`[Email] ✗ Failed on port ${config.port}: ${errSummary}`)
+      attempts.push({ port: config.port, secure: config.secure, error: errSummary, ok: false })
+    }
+  }
+
+  const lastError = attempts[attempts.length - 1]?.error || 'All SMTP connection attempts failed'
+  return { success: false, error: lastError, attempts }
+}
+
 export async function sendEmail(opts: {
   to: string
   subject: string
@@ -142,36 +211,8 @@ export async function sendEmail(opts: {
   ctaLabel?: string
   ctaUrl?: string
 }): Promise<boolean> {
-  const smtpUser = cleanEnv(process.env.SMTP_USER)
-  const smtpPass = cleanEnv(process.env.SMTP_PASS)
-
-  if (!smtpUser || !smtpPass) {
-    console.warn('[Email] SMTP_USER / SMTP_PASS not configured — skipping email to', opts.to)
-    return false
-  }
-
-  try {
-    const transporter = createTransporter()
-    const fromAddress = normalizeFromAddress(process.env.SMTP_FROM, smtpUser)
-    console.log(`[Email] Sending "${opts.subject}" → ${opts.to} (from: ${fromAddress})`)
-    const info = await transporter.sendMail({
-      from: fromAddress,
-      to: opts.to,
-      subject: opts.subject,
-      html: buildHtml(opts.title, opts.bodyHtml, opts.ctaLabel, opts.ctaUrl),
-      replyTo: smtpUser,
-    })
-    // Close the connection so serverless runtimes don't leak sockets
-    transporter.close()
-    console.log(`[Email] ✓ Sent "${opts.subject}" → ${opts.to} messageId=${info.messageId}`)
-    return true
-  } catch (err: unknown) {
-    const e = err as { code?: string; response?: string; message?: string; command?: string }
-    console.error(
-      `[Email] ✗ Failed — code=${e?.code} command=${e?.command} response=${e?.response} message=${e?.message}`
-    )
-    return false
-  }
+  const result = await sendEmailDetailed(opts)
+  return result.success
 }
 
 async function getFormattedWhatsAppPhone(email: string, rawPhone: string | null | undefined): Promise<string> {

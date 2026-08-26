@@ -1,57 +1,78 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
-import { sendEmail } from '@/lib/email'
+import { sendEmailDetailed } from '@/lib/email'
 
 /**
- * GET /api/test-email?to=someone@example.com
- * Admin-only. Tests the SMTP config by sending a real email.
+ * GET /api/test-email?to=someone@example.com&secret=...
+ * Admin-only (or with ?secret=<JWT_SECRET>). Tests the SMTP config by sending a real email.
  */
 export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url)
+  const secret = searchParams.get('secret')
   const currentUser = await getCurrentUser()
-  if (!currentUser || (currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPER_ADMIN')) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const isAuthorized =
+    (currentUser && (currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN')) ||
+    (secret && process.env.JWT_SECRET && secret === process.env.JWT_SECRET)
+
+  if (!isAuthorized) {
+    return NextResponse.json(
+      {
+        error: 'Unauthorized. Log in as an Admin or provide ?secret=<JWT_SECRET> to test SMTP.',
+      },
+      { status: 401 }
+    )
   }
 
-  const { searchParams } = new URL(request.url)
-  const to = searchParams.get('to') || currentUser.email
+  const to = searchParams.get('to') || currentUser?.email || process.env.SMTP_USER || 'info@nexttripy.com'
 
   const config = {
-    SMTP_HOST: process.env.SMTP_HOST ? 'set' : '(not set)',
-    SMTP_PORT: process.env.SMTP_PORT || '(not set, default 587)',
-    SMTP_USER: process.env.SMTP_USER ? 'set' : '(NOT SET)',
-    SMTP_PASS: process.env.SMTP_PASS ? '***set***' : '(NOT SET)',
-    SMTP_FROM: process.env.SMTP_FROM ? 'set' : '(not set, will use default)',
+    SMTP_HOST: process.env.SMTP_HOST || 'mail.nexttripy.com (default)',
+    SMTP_PORT: process.env.SMTP_PORT || '587 (default)',
+    SMTP_USER: process.env.SMTP_USER || '(NOT SET)',
+    SMTP_PASS_SET: !!process.env.SMTP_PASS,
+    SMTP_PASS_LENGTH: process.env.SMTP_PASS?.length || 0,
+    SMTP_FROM: process.env.SMTP_FROM || '(default will be used)',
     sending_to: to,
   }
 
   if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    return NextResponse.json({
-      success: false,
-      error: 'SMTP_USER or SMTP_PASS is missing. Set them in .env / Vercel env vars, then restart/redeploy.',
-      config,
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'SMTP_USER or SMTP_PASS is missing in environment variables. Add them in Vercel / .env.local and redeploy.',
+        config,
+      },
+      { status: 500 }
+    )
   }
 
-  const emailSent = await sendEmail({
+  const result = await sendEmailDetailed({
     to,
     subject: `NextTripy SMTP Test — ${new Date().toISOString()}`,
     title: 'SMTP is Working!',
-    bodyHtml: `This test email was sent successfully from your NextTripy app.<br><br>Sent at: <strong>${new Date().toISOString()}</strong>`,
+    bodyHtml: `This test email was sent successfully from your NextTripy application.<br><br>Sent at: <strong>${new Date().toISOString()}</strong>`,
     ctaLabel: 'Open App',
     ctaUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
   })
 
-  if (!emailSent) {
-    return NextResponse.json({
-      success: false,
-      error: 'SMTP send failed — check server logs for [Email] errors',
-      config,
-    }, { status: 500 })
+  if (!result.success) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: result.error,
+        attempts: result.attempts,
+        config,
+      },
+      { status: 500 }
+    )
   }
 
   return NextResponse.json({
     success: true,
-    message: `Test email sent to ${to}`,
+    message: `Test email successfully delivered to ${to}`,
+    messageId: result.messageId,
+    attempts: result.attempts,
     config,
   })
 }
