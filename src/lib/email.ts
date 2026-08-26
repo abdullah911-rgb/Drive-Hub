@@ -321,9 +321,12 @@ export const notifications = {
     return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
   },
 
-  async companyApproved(to: string, phone: string, companyName: string, plainPassword?: string | null) {
+  async companyApproved(to: string, phone: string, companyName: string, plainPassword?: string | null, companyType?: string) {
+    const isHotel = companyType === 'HOTEL'
     const passLine = plainPassword ? `\n🔑 Password: ${plainPassword}` : ''
-    const msg = `Hello ${companyName} 🎉\n\nYour partner profile on NextTripy has been APPROVED!\n\n📧 Login Email: ${to}${passLine}\n\nYou can now log in to your partner portal and start listing your rental cars and hotel rooms on the marketplace.\n\nLogin: ${APP_URL()}/auth`
+    const msg = isHotel
+      ? `Hello ${companyName} 🎉\n\nYour hotel partner profile on NextTripy has been APPROVED!\n\n🔑 Your Hotel Partner Login Credentials:\n📧 Login Email: ${to}${passLine}\n\nYou can now log in to your partner portal and start listing your hotel rooms on the marketplace.\n\nLogin: ${APP_URL()}/auth`
+      : `Hello ${companyName} 🎉\n\nYour car rental partner profile on NextTripy has been APPROVED!\n\n🔑 Your Car Rental Partner Login Credentials:\n📧 Login Email: ${to}${passLine}\n\nYou can now log in to your partner portal and start listing your rental cars on the marketplace.\n\nLogin: ${APP_URL()}/auth`
     
     const credsHtml = plainPassword ? `
       <table cellpadding="10" cellspacing="0" style="background:#0f172a;border-radius:10px;border:1px solid rgba(255,255,255,0.1);width:100%;margin:20px 0;">
@@ -334,41 +337,55 @@ export const notifications = {
 
     const emailSent = await sendEmail({
       to,
-      subject: `🎉 ${companyName} — NextTripy Partner Profile Approved!`,
-      title: `${companyName} — Approved!`,
-      bodyHtml: `Congratulations! Your business profile has been <strong style="color:#34d399;">approved</strong> by our team.<br><br>
-        ${credsHtml}
-        You can now:<br>
-        ✅ Activate your Partner Subscription from the dashboard<br>
-        ✅ Start listing your rental cars and hotel rooms on the marketplace<br>
-        ✅ Receive direct inquiries via WhatsApp<br>
-        ✅ Build your verified customer review profile`,
-      ctaLabel: 'Go to Partner Dashboard',
+      subject: isHotel
+        ? `🎉 ${companyName} — NextTripy Hotel Partner Profile Approved!`
+        : `🎉 ${companyName} — NextTripy Car Rental Profile Approved!`,
+      title: isHotel ? `${companyName} — Hotel Approved!` : `${companyName} — Car Rental Approved!`,
+      bodyHtml: isHotel
+        ? `Congratulations! Your hotel business profile has been <strong style="color:#34d399;">approved</strong> by our team.<br><br>
+          ${credsHtml}
+          You can now:<br>
+          ✅ Activate your Hotel Partner Subscription from the dashboard<br>
+          ✅ Start listing your hotel rooms and suites on the marketplace<br>
+          ✅ Receive direct booking inquiries via WhatsApp<br>
+          ✅ Build your verified customer review profile`
+        : `Congratulations! Your car rental business profile has been <strong style="color:#34d399;">approved</strong> by our team.<br><br>
+          ${credsHtml}
+          You can now:<br>
+          ✅ Activate your Car Rental Partner Subscription from the dashboard<br>
+          ✅ Start listing your rental cars and vehicles on the marketplace<br>
+          ✅ Receive direct rental inquiries via WhatsApp<br>
+          ✅ Build your verified customer review profile`,
+      ctaLabel: isHotel ? 'Go to Hotel Dashboard' : 'Go to Car Rental Dashboard',
       ctaUrl: `${APP_URL()}/auth`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
     return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
   },
 
-  async companyRejected(to: string, phone: string, companyName: string) {
-    const msg = `Hello ${companyName},\n\nYour NextTripy company application was not approved at this time. Please contact info@nexttripy.com for details.`
+  async companyRejected(to: string, phone: string, companyName: string, companyType?: string) {
+    const isHotel = companyType === 'HOTEL'
+    const label = isHotel ? 'hotel' : 'car rental'
+    const msg = `Hello ${companyName},\n\nYour NextTripy ${label} application was not approved at this time. Please contact info@nexttripy.com for details.`
     const emailSent = await sendEmail({
       to,
-      subject: `${companyName} — NextTripy Application Update`,
-      title: 'Company Application Not Approved',
-      bodyHtml: `Unfortunately, your company application for <strong>${companyName}</strong> was not approved at this time. This may be due to incomplete information or documentation issues.<br><br>Please contact <strong>info@nexttripy.com</strong> with your business license and CNIC/ID for assistance.`,
+      subject: `${companyName} — NextTripy ${isHotel ? 'Hotel' : 'Car Rental'} Application Update`,
+      title: `${isHotel ? 'Hotel' : 'Company'} Application Not Approved`,
+      bodyHtml: `Unfortunately, your ${label} application for <strong>${companyName}</strong> was not approved at this time. This may be due to incomplete information or documentation issues.<br><br>Please contact <strong>info@nexttripy.com</strong> with your business license and CNIC/ID for assistance.`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
     return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
   },
 
-  async companySuspended(to: string, phone: string, companyName: string) {
-    const msg = `Hello ${companyName},\n\nYour NextTripy account has been suspended. Contact info@nexttripy.com for assistance.`
+  async companySuspended(to: string, phone: string, companyName: string, companyType?: string) {
+    const isHotel = companyType === 'HOTEL'
+    const label = isHotel ? 'hotel' : 'car rental'
+    const msg = `Hello ${companyName},\n\nYour NextTripy ${label} account has been suspended. Contact info@nexttripy.com for assistance.`
     const emailSent = await sendEmail({
       to,
-      subject: `${companyName} — NextTripy Account Suspended`,
-      title: 'Company Account Suspended',
-      bodyHtml: `Your account for <strong>${companyName}</strong> has been temporarily suspended by an administrator. Your listings are hidden until the suspension is lifted.<br><br>Contact <strong>info@nexttripy.com</strong> to resolve this.`,
+      subject: `${companyName} — NextTripy ${isHotel ? 'Hotel' : 'Car Rental'} Account Suspended`,
+      title: `${isHotel ? 'Hotel' : 'Company'} Account Suspended`,
+      bodyHtml: `Your ${label} account for <strong>${companyName}</strong> has been temporarily suspended by an administrator. Your listings are hidden until the suspension is lifted.<br><br>Contact <strong>info@nexttripy.com</strong> to resolve this.`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
     return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
@@ -462,10 +479,12 @@ export const notifications = {
     return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
   },
 
-
-  async subscriptionActivated(to: string, phone: string, companyName: string, endDate: string, plainPassword?: string | null) {
+  async subscriptionActivated(to: string, phone: string, companyName: string, endDate: string, plainPassword?: string | null, companyType?: string) {
+    const isHotel = companyType === 'HOTEL'
     const passLine = plainPassword ? `\n🔑 Password: ${plainPassword}` : ''
-    const msg = `Hello ${companyName} ✅\n\nYour NextTripy subscription is now ACTIVE until ${endDate}!\n\n📧 Login Email: ${to}${passLine}\n\nYou can now start listing your rental cars and hotel rooms on the marketplace and partner portal.\n\nSign In: ${APP_URL()}/auth`
+    const msg = isHotel
+      ? `Hello ${companyName} ✅\n\nYour NextTripy hotel subscription is now ACTIVE until ${endDate}!\n\n📧 Login Email: ${to}${passLine}\n\nYou can now start listing your hotel rooms on the marketplace and partner portal.\n\nSign In: ${APP_URL()}/auth`
+      : `Hello ${companyName} ✅\n\nYour NextTripy car rental subscription is now ACTIVE until ${endDate}!\n\n📧 Login Email: ${to}${passLine}\n\nYou can now start listing your rental cars on the marketplace and partner portal.\n\nSign In: ${APP_URL()}/auth`
     
     const credsHtml = plainPassword ? `
       <table cellpadding="10" cellspacing="0" style="background:#0f172a;border-radius:10px;border:1px solid rgba(255,255,255,0.1);width:100%;margin:20px 0;">
@@ -476,25 +495,33 @@ export const notifications = {
 
     const emailSent = await sendEmail({
       to,
-      subject: '✅ NextTripy Subscription Activated',
-      title: 'Subscription Activated',
-      bodyHtml: `Your payment has been verified and your NextTripy subscription for <strong>${companyName}</strong> is now <strong style="color:#34d399;">active until ${endDate}</strong>.<br><br>
-        ${credsHtml}
-        You can now start listing your rental cars and hotel rooms on the marketplace and receive customer inquiries directly via WhatsApp.`,
-      ctaLabel: 'Go to Partner Dashboard',
+      subject: isHotel
+        ? `✅ ${companyName} — NextTripy Hotel Subscription Activated`
+        : `✅ ${companyName} — NextTripy Car Rental Subscription Activated`,
+      title: isHotel ? 'Hotel Subscription Activated' : 'Car Rental Subscription Activated',
+      bodyHtml: isHotel
+        ? `Your payment has been verified and your NextTripy hotel subscription for <strong>${companyName}</strong> is now <strong style="color:#34d399;">active until ${endDate}</strong>.<br><br>
+          ${credsHtml}
+          You can now start listing your hotel rooms and suites on the marketplace and receive customer bookings directly via WhatsApp.`
+        : `Your payment has been verified and your NextTripy car rental subscription for <strong>${companyName}</strong> is now <strong style="color:#34d399;">active until ${endDate}</strong>.<br><br>
+          ${credsHtml}
+          You can now start listing your rental cars and vehicles on the marketplace and receive customer inquiries directly via WhatsApp.`,
+      ctaLabel: isHotel ? 'Go to Hotel Dashboard' : 'Go to Car Rental Dashboard',
       ctaUrl: `${APP_URL()}/auth`,
     })
     const formattedPhone = await getFormattedWhatsAppPhone(to, phone)
     return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
   },
 
-  async subscriptionDeactivated(to: string, phone: string, companyName: string) {
-    const msg = `Hello ${companyName},\n\nYour NextTripy subscription has been deactivated. Your listings are currently hidden. Contact info@nexttripy.com for help.`
+  async subscriptionDeactivated(to: string, phone: string, companyName: string, companyType?: string) {
+    const isHotel = companyType === 'HOTEL'
+    const item = isHotel ? 'hotel room' : 'car rental'
+    const msg = `Hello ${companyName},\n\nYour NextTripy ${item} subscription has been deactivated. Your listings are currently hidden. Contact info@nexttripy.com for help.`
     const emailSent = await sendEmail({
       to,
-      subject: 'NextTripy Subscription Deactivated',
+      subject: `NextTripy ${isHotel ? 'Hotel' : 'Car Rental'} Subscription Deactivated`,
       title: 'Subscription Deactivated',
-      bodyHtml: `Your NextTripy subscription for <strong>${companyName}</strong> has been deactivated by an administrator. Your listings are currently hidden from customers.<br><br>Contact <strong>info@nexttripy.com</strong> to resolve this or renew your subscription from the dashboard.`,
+      bodyHtml: `Your NextTripy subscription for <strong>${companyName}</strong> has been deactivated by an administrator. Your ${item} listings are currently hidden from customers.<br><br>Contact <strong>info@nexttripy.com</strong> to resolve this or renew your subscription from the dashboard.`,
       ctaLabel: 'Go to Dashboard',
       ctaUrl: `${APP_URL()}/auth`,
     })
@@ -502,11 +529,12 @@ export const notifications = {
     return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
   },
 
-  async paymentRejected(to: string, phone: string, companyName: string) {
+  async paymentRejected(to: string, phone: string, companyName: string, companyType?: string) {
+    const isHotel = companyType === 'HOTEL'
     const msg = `Hello ${companyName},\n\nYour NextTripy subscription payment could not be verified. Please contact info@nexttripy.com or resubmit your payment from the dashboard.`
     const emailSent = await sendEmail({
       to,
-      subject: 'NextTripy — Payment Could Not Be Verified',
+      subject: `NextTripy ${isHotel ? 'Hotel' : 'Car Rental'} — Payment Could Not Be Verified`,
       title: 'Payment Verification Failed',
       bodyHtml: `The subscription payment submitted for <strong>${companyName}</strong> could not be verified. This may be due to an incorrect transaction ID or amount mismatch.<br><br>Please contact <strong>info@nexttripy.com</strong> or resubmit your payment from the dashboard.`,
       ctaLabel: 'Go to Dashboard',

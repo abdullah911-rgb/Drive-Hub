@@ -210,7 +210,7 @@ export async function PATCH(request: NextRequest) {
       if (action === 'activate_sub' || action === 'deactivate_sub') {
         const company = await db.getCompanyById(id)
         if (!company) return NextResponse.json({ success: false, error: 'Company not found' }, { status: 404 })
-        const c = company as { id: string; userId: string; name: string }
+        const c = company as { id: string; userId: string; name: string; companyType?: string }
 
         let sub = await db.getSubscriptionByCompanyId(c.id)
         if (action === 'activate_sub') {
@@ -242,7 +242,7 @@ export async function PATCH(request: NextRequest) {
             emailAttempted = true
             const plainPassword = decryptPassword(user.passwordEnc)
             const expiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-            const result = await notifications.subscriptionActivated(user.email, user.phone, c.name, expiry, plainPassword)
+            const result = await notifications.subscriptionActivated(user.email, user.phone, c.name, expiry, plainPassword, c.companyType)
             whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
           }
         } else {
@@ -258,7 +258,7 @@ export async function PATCH(request: NextRequest) {
           const user = await db.getUserById(c.userId) as { email: string; phone: string } | null
           if (user) {
             emailAttempted = true
-            const result = await notifications.subscriptionDeactivated(user.email, user.phone, c.name)
+            const result = await notifications.subscriptionDeactivated(user.email, user.phone, c.name, c.companyType)
             whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
           }
         }
@@ -267,7 +267,7 @@ export async function PATCH(request: NextRequest) {
 
       const company = await db.updateCompany(id, { status: statusMap[action] })
       if (!company) return NextResponse.json({ success: false, error: 'Company not found' }, { status: 404 })
-      const c = company as { id: string; userId: string; name: string }
+      const c = company as { id: string; userId: string; name: string; companyType?: string }
 
       await db.updateUser(c.userId, { status: statusMap[action] })
       const isApprovedAction = action === 'approve' || action === 'restore'
@@ -287,15 +287,15 @@ export async function PATCH(request: NextRequest) {
         const plainPassword = decryptPassword(user.passwordEnc)
         if (action === 'approve' || action === 'restore') {
           emailAttempted = true
-          const result = await notifications.companyApproved(user.email, user.phone, c.name, plainPassword)
+          const result = await notifications.companyApproved(user.email, user.phone, c.name, plainPassword, c.companyType)
           whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
         } else if (action === 'reject') {
           emailAttempted = true
-          const result = await notifications.companyRejected(user.email, user.phone, c.name)
+          const result = await notifications.companyRejected(user.email, user.phone, c.name, c.companyType)
           whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
         } else if (action === 'suspend') {
           emailAttempted = true
-          const result = await notifications.companySuspended(user.email, user.phone, c.name)
+          const result = await notifications.companySuspended(user.email, user.phone, c.name, c.companyType)
           whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
         }
       } else {
@@ -384,7 +384,7 @@ export async function PATCH(request: NextRequest) {
       const subscription = payment.subscription
       if (!subscription) return NextResponse.json({ success: false, error: 'Subscription not found' }, { status: 404 })
 
-      const companyRecord = (subscription as { company: { id: string; userId: string; name: string } }).company
+      const companyRecord = (subscription as { company: { id: string; userId: string; name: string; companyType?: string } }).company
       if (!companyRecord) return NextResponse.json({ success: false, error: 'Company not found' }, { status: 404 })
 
       if (action === 'verify' || action === 'approve') {
@@ -414,7 +414,7 @@ export async function PATCH(request: NextRequest) {
           emailAttempted = true
           const plainPassword = decryptPassword(user.passwordEnc)
           const expiry = endDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-          const result = await notifications.subscriptionActivated(user.email, user.phone, companyRecord.name, expiry, plainPassword)
+          const result = await notifications.subscriptionActivated(user.email, user.phone, companyRecord.name, expiry, plainPassword, companyRecord.companyType)
           whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
         }
         return NextResponse.json({ success: true, data: sub, whatsAppUrl, emailSent, emailAttempted })
@@ -436,7 +436,7 @@ export async function PATCH(request: NextRequest) {
         const user2 = await db.getUserById(companyRecord.userId) as { email: string; phone: string } | null
         if (user2) {
           emailAttempted = true
-          const result = await notifications.paymentRejected(user2.email, user2.phone, companyRecord.name)
+          const result = await notifications.paymentRejected(user2.email, user2.phone, companyRecord.name, companyRecord.companyType)
           whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
         }
         return NextResponse.json({ success: true, data: sub, whatsAppUrl, emailSent, emailAttempted })
