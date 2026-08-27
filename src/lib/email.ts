@@ -272,9 +272,13 @@ const APP_URL = () => process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
 export const notifications = {
 
-  async userApproved(to: string, phone: string, fullName?: string, plainPassword?: string | null) {
+  async userApproved(to: string, phone: string, fullName?: string, plainPassword?: string | null, roleName?: string) {
+    const isOwner = roleName === 'COMPANY' || roleName === 'HOTEL' || roleName === 'OWNER'
     const passLine = plainPassword ? `\n🔑 Password: ${plainPassword}` : ''
-    const msg = `Hello ${fullName || 'there'} 👋\n\nYour NextTripy account has been APPROVED!\n\n📧 Login Email: ${to}${passLine}\n\nYou can now browse listings, contact partners directly on WhatsApp, and manage your profile.\n\nSign In: ${APP_URL()}/auth`
+    const actionText = isOwner
+      ? 'You can now add your listing and reach more customers effortlessly.'
+      : 'You can now browse listings, contact partners directly on WhatsApp, and manage your profile.'
+    const msg = `Hello ${fullName || 'there'} 👋\n\nYour NextTripy account has been APPROVED!\n\n📧 Login Email: ${to}${passLine}\n\n${actionText}\n\nSign In: ${APP_URL()}/auth`
     
     const credsHtml = plainPassword ? `
       <table cellpadding="10" cellspacing="0" style="background:#0f172a;border-radius:10px;border:1px solid rgba(255,255,255,0.1);width:100%;margin:20px 0;">
@@ -283,13 +287,19 @@ export const notifications = {
       </table>` : `
       <p style="margin:16px 0;color:#cbd5e1;">Your login email is: <strong>${to}</strong></p>`
 
+    const emailActionText = isOwner
+      ? `Your account has been reviewed and <strong style="color:#34d399;">approved</strong> by our team.<br><br>
+        ${credsHtml}
+        You can now add your listing and reach more customers effortlessly.`
+      : `Your account has been reviewed and <strong style="color:#34d399;">approved</strong> by our team.<br><br>
+        ${credsHtml}
+        You can now browse car and hotel listings, contact providers via WhatsApp, and enjoy a seamless travel booking experience.`
+
     const emailSent = await sendEmail({
       to,
       subject: '🎉 Your NextTripy Account Is Approved!',
       title: `Welcome to NextTripy, ${fullName || 'there'}!`,
-      bodyHtml: `Your account has been reviewed and <strong style="color:#34d399;">approved</strong> by our team.<br><br>
-        ${credsHtml}
-        You can now browse car and hotel listings, contact providers via WhatsApp, and enjoy a seamless travel booking experience.`,
+      bodyHtml: emailActionText,
       ctaLabel: 'Sign In to NextTripy',
       ctaUrl: `${APP_URL()}/auth`,
     })

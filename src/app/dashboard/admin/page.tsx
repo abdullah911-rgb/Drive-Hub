@@ -22,12 +22,17 @@ interface Room {
   company?: { name: string; country?: { currency?: string } }
 }
 
-type AdminTab = 'stats' | 'notifications' | 'companies' | 'cars' | 'rooms' | 'payments' | 'users' | 'reviews' | 'profile'
+type AdminTab = 'stats' | 'notifications' | 'companies' | 'cars' | 'rooms' | 'payments' | 'users' | 'reviews' | 'admins' | 'profile'
 
 export default function AdminDashboard() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<AdminTab>('stats')
+
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false)
+  const [createAdminForm, setCreateAdminForm] = useState({ fullName: '', email: '', password: '', confirmPassword: '' })
+  const [creatingAdmin, setCreatingAdmin] = useState(false)
+  const [showCreateAdminPw, setShowCreateAdminPw] = useState(false)
 
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [users, setUsers] = useState<User[]>([])
@@ -77,6 +82,7 @@ export default function AdminDashboard() {
         router.push('/')
         return
       }
+      setIsSuperAdmin(meData.data.roleName === 'SUPER_ADMIN')
       // Pre-fill profile form with current admin info
       setProfileForm(prev => ({
         ...prev,
@@ -271,6 +277,43 @@ export default function AdminDashboard() {
     }
   }
 
+  const handleCreateAdmin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (createAdminForm.password !== createAdminForm.confirmPassword) {
+      toast.error('Passwords do not match')
+      return
+    }
+    if (createAdminForm.password.length < 8) {
+      toast.error('Password must be at least 8 characters')
+      return
+    }
+    setCreatingAdmin(true)
+    try {
+      const res = await fetch('/api/admin/create-admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          fullName: createAdminForm.fullName,
+          email: createAdminForm.email,
+          password: createAdminForm.password,
+        }),
+      })
+      const data = await res.json()
+      if (res.ok && data.success) {
+        toast.success(`✅ Admin account created for ${createAdminForm.fullName}!`)
+        setCreateAdminForm({ fullName: '', email: '', password: '', confirmPassword: '' })
+        loadData()
+      } else {
+        toast.error(data.error || 'Failed to create admin')
+      }
+    } catch {
+      toast.error('Error creating admin account')
+    } finally {
+      setCreatingAdmin(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="container-app py-16 text-center">
@@ -366,6 +409,7 @@ export default function AdminDashboard() {
             { id: 'payments', label: '💳 Payment Verification', badge: 0 },
             { id: 'users', label: '👥 User Management', badge: 0 },
             { id: 'reviews', label: '⭐ Review Moderation', badge: 0 },
+            ...(isSuperAdmin ? [{ id: 'admins' as AdminTab, label: '🛡️ Admin Accounts', badge: 0 }] : []),
             { id: 'profile', label: '👤 My Profile', badge: 0 },
           ].map(tab => (
             <button
@@ -1303,6 +1347,175 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                 ))}
+              </motion.div>
+            )}
+
+            {activeTab === 'admins' && isSuperAdmin && (
+              <motion.div
+                key="admins"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="flex flex-col gap-6"
+              >
+                <div>
+                  <h3 className="font-heading font-bold text-slate-900 dark:text-white text-lg mb-1">🛡️ Admin Account Management</h3>
+                  <p className="text-slate-400 text-xs">Only you (Super Admin) can create and manage admin accounts. Admins have full access to platform operations but cannot create other admins.</p>
+                </div>
+
+                {/* Create Admin Form */}
+                <form onSubmit={handleCreateAdmin} className="glass-card p-6 border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+                  <h4 className="font-semibold text-slate-900 dark:text-white text-sm mb-4 flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-md bg-primary/20 text-primary flex items-center justify-center text-xs">➕</span>
+                    Create New Admin Account
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-slate-400 text-xs font-semibold mb-1.5">Full Name</label>
+                      <input
+                        type="text"
+                        required
+                        value={createAdminForm.fullName}
+                        onChange={e => setCreateAdminForm(prev => ({ ...prev, fullName: e.target.value }))}
+                        className="w-full bg-elevated border border-border rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-primary/50 transition-colors"
+                        placeholder="e.g. John Doe"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-400 text-xs font-semibold mb-1.5">Email Address</label>
+                      <input
+                        type="email"
+                        required
+                        value={createAdminForm.email}
+                        onChange={e => setCreateAdminForm(prev => ({ ...prev, email: e.target.value }))}
+                        className="w-full bg-elevated border border-border rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-primary/50 transition-colors"
+                        placeholder="admin@nexttripy.com"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-400 text-xs font-semibold mb-1.5">Password</label>
+                      <div className="relative">
+                        <input
+                          type={showCreateAdminPw ? 'text' : 'password'}
+                          required
+                          value={createAdminForm.password}
+                          onChange={e => setCreateAdminForm(prev => ({ ...prev, password: e.target.value }))}
+                          className="w-full bg-elevated border border-border rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-primary/50 transition-colors pr-10"
+                          placeholder="Min 8 characters"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowCreateAdminPw(v => !v)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors text-sm select-none"
+                        >
+                          {showCreateAdminPw ? '🙈' : '👁️'}
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-slate-400 text-xs font-semibold mb-1.5">Confirm Password</label>
+                      <input
+                        type="password"
+                        required
+                        value={createAdminForm.confirmPassword}
+                        onChange={e => setCreateAdminForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                        className="w-full bg-elevated border border-border rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-primary/50 transition-colors"
+                        placeholder="Repeat password"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end mt-5">
+                    <button
+                      type="submit"
+                      disabled={creatingAdmin}
+                      className="btn-primary px-8 py-2.5 text-sm font-bold disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      {creatingAdmin ? (
+                        <>
+                          <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Creating...
+                        </>
+                      ) : (
+                        '🛡️ Create Admin Account'
+                      )}
+                    </button>
+                  </div>
+                </form>
+
+                {/* Existing Admins List */}
+                <div className="glass-card p-6 border border-white/5">
+                  <h4 className="font-semibold text-slate-900 dark:text-white text-sm mb-4 flex items-center justify-between">
+                    <span>Existing Admin Accounts</span>
+                    <span className="text-xs text-slate-400">
+                      {users.filter(u => u.roleName === 'ADMIN').length} registered admin(s)
+                    </span>
+                  </h4>
+                  {users.filter(u => u.roleName === 'ADMIN').length === 0 ? (
+                    <div className="text-center py-8 text-slate-500 text-sm">
+                      <span className="text-3xl block mb-2">🛡️</span>
+                      No sub-admin accounts created yet. Use the form above to create one.
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-3">
+                      {users.filter(u => u.roleName === 'ADMIN').map(admin => (
+                        <div key={admin.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 glass rounded-xl p-4 border border-white/5">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="text-slate-900 dark:text-white font-bold text-sm">{admin.fullName}</p>
+                              <span className="text-3xs bg-primary/20 text-primary px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                                ADMIN
+                              </span>
+                            </div>
+                            <p className="text-slate-400 text-xs mt-0.5">{admin.email}</p>
+                            {admin.password && (
+                              <p className="text-emerald-400/90 text-2xs font-mono mt-1">
+                                Password: {admin.password}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className={`text-xs px-2.5 py-1 rounded-full font-semibold border ${
+                              admin.status === 'APPROVED' ? 'text-emerald-400 border-emerald-400/20 bg-emerald-400/5' : 'text-red-400 border-red-400/20 bg-red-400/5'
+                            }`}>
+                              {admin.status}
+                            </span>
+                            <button
+                              onClick={() => openUserDetails(admin)}
+                              className="text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded-lg font-semibold transition-all"
+                            >
+                              Manage
+                            </button>
+                            {admin.status === 'APPROVED' ? (
+                              <button
+                                onClick={() => {
+                                  if (window.confirm(`Suspend admin account for ${admin.fullName}?`)) {
+                                    handleAdminAction('user', admin.id, 'suspend')
+                                  }
+                                }}
+                                className="text-xs bg-orange-500/20 hover:bg-orange-500/40 text-orange-400 border border-orange-400/20 px-3 py-1.5 rounded-lg font-semibold transition-all"
+                              >
+                                Suspend
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleAdminAction('user', admin.id, 'approve')}
+                                className="text-xs bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-400 border border-emerald-400/20 px-3 py-1.5 rounded-lg font-semibold transition-all"
+                              >
+                                Restore
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleAdminAction('user', admin.id, 'delete')}
+                              className="text-xs bg-red-500/20 hover:bg-red-500/40 text-red-400 border border-red-400/20 px-3 py-1.5 rounded-lg font-semibold transition-all"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </motion.div>
             )}
 

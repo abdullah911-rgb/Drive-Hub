@@ -172,11 +172,11 @@ export async function PATCH(request: NextRequest) {
         isRead: false,
       })
 
-      const u = user as { email: string; phone: string; fullName?: string; passwordEnc?: string }
+      const u = user as { email: string; phone: string; fullName?: string; passwordEnc?: string; roleName?: string }
       const plainPassword = decryptPassword(u.passwordEnc)
       if (action === 'approve' || action === 'restore') {
         emailAttempted = true
-        const result = await notifications.userApproved(u.email, u.phone, u.fullName, plainPassword)
+        const result = await notifications.userApproved(u.email, u.phone, u.fullName, plainPassword, u.roleName)
         whatsAppUrl = result.whatsAppUrl
         emailSent = result.emailSent
       } else if (action === 'reject') {
