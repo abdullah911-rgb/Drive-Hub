@@ -40,11 +40,11 @@ export async function POST(request: NextRequest) {
 
     const sub = await db.createSubscription({
       companyId: c.id,
-      planName: 'Standard Plan',
+      planName: 'Lifetime Partner Plan',
       maxCars: 9999,
       price: localPrice,
-      durationDays: 30,
-      features: ['Marketplace listings', 'WhatsApp integration', 'Company profile page', 'Customer reviews'],
+      durationDays: 36500,
+      features: ['Unlimited Marketplace listings', 'WhatsApp lead integration', 'Verified business badge', 'Company profile page', 'Customer reviews', 'Lifetime access'],
       status: 'PENDING',
     })
 

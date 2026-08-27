@@ -215,7 +215,7 @@ export async function PATCH(request: NextRequest) {
         let sub = await db.getSubscriptionByCompanyId(c.id)
         if (action === 'activate_sub') {
           const startDate = new Date().toISOString()
-          const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+          const endDate = new Date(Date.now() + 36500 * 24 * 60 * 60 * 1000).toISOString()
           if (sub) {
             sub = await db.updateSubscription((sub as { id: string }).id, { status: 'ACTIVE', startDate, endDate })
           } else {
@@ -224,16 +224,16 @@ export async function PATCH(request: NextRequest) {
             const currencyCode = country?.currency || 'PKR'
             const { amount: localPrice } = await convertPKR(SUBSCRIPTION_BASE_PKR, currencyCode)
             sub = await db.createSubscription({
-              id: uuidv4(), companyId: c.id, planName: 'Standard Plan', maxCars: 9999, price: localPrice,
-              durationDays: 30,
-              features: ['Marketplace listings', 'WhatsApp integration', 'Company profile page', 'Customer reviews'],
+              id: uuidv4(), companyId: c.id, planName: 'Lifetime Partner Plan', maxCars: 9999, price: localPrice,
+              durationDays: 36500,
+              features: ['Unlimited Marketplace listings', 'WhatsApp lead integration', 'Verified business badge', 'Company profile page', 'Customer reviews', 'Lifetime access'],
               status: 'ACTIVE', startDate, endDate,
             })
           }
           await db.createNotification({
             id: uuidv4(), userId: c.userId, type: 'GENERAL',
-            title: 'Subscription Activated',
-            message: 'Your subscription has been activated. You can start listing on the marketplace from now!',
+            title: 'Lifetime Subscription Activated',
+            message: 'Your lifetime subscription has been activated. You can start listing on the marketplace with unlimited lifetime access!',
             isRead: false,
           })
 
@@ -241,8 +241,7 @@ export async function PATCH(request: NextRequest) {
           if (user) {
             emailAttempted = true
             const plainPassword = decryptPassword(user.passwordEnc)
-            const expiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-            const result = await notifications.subscriptionActivated(user.email, user.phone, c.name, expiry, plainPassword, c.companyType)
+            const result = await notifications.subscriptionActivated(user.email, user.phone, c.name, 'Lifetime Access', plainPassword, c.companyType)
             whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
           }
         } else {
@@ -389,8 +388,7 @@ export async function PATCH(request: NextRequest) {
 
       if (action === 'verify' || action === 'approve') {
         const startDate = new Date()
-        const endDate = new Date()
-        endDate.setDate(startDate.getDate() + ((subscription as { durationDays: number }).durationDays || 30))
+        const endDate = new Date(Date.now() + 36500 * 24 * 60 * 60 * 1000)
 
         const sub = await db.updateSubscription(payment.subscriptionId, {
           status: 'ACTIVE',
@@ -405,16 +403,15 @@ export async function PATCH(request: NextRequest) {
 
         await db.createNotification({
           id: uuidv4(), userId: companyRecord.userId, type: 'GENERAL',
-          title: 'Payment Verified — Subscription Active',
-          message: 'Your subscription payment has been verified. You can start listing on the marketplace from now!',
+          title: 'Payment Verified — Lifetime Subscription Active',
+          message: 'Your subscription payment has been verified. You now have lifetime access to list on the marketplace!',
           isRead: false,
         })
         const user = await db.getUserById(companyRecord.userId) as { email: string; phone: string; passwordEnc?: string } | null
         if (user) {
           emailAttempted = true
           const plainPassword = decryptPassword(user.passwordEnc)
-          const expiry = endDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-          const result = await notifications.subscriptionActivated(user.email, user.phone, companyRecord.name, expiry, plainPassword, companyRecord.companyType)
+          const result = await notifications.subscriptionActivated(user.email, user.phone, companyRecord.name, 'Lifetime Access', plainPassword, companyRecord.companyType)
           whatsAppUrl = result.whatsAppUrl; emailSent = result.emailSent
         }
         return NextResponse.json({ success: true, data: sub, whatsAppUrl, emailSent, emailAttempted })

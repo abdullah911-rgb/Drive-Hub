@@ -509,16 +509,18 @@ export default function HotelDashboardClient() {
                 <h2 className="font-bold text-lg text-slate-900 dark:text-white mb-5">Subscription Management</h2>
 
                 {/* Plan Card */}
-                <div className="glass-card no-card-hover p-6 border border-primary/20 mb-6">
+                <div className="glass-card no-card-hover p-6 border border-primary/20 mb-6 bg-gradient-to-br from-primary/5 to-transparent">
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="text-primary text-2xl mb-2">💎</div>
-                      <h3 className="font-bold text-slate-900 dark:text-white text-lg">Hotel Partner Plan</h3>
-                      <p className="text-slate-400 text-sm mt-1">Monthly subscription to list rooms on the marketplace</p>
+                      <h3 className="font-bold text-slate-900 dark:text-white text-lg">Lifetime Hotel Partner Plan</h3>
+                      <p className="text-slate-400 text-sm mt-1">One-time activation for unlimited lifetime hotel room listings</p>
                     </div>
                     <div className="text-right">
                       <div className="font-black text-2xl text-slate-900 dark:text-white">{planPrice}</div>
-                      <div className="text-xs text-slate-400">per month</div>
+                      <span className="text-3xs font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full inline-block mt-1">
+                        Lifetime Access
+                      </span>
                     </div>
                   </div>
 
@@ -528,10 +530,12 @@ export default function HotelDashboardClient() {
                       : subscription.status === 'PENDING' ? 'bg-amber-400/5 border-amber-400/20 text-amber-300'
                       : 'bg-red-400/5 border-red-400/20 text-red-300'
                     }`}>
-                      <div className="font-bold">Status: {subscription.status}</div>
-                      {(subscription as Subscription & { expiresAt?: string }).expiresAt && (
-                        <div className="text-xs mt-1">Expires: {formatDate((subscription as Subscription & { expiresAt?: string }).expiresAt!)}</div>
-                      )}
+                      <div className="font-bold flex items-center justify-between">
+                        <span>Status: {subscription.status === 'ACTIVE' ? '✓ Active & Verified' : subscription.status}</span>
+                        {subscription.status === 'ACTIVE' && (
+                          <span className="text-xs text-emerald-400 font-bold">♾️ Lifetime Validity (Never Expires)</span>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -539,14 +543,14 @@ export default function HotelDashboardClient() {
                 {/* Bank Details */}
                 {bankDetails && (
                   <div className="glass-card no-card-hover p-5 border border-white/5 mb-6">
-                    <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-3">💳 Payment Instructions</h3>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-3">🏦 Admin Bank Transfer Details</h3>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-slate-400">Bank</span>
                         <span className="text-slate-900 dark:text-white font-medium">{bankDetails.bankName}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-400">Account Name</span>
+                        <span className="text-slate-400">Account Title</span>
                         <span className="text-slate-900 dark:text-white font-medium">{bankDetails.accountName}</span>
                       </div>
                       <div className="flex justify-between">
@@ -554,30 +558,46 @@ export default function HotelDashboardClient() {
                         <span className="text-primary font-bold tracking-wider">{bankDetails.accountNumber}</span>
                       </div>
                     </div>
-                    <p className="text-xs text-slate-500 mt-3">Transfer {planPrice} and enter the transaction ID below</p>
+                    <div className="mt-4 p-3 rounded-xl bg-dark-900/80 border border-primary/20 text-xs text-slate-300">
+                      <div className="flex items-center gap-1.5 font-bold text-amber-400 mb-1 text-2xs uppercase tracking-wider">
+                        <span>📌</span>
+                        <span>Payment Instructions</span>
+                      </div>
+                      <p className="text-slate-400 text-2xs leading-relaxed">
+                        Please transfer exactly <strong className="text-white font-semibold">{planPrice}</strong> to the bank account details above. Then select your payment channel, enter the Transaction ID, and submit for admin verification.
+                      </p>
+                    </div>
                   </div>
                 )}
 
                 {/* Payment Form */}
                 {(!subscription || subscription.status === 'EXPIRED' || subscription.status === 'CANCELLED') && (
                   <form onSubmit={handlePayment} className="glass-card no-card-hover p-5 space-y-4">
-                    <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-1">Submit Subscription Payment</h3>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-1">Submit Lifetime Subscription Payment</h3>
 
                     <div>
-                      <label className="text-xs text-slate-400 mb-1 block">Payment Gateway</label>
-                      <div className="grid grid-cols-2 gap-2">
+                      <label className="text-xs text-slate-400 mb-2 block">Select Payment Channel</label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         {paymentGateways.map(gw => (
                           <button
                             key={gw.id}
                             type="button"
-                            onClick={() => setSelectedGateway(gw.id)}
-                            className={`py-2 px-3 rounded-lg border text-xs font-semibold transition-all ${
-                              selectedGateway === gw.id
-                                ? 'border-primary/50 bg-primary/10 text-primary'
-                                : 'border-white/10 text-slate-400 hover:border-white/20 hover:text-white'
+                            onClick={() => setSelectedGateway(gw.name)}
+                            className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${
+                              selectedGateway === gw.name
+                                ? 'border-primary/50 bg-primary/10 text-white ring-1 ring-primary'
+                                : 'border-white/10 text-slate-400 hover:border-white/20 hover:text-white glass'
                             }`}
                           >
-                            {gw.name}
+                            <div className="relative w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center p-1 overflow-hidden shrink-0 border border-white/10">
+                              {gw.logoUrl ? (
+                                <img src={gw.logoUrl} alt={gw.name} className="w-full h-full object-contain" />
+                              ) : (
+                                <span className="text-sm">{gw.icon}</span>
+                              )}
+                            </div>
+                            <span className="text-xs font-semibold truncate flex-1">{gw.name}</span>
+                            {selectedGateway === gw.name && <span className="text-primary text-xs shrink-0">✓</span>}
                           </button>
                         ))}
                       </div>

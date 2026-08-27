@@ -400,30 +400,31 @@ export default function CompanyDashboard() {
               animate={{ opacity: 1, x: 0 }}
               className="grid grid-cols-1 md:grid-cols-12 gap-8"
             >
-
               <div className="md:col-span-7 flex flex-col gap-6">
                 <div className="glass-card p-6 border border-white/5">
                   <h3 className="font-heading font-bold text-slate-900 dark:text-white text-base mb-4">Subscription Overview</h3>
 
                   {subscription ? (
-                    <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-3">
                       <div className="flex justify-between items-center py-2 border-b border-white/5">
-                        <span className="text-slate-500 text-xs">Plan Name</span>
-                        <span className="text-slate-900 dark:text-white text-sm font-semibold">{subscription.planName}</span>
+                        <span className="text-slate-500 text-xs">Plan Type</span>
+                        <span className="text-slate-900 dark:text-white text-sm font-semibold">
+                          Lifetime Partner Plan
+                        </span>
                       </div>
                       <div className="flex justify-between items-center py-2 border-b border-white/5">
                         <span className="text-slate-500 text-xs">Verification Status</span>
-                        <span className={`text-xs font-semibold ${
+                        <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${
                           subscription.status === 'ACTIVE' 
-                            ? 'text-emerald-500 dark:text-emerald-400' 
+                            ? 'text-emerald-400 bg-emerald-400/10 border-emerald-400/30' 
                             : subscription.status === 'PENDING'
-                              ? 'text-amber-500 dark:text-amber-400'
-                              : 'text-rose-500 dark:text-rose-400'
+                              ? 'text-amber-400 bg-amber-400/10 border-amber-400/30'
+                              : 'text-rose-400 bg-rose-400/10 border-rose-400/30'
                         }`}>
                           {subscription.status === 'ACTIVE' 
-                            ? 'Active / Verified' 
+                            ? '✓ Active & Verified' 
                             : subscription.status === 'PENDING' 
-                              ? 'Awaiting Admin Verification'
+                              ? '⏳ Awaiting Admin Verification'
                               : `Subscription ${subscription.status}`}
                         </span>
                       </div>
@@ -433,41 +434,40 @@ export default function CompanyDashboard() {
                           {cars.length} vehicles
                         </span>
                       </div>
-                      {subscription.startDate && (
-                        <div className="flex justify-between items-center py-2 border-b border-white/5">
-                          <span className="text-slate-500 text-xs">Started On</span>
-                          <span className="text-slate-900 dark:text-white text-sm">{formatDate(subscription.startDate)}</span>
-                        </div>
-                      )}
-                      {subscription.endDate && (
-                        <div className="flex justify-between items-center py-2">
-                          <span className="text-slate-500 text-xs">Expires On</span>
-                          <span className="text-slate-900 dark:text-white text-sm font-semibold">
-                            {formatDate(subscription.endDate)}
-                          </span>
-                        </div>
-                      )}
+                      <div className="flex justify-between items-center py-2">
+                        <span className="text-slate-500 text-xs">Membership Duration</span>
+                        <span className="text-emerald-400 text-sm font-bold flex items-center gap-1.5">
+                          <span>♾️</span> Lifetime Access (Never Expires)
+                        </span>
+                      </div>
                     </div>
                   ) : (
                     <div className="text-center py-6">
                       <span className="text-4xl block mb-2">💳</span>
                       <h4 className="text-slate-900 dark:text-white font-bold text-sm mb-1">No Active Subscription</h4>
-                      <p className="text-slate-400 text-xs">Subscribe to start listing your rental vehicles on the marketplace.</p>
+                      <p className="text-slate-400 text-xs">Activate your lifetime subscription to start listing rental vehicles on the marketplace.</p>
                     </div>
                   )}
                 </div>
 
                 <div className="glass-card p-6 border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
-                  <h4 className="font-heading font-black text-slate-900 dark:text-white text-base mb-1">Standard Market Plan</h4>
-                  <div className="text-2xl font-black text-slate-900 dark:text-white my-3">
-                    {planPrice}<span className="text-slate-500 text-sm font-medium"> / month</span>
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <h4 className="font-heading font-black text-slate-900 dark:text-white text-base">Lifetime Partner Plan</h4>
+                    <span className="text-3xs font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+                      Lifetime Access
+                    </span>
                   </div>
-                  <p className="text-slate-500 text-xs">Base price: Rs. {SUBSCRIPTION_BASE_PKR.toLocaleString()} PKR / month</p>
-                  <ul className="text-xs text-slate-600 dark:text-slate-300 flex flex-col gap-2 mt-4">
-                    <li className="flex items-center gap-2">✓ List and manage your rental cars</li>
-                    <li className="flex items-center gap-2">✓ Verified badges on listings</li>
-                    <li className="flex items-center gap-2">✓ Direct WhatsApp CTA leading to your inbox</li>
-                    <li className="flex items-center gap-2">✓ Reviews enabled on your business profile</li>
+                  <div className="text-2xl font-black text-slate-900 dark:text-white my-3 flex items-baseline gap-2">
+                    <span>{planPrice}</span>
+                    <span className="text-slate-400 text-xs font-normal">one-time payment</span>
+                  </div>
+                  <p className="text-slate-500 text-xs">Base price: Rs. {SUBSCRIPTION_BASE_PKR.toLocaleString()} PKR (One-time activation)</p>
+                  <ul className="text-xs text-slate-600 dark:text-slate-300 flex flex-col gap-2.5 mt-4">
+                    <li className="flex items-center gap-2">✓ Unlimited lifetime listings on NextTripy</li>
+                    <li className="flex items-center gap-2">✓ Verified partner badge on all vehicles</li>
+                    <li className="flex items-center gap-2">✓ Direct customer leads via WhatsApp</li>
+                    <li className="flex items-center gap-2">✓ Dedicated company review & ratings profile</li>
+                    <li className="flex items-center gap-2">✓ Zero monthly renewal or hidden fees</li>
                   </ul>
                 </div>
               </div>
@@ -475,15 +475,15 @@ export default function CompanyDashboard() {
               <div className="md:col-span-5">
                 {(!subscription || subscription.status !== 'ACTIVE') ? (
                   <div className="glass-card p-6 border border-white/5">
-                    <h3 className="font-heading font-bold text-slate-900 dark:text-white text-base mb-4">Activate Subscription</h3>
+                    <h3 className="font-heading font-bold text-slate-900 dark:text-white text-base mb-4">Activate Lifetime Subscription</h3>
                     <form onSubmit={handlePayment} className="flex flex-col gap-4">
 
                       {bankDetails && (
-                        <div className="glass p-4 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent flex flex-col gap-2 mb-2">
+                        <div className="glass p-4 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent flex flex-col gap-3 mb-2">
                           <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                             🏦 Admin Bank Transfer Details
                           </span>
-                          <div className="text-2xs text-slate-400 flex flex-col gap-1.5 mt-1">
+                          <div className="text-2xs text-slate-400 flex flex-col gap-1.5">
                             <div className="flex justify-between items-center py-1 border-b border-white/5">
                               <span>Bank Name</span>
                               <span className="text-slate-900 dark:text-white font-medium">{bankDetails.bankName}</span>
@@ -494,8 +494,8 @@ export default function CompanyDashboard() {
                             </div>
                             <div className="flex justify-between items-center py-1">
                               <span>Account / IBAN</span>
-                              <div className="flex items-center gap-1">
-                                <span className="text-slate-900 dark:text-white font-mono font-bold select-all bg-dark-900 px-1.5 py-0.5 rounded border border-white/5">{bankDetails.accountNumber}</span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-slate-900 dark:text-white font-mono font-bold select-all bg-dark-900 px-2 py-0.5 rounded border border-white/10">{bankDetails.accountNumber}</span>
                                 <button
                                   type="button"
                                   onClick={() => {
@@ -510,34 +510,46 @@ export default function CompanyDashboard() {
                               </div>
                             </div>
                           </div>
-                          <div className="text-3xs text-slate-400 mt-2 border-t border-white/5 pt-2 leading-relaxed">
-                            📌 **Instructions**: Please transfer exactly <strong className="text-white">{planPrice}</strong> to the bank account details above, then select your payment channel, enter the Transaction ID, and submit for admin verification.
+
+                          <div className="p-3 rounded-xl bg-dark-900/80 border border-primary/20 text-xs text-slate-300">
+                            <div className="flex items-center gap-1.5 font-bold text-amber-400 mb-1 text-2xs uppercase tracking-wider">
+                              <span>📌</span>
+                              <span>Payment Instructions</span>
+                            </div>
+                            <p className="text-slate-400 text-2xs leading-relaxed">
+                              Please transfer exactly <strong className="text-white font-semibold">{planPrice}</strong> to the bank account details above. Then select your payment channel, enter the Transaction ID, and submit for admin verification.
+                            </p>
                           </div>
                         </div>
                       )}
 
                       <div>
-                        <label className="text-slate-400 text-xs font-semibold mb-3 block">Select Your Payment Channel</label>
-                        <div className="grid grid-cols-2 gap-3">
+                        <label className="text-slate-400 text-xs font-semibold mb-2.5 block">Select Your Payment Channel</label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                           {paymentGateways.map(g => (
                             <button
                               key={g.id}
                               type="button"
                               onClick={() => setSelectedGateway(g.name)}
-                              className={`flex items-center gap-3 p-2.5 rounded-xl border text-left transition-all ${
+                              className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${
                                 selectedGateway === g.name
-                                  ? 'bg-primary/20 border-primary text-primary dark:text-white shadow-neon-violet/10'
-                                  : 'glass border-white/5 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:border-white/10'
+                                  ? 'bg-primary/20 border-primary text-white shadow-neon-violet/10 ring-1 ring-primary'
+                                  : 'glass border-white/5 text-slate-400 hover:text-white hover:border-white/20'
                               }`}
                             >
-                              <div className="relative w-8 h-8 rounded-lg bg-white flex items-center justify-center p-1 overflow-hidden shrink-0">
+                              <div className="relative w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center p-1 overflow-hidden shrink-0 border border-white/10">
                                 {g.logoUrl ? (
-                                  <Image src={g.logoUrl} alt={g.name} fill className="w-full h-full object-contain" />
+                                  <img src={g.logoUrl} alt={g.name} className="w-full h-full object-contain" />
                                 ) : (
                                   <span className="text-sm">{g.icon}</span>
                                 )}
                               </div>
-                              <span className="text-2xs font-semibold leading-tight truncate">{g.name}</span>
+                              <div className="min-w-0 flex-1">
+                                <span className="text-xs font-semibold block truncate">{g.name}</span>
+                              </div>
+                              {selectedGateway === g.name && (
+                                <span className="text-primary text-xs shrink-0">✓</span>
+                              )}
                             </button>
                           ))}
                         </div>
@@ -577,9 +589,9 @@ export default function CompanyDashboard() {
                 ) : (
                   <div className="glass-card p-6 border border-emerald-500/20 bg-emerald-500/5 text-center">
                     <span className="text-2xl block mb-2">🎉</span>
-                    <h4 className="text-slate-900 dark:text-white font-bold text-sm mb-1">Active Subscription</h4>
+                    <h4 className="text-slate-900 dark:text-white font-bold text-sm mb-1">Active Lifetime Subscription</h4>
                     <p className="text-slate-400 text-xs leading-relaxed">
-                      Your subscription is active and verified. You have full access to add and manage car listings.
+                      Your lifetime subscription is active and verified. You have full access to add and manage car listings without any recurring renewal fees.
                     </p>
                   </div>
                 )}

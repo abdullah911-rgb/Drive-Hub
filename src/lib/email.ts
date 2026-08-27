@@ -489,12 +489,13 @@ export const notifications = {
     return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
   },
 
-  async subscriptionActivated(to: string, phone: string, companyName: string, endDate: string, plainPassword?: string | null, companyType?: string) {
+  async subscriptionActivated(to: string, phone: string, companyName: string, endDate: string = 'Lifetime Access', plainPassword?: string | null, companyType?: string) {
     const isHotel = companyType === 'HOTEL'
     const passLine = plainPassword ? `\n🔑 Password: ${plainPassword}` : ''
+    const validityText = endDate.toLowerCase().includes('lifetime') ? 'ACTIVE with LIFETIME ACCESS' : `ACTIVE until ${endDate}`
     const msg = isHotel
-      ? `Hello ${companyName} ✅\n\nYour NextTripy hotel subscription is now ACTIVE until ${endDate}!\n\n📧 Login Email: ${to}${passLine}\n\nYou can now start listing your hotel rooms on the marketplace and partner portal.\n\nSign In: ${APP_URL()}/auth`
-      : `Hello ${companyName} ✅\n\nYour NextTripy car rental subscription is now ACTIVE until ${endDate}!\n\n📧 Login Email: ${to}${passLine}\n\nYou can now start listing your rental cars on the marketplace and partner portal.\n\nSign In: ${APP_URL()}/auth`
+      ? `Hello ${companyName} ✅\n\nYour NextTripy hotel subscription is now ${validityText}!\n\n📧 Login Email: ${to}${passLine}\n\nYou can now start listing your hotel rooms on the marketplace and partner portal.\n\nSign In: ${APP_URL()}/auth`
+      : `Hello ${companyName} ✅\n\nYour NextTripy car rental subscription is now ${validityText}!\n\n📧 Login Email: ${to}${passLine}\n\nYou can now start listing your rental cars on the marketplace and partner portal.\n\nSign In: ${APP_URL()}/auth`
     
     const credsHtml = plainPassword ? `
       <table cellpadding="10" cellspacing="0" style="background:#0f172a;border-radius:10px;border:1px solid rgba(255,255,255,0.1);width:100%;margin:20px 0;">
@@ -506,14 +507,14 @@ export const notifications = {
     const emailSent = await sendEmail({
       to,
       subject: isHotel
-        ? `✅ ${companyName} — NextTripy Hotel Subscription Activated`
-        : `✅ ${companyName} — NextTripy Car Rental Subscription Activated`,
-      title: isHotel ? 'Hotel Subscription Activated' : 'Car Rental Subscription Activated',
+        ? `✅ ${companyName} — NextTripy Hotel Lifetime Subscription Activated`
+        : `✅ ${companyName} — NextTripy Car Rental Lifetime Subscription Activated`,
+      title: isHotel ? 'Hotel Lifetime Subscription Activated' : 'Car Rental Lifetime Subscription Activated',
       bodyHtml: isHotel
-        ? `Your payment has been verified and your NextTripy hotel subscription for <strong>${companyName}</strong> is now <strong style="color:#34d399;">active until ${endDate}</strong>.<br><br>
+        ? `Your payment has been verified and your NextTripy hotel subscription for <strong>${companyName}</strong> is now <strong style="color:#34d399;">active with Lifetime Access</strong> (no renewal required).<br><br>
           ${credsHtml}
           You can now start listing your hotel rooms and suites on the marketplace and receive customer bookings directly via WhatsApp.`
-        : `Your payment has been verified and your NextTripy car rental subscription for <strong>${companyName}</strong> is now <strong style="color:#34d399;">active until ${endDate}</strong>.<br><br>
+        : `Your payment has been verified and your NextTripy car rental subscription for <strong>${companyName}</strong> is now <strong style="color:#34d399;">active with Lifetime Access</strong> (no renewal required).<br><br>
           ${credsHtml}
           You can now start listing your rental cars and vehicles on the marketplace and receive customer inquiries directly via WhatsApp.`,
       ctaLabel: isHotel ? 'Go to Hotel Dashboard' : 'Go to Car Rental Dashboard',

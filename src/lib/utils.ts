@@ -106,19 +106,19 @@ export function getRatingStars(rating: number): string {
 export const PAKISTAN_PAYMENT_GATEWAYS = [
   { id: 'jazzcash', name: 'JazzCash', icon: '💚', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/2/25/JazzCash_Logo.png' },
   { id: 'easypaisa', name: 'Easypaisa', icon: '💜', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/ad/Easypaisa_logo.png' },
-  { id: 'card', name: 'Bank Card', icon: '💳', logoUrl: 'https://cdn-icons-png.flaticon.com/512/2331/2331941.png' },
+  { id: 'card', name: 'Credit / Debit Card', icon: '💳', logoUrl: '/credit-card.jfif' },
 ]
 
 export const SAUDI_PAYMENT_GATEWAYS = [
   { id: 'mada', name: 'Mada', icon: '💳', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/8b/Mada_Logo.svg' },
   { id: 'apple_pay', name: 'Apple Pay', icon: '', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg' },
-  { id: 'card', name: 'Bank Card', icon: '💳', logoUrl: 'https://cdn-icons-png.flaticon.com/512/2331/2331941.png' },
+  { id: 'card', name: 'Credit / Debit Card', icon: '💳', logoUrl: '/credit-card.jfif' },
 ]
 
 export const GENERAL_PAYMENT_GATEWAYS = [
-  { id: 'stripe', name: 'Credit / Debit Card', icon: '💳', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_clean.svg' },
+  { id: 'stripe', name: 'Credit / Debit Card', icon: '💳', logoUrl: '/credit-card.jfif' },
   { id: 'paypal', name: 'PayPal', icon: '📱', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg' },
-  { id: 'bank_transfer_intl', name: 'International Bank Transfer', icon: '🏦', logoUrl: 'https://cdn-icons-png.flaticon.com/512/6404/6404118.png' },
+  { id: 'bank_transfer_intl', name: 'International Wire', icon: '🌐', logoUrl: '/international-card.jfif' },
 ]
 
 export function getPaymentGateways(country: string) {
