@@ -1228,8 +1228,6 @@ export function validateCountryField(
   const trimmed = value.trim()
   if (!trimmed) return { valid: false, message: `${fieldConfig.label} is required` }
 
-  // For phone fields: use a relaxed check — just require a + sign, digits, and reasonable length
-  // This prevents strict per-country rules from rejecting valid numbers (landlines, different prefixes, etc.)
   if (field === 'phone') {
     const digitsCount = trimmed.replace(/\D/g, '').length
     const hasPlus = trimmed.startsWith('+')

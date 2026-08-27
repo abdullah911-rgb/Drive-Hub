@@ -94,7 +94,7 @@ export default function RoomDetailClient({ id }: { id: string }) {
 
   return (
     <div className="container-app py-10">
-      {/* Breadcrumb */}
+      {}
       <div className="flex items-center gap-2 text-xs text-slate-500 mb-6">
         <Link href="/" className="hover:text-primary transition-colors">Home</Link>
         <span>/</span>
@@ -104,9 +104,9 @@ export default function RoomDetailClient({ id }: { id: string }) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left: Images & Info */}
+        {}
         <div className="lg:col-span-2 space-y-6">
-          {/* Image Gallery */}
+          {}
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
             <div className="relative w-full h-72 md:h-96 rounded-2xl overflow-hidden bg-white/5">
               {images.length > 0 ? (
@@ -126,7 +126,7 @@ export default function RoomDetailClient({ id }: { id: string }) {
               </div>
             </div>
 
-            {/* Thumbnails */}
+            {}
             {images.length > 1 && (
               <div className="flex gap-2 mt-3">
                 {images.map((img, idx) => (
@@ -144,7 +144,7 @@ export default function RoomDetailClient({ id }: { id: string }) {
             )}
           </motion.div>
 
-          {/* Room Info */}
+          {}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -166,7 +166,7 @@ export default function RoomDetailClient({ id }: { id: string }) {
             <p className="text-slate-300 text-sm leading-relaxed">{room.description}</p>
           </motion.div>
 
-          {/* Amenities */}
+          {}
           {room.amenities && room.amenities.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 12 }}
@@ -190,7 +190,7 @@ export default function RoomDetailClient({ id }: { id: string }) {
           )}
         </div>
 
-        {/* Right: Booking Card */}
+        {}
         <div className="lg:col-span-1 space-y-4">
           <motion.div
             initial={{ opacity: 0, x: 16 }}
@@ -253,7 +253,7 @@ export default function RoomDetailClient({ id }: { id: string }) {
               )}
             </div>
 
-            {/* Hotel Info */}
+            {}
             {room.company && (
               <div className="mt-5 pt-4 border-t border-white/5">
                 <h3 className="text-xs text-slate-400 font-bold uppercase mb-2">About the Hotel</h3>

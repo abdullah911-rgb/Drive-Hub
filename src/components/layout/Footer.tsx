@@ -6,17 +6,17 @@ export default function Footer() {
 
   return (
     <footer className="relative isolate z-0 overflow-hidden border-t border-slate-200 bg-slate-50 dark:border-slate-800/80 dark:bg-[#070B14]">
-      {/* Top accent glow line */}
+      {}
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent"
         aria-hidden
       />
 
       <div className="container-app relative z-10 px-6 pt-10 pb-6">
-        {/* 4-column compact grid */}
+        {}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 mb-8">
           
-          {/* Column 1: Brand & Bio (4 cols on lg) */}
+          {}
           <div className="lg:col-span-4 flex flex-col items-start">
             <Link href="/" className="group inline-flex items-center gap-2.5 mb-3">
               <Image
@@ -34,7 +34,7 @@ export default function Footer() {
               Discover verified rental cars and comfortable hotel stays worldwide. Connect and book directly with local partners on WhatsApp.
             </p>
 
-            {/* Social icons */}
+            {}
             <div className="flex items-center gap-2">
               <a
                 href="https://wa.me/923395007019"
@@ -83,7 +83,7 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Column 2: Quick Links (2 cols on lg) */}
+          {}
           <div className="lg:col-span-2">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white mb-3">
               Quick Links
@@ -108,7 +108,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Column 3: Partner Portal (3 cols on lg) */}
+          {}
           <div className="lg:col-span-3">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white mb-3">
               Partner Portal
@@ -133,7 +133,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Column 4: Contact Info (3 cols on lg) */}
+          {}
           <div className="lg:col-span-3">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white mb-3">
               Contact Info
@@ -180,7 +180,7 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom copyright line */}
+        {}
         <div className="border-t border-slate-200 dark:border-slate-800/80 pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
           <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
             © {year} NextTripy — Car Rentals, Hotel Stays & Direct WhatsApp Booking.

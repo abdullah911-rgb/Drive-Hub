@@ -11,7 +11,6 @@ export async function POST(request: NextRequest) {
 
     const safeMessage = message.replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
-    // Inbox notification must succeed — previously failures were ignored
     const inboxOk = await sendEmail({
       to: 'info@nexttripy.com',
       subject: `[Contact Form] ${subject}`,
@@ -31,7 +30,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Confirmation to sender is best-effort (don't fail the request if it bounces)
     await sendEmail({
       to: email,
       subject: 'We received your message — NextTripy',

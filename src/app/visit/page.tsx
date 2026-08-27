@@ -22,19 +22,16 @@ function VisitContent() {
   const [userId, setUserId] = useState<string | null>(null)
   const [countries, setCountries] = useState<Country[]>([])
 
-  // Customer fields
   const [custForm, setCustForm] = useState({
     fatherName: '', cnicOrId: '', dateOfBirth: '', address: '',
     countryId: '', emergencyName: '', emergencyPhone: '',
   })
 
-  // Company fields
   const [compForm, setCompForm] = useState({
     ownerName: '', cnicOrId: '', licenseNumber: '', businessAddress: '',
     whatsAppNumber: '', countryId: '',
   })
 
-  // Document files
   const [licenseFile, setLicenseFile] = useState<File | null>(null)
   const [cnicFrontFile, setCnicFrontFile] = useState<File | null>(null)
   const [cnicBackFile, setCnicBackFile] = useState<File | null>(null)
@@ -66,14 +63,13 @@ function VisitContent() {
   useEffect(() => {
     async function init() {
       try {
-        // Verify user is authenticated and approved
+        
         const meRes = await fetch('/api/auth/me', { credentials: 'include' })
         if (!meRes.ok) { router.push('/auth'); return }
         const meData = await meRes.json()
         const user = meData.data
         if (!user) { router.push('/auth'); return }
 
-        // If already completed profile (cnicOrId not 'Pending'), redirect to panel
         if (user.cnicOrId && user.cnicOrId !== 'Pending' && user.cnicOrId !== 'SKIPPED') {
           redirectToPanel(user.roleName)
           return
@@ -169,7 +165,7 @@ function VisitContent() {
       const data = await res.json()
       if (data.success) {
         toast.success('Profile submitted for admin review! You will be notified once approved.')
-        // Stay on visit page but show success — user is PENDING review
+        
         router.push('/auth?status=pending')
       } else {
         toast.error(data.error || 'Failed to submit profile.')
@@ -244,7 +240,7 @@ function VisitContent() {
           transition={{ duration: 0.5 }}
           className="relative z-10 w-full max-w-lg"
         >
-          {/* Header */}
+          {}
           <div className="text-center mb-8">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/30 flex items-center justify-center mx-auto mb-4 text-3xl">
               📋
@@ -362,7 +358,7 @@ function VisitContent() {
                       </div>
                     </div>
 
-                    {/* Documents */}
+                    {}
                     <div className="pt-2 border-t border-white/5">
                       <p className="text-xs font-semibold text-slate-400 mb-3">📁 Upload Documents</p>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -375,7 +371,7 @@ function VisitContent() {
                 )}
               </AnimatePresence>
 
-              {/* Action buttons */}
+              {}
               <div className="flex flex-col gap-3 pt-2">
                 <button type="submit" disabled={submitting}
                   className="btn-primary w-full py-3 font-bold">

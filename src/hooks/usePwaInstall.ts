@@ -45,7 +45,6 @@ export function usePwaInstall() {
 
     if (standalone) return
 
-    // Capture any prompt that fired before this component mounted
     const win = window as Window & { __pwaInstallPrompt?: BeforeInstallPromptEvent }
     if (win.__pwaInstallPrompt) {
       setDeferredPrompt(win.__pwaInstallPrompt)
@@ -74,7 +73,7 @@ export function usePwaInstall() {
   }, [])
 
   const canNativeInstall = Boolean(deferredPrompt)
-  // Always show install option unless already running in standalone (installed) mode
+  
   const showInstallOption = !isInstalled
 
   const install = useCallback(async () => {

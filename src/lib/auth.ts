@@ -39,7 +39,6 @@ export async function verifyToken(token: string): Promise<JWTPayload | null> {
 
 const AUTH_COOKIE = 'auth_token'
 
-/** Prefer Secure cookies on HTTPS (Vercel/Safari). Fall back for local HTTP. */
 function cookieSecure(): boolean {
   if (process.env.NODE_ENV !== 'production') return false
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || ''
@@ -64,7 +63,7 @@ export async function setAuthCookie(token: string) {
 
 export async function clearAuthCookie() {
   const cookieStore = await cookies()
-  // Mirror set attributes so Safari/Chrome actually clear the cookie
+  
   cookieStore.set(AUTH_COOKIE, '', { ...authCookieOptions(0) })
 }
 

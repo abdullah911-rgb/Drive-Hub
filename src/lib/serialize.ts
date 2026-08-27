@@ -1,4 +1,4 @@
-/** Convert Prisma Decimal / Date trees into JSON-safe plain values. */
+
 export function serializePrisma<T>(obj: T): T {
   if (obj === null || obj === undefined) return obj
   if (Array.isArray(obj)) {
@@ -20,14 +20,13 @@ export function serializePrisma<T>(obj: T): T {
   return obj
 }
 
-/** Prisma Decimal / decimal.js — often has keys { s, e, d } */
 function isDecimalLike(obj: unknown): boolean {
   if (!obj || typeof obj !== 'object') return false
   const name = (obj as { constructor?: { name?: string } }).constructor?.name
   if (name === 'Decimal' || name === 'PrismaDecimal') return true
   const o = obj as { s?: unknown; e?: unknown; d?: unknown; toNumber?: unknown; toFixed?: unknown }
   if (typeof o.toNumber === 'function' && typeof o.toFixed === 'function') return true
-  // Plain serialized Decimal shape (React error #31: object with keys {s, e, d})
+  
   if ('s' in o && 'e' in o && 'd' in o && Array.isArray(o.d)) return true
   return false
 }

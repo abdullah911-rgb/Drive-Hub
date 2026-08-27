@@ -28,7 +28,6 @@ function MarketplaceContent() {
   const [selectedCityId, setSelectedCityId] = useState('')
   const [showMobileFilters, setShowMobileFilters] = useState(false)
 
-  // Fetch countries
   useEffect(() => {
     async function fetchCountries() {
       try {
@@ -44,7 +43,6 @@ function MarketplaceContent() {
     fetchCountries()
   }, [])
 
-  // Set initial country from URL / session
   useEffect(() => {
     if (countries.length === 0) return
     const urlCountry = searchParams.get('country')
@@ -60,7 +58,6 @@ function MarketplaceContent() {
     }
   }, [countries, searchParams])
 
-  // Fetch cities when country changes
   useEffect(() => {
     if (!selectedCountry) return
     setSelectedCityId('')
@@ -125,7 +122,6 @@ function MarketplaceContent() {
     router.push(`/marketplace?country=${country.code}`)
   }
 
-  // Sidebar filter panel (shared between desktop & mobile)
   const FilterPanel = () => (
     <div className="flex flex-col gap-5">
       <div>
@@ -221,7 +217,7 @@ function MarketplaceContent() {
 
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
         <div>
-          {/* Country Dropdown */}
+          {}
           <div className="relative mb-3 w-full max-w-xs">
             <SearchableSelect
               size="sm"
@@ -253,7 +249,7 @@ function MarketplaceContent() {
           </p>
         </div>
 
-        {/* Search bar */}
+        {}
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
           <div className="relative w-full sm:w-72">
             <input
@@ -270,7 +266,7 @@ function MarketplaceContent() {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
 
-        {/* Desktop Sidebar */}
+        {}
         <aside className="hidden lg:block lg:col-span-1 glass-card p-6 h-fit sticky top-24 border border-white/5">
           <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4">
             <h3 className="font-heading font-bold text-white text-base">Filters</h3>
@@ -281,7 +277,7 @@ function MarketplaceContent() {
           <FilterPanel />
         </aside>
 
-        {/* Mobile filter toggle */}
+        {}
         <div className="lg:hidden flex items-center justify-between gap-4">
           <button
             onClick={() => setShowMobileFilters(true)}
@@ -296,7 +292,7 @@ function MarketplaceContent() {
           )}
         </div>
 
-        {/* Mobile Filter Drawer */}
+        {}
         <AnimatePresence>
           {showMobileFilters && (
             <>
@@ -330,7 +326,7 @@ function MarketplaceContent() {
           )}
         </AnimatePresence>
 
-        {/* Car Grid */}
+        {}
         <div className="lg:col-span-3">
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

@@ -47,18 +47,14 @@ export async function GET(request: NextRequest) {
     const requestedStatus = searchParams.get('status') || undefined
     const nearCity = searchParams.get('nearCity') || undefined
 
-    // Determine effective status filter:
-    // - admins can filter freely or see all
-    // - hotel users seeing own company rooms: no status filter (or use their requested status)
-    // - public (marketplace): only APPROVED
     let effectiveStatus: string | undefined
     if (isAdmin) {
       effectiveStatus = requestedStatus
     } else if (isHotel && companyId) {
-      // hotel viewing their own rooms - allow any status
+      
       effectiveStatus = requestedStatus
     } else {
-      // Public marketplace: always APPROVED
+      
       effectiveStatus = 'APPROVED'
     }
 
@@ -70,7 +66,6 @@ export async function GET(request: NextRequest) {
     if (effectiveStatus) where.status = effectiveStatus
     if (companyId) where.companyId = companyId
 
-    // Max price filter
     const maxPrice = searchParams.get('maxPrice') ? parseFloat(searchParams.get('maxPrice')!) : undefined
     const minCapacity = searchParams.get('minCapacity') ? parseInt(searchParams.get('minCapacity')!) : undefined
     if (maxPrice) where.pricePerNight = { lte: maxPrice }

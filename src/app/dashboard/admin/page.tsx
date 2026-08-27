@@ -83,7 +83,7 @@ export default function AdminDashboard() {
         return
       }
       setIsSuperAdmin(meData.data.roleName === 'SUPER_ADMIN')
-      // Pre-fill profile form with current admin info
+      
       setProfileForm(prev => ({
         ...prev,
         fullName: meData.data?.fullName || '',
@@ -365,7 +365,6 @@ export default function AdminDashboard() {
 
   const statsCards = [...baseCards, ...revenueCards]
 
-  // Search filters
   const filteredCompanies = companies.filter(comp =>
     comp.name?.toLowerCase().includes(companySearch.toLowerCase()) ||
     comp.ownerName?.toLowerCase().includes(companySearch.toLowerCase())
@@ -580,7 +579,7 @@ export default function AdminDashboard() {
                             <p className="text-slate-500 text-xs mt-1">Address: {comp.businessAddress}</p>
                           )}
 
-                          {/* Document count badge — click card to view full documents */}
+                          {}
                           <div className="mt-2 flex items-center gap-2">
                             {(comp as { documents?: { docType: string; fileUrl: string }[] }).documents?.length ? (
                               <span className="inline-flex items-center gap-1 text-2xs px-2 py-0.5 rounded border border-cyan-400/20 bg-cyan-400/5 text-cyan-300 font-semibold">
@@ -980,7 +979,7 @@ export default function AdminDashboard() {
                    )}
                  </div>
 
-                {/* User cards grid */}
+                {}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filteredUsers.map(u => {
                     const roleColors: Record<string, string> = {
@@ -1003,7 +1002,7 @@ export default function AdminDashboard() {
                         onClick={() => openUserDetails(u)}
                         className="glass-card p-5 border border-white/5 hover:border-primary/30 text-left transition-all hover:shadow-neon-violet/10 hover:scale-[1.01] group"
                       >
-                        {/* Avatar + name */}
+                        {}
                         <div className="flex items-start gap-3 mb-3">
                           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/20 flex items-center justify-center text-lg font-black text-primary flex-shrink-0">
                             {(u.fullName || u.email)?.[0]?.toUpperCase() || '?'}
@@ -1016,7 +1015,7 @@ export default function AdminDashboard() {
                           </div>
                         </div>
 
-                        {/* Tags */}
+                        {}
                         <div className="flex flex-wrap gap-1.5 mb-3">
                           <span className={`text-2xs px-2 py-0.5 rounded font-bold border ${roleColors[u.roleName] || 'text-slate-400 bg-white/5 border-white/10'}`}>
                             {u.roleName}
@@ -1035,7 +1034,7 @@ export default function AdminDashboard() {
                         <p className="text-slate-500 text-xs">📱 {u.phone || '—'}</p>
                         <p className="text-slate-500 text-xs mt-1 truncate">🔑 {u.password || 'Set password in details'}</p>
 
-                        {/* Actions row */}
+                        {}
                         <div className="flex gap-2 mt-3 pt-3 border-t border-white/5" onClick={e => e.stopPropagation()}>
                           {u.status === 'PENDING' ? (
                             <>
@@ -1077,7 +1076,7 @@ export default function AdminDashboard() {
               </motion.div>
             )}
 
-            {/* User Details Modal */}
+            {}
             {selectedUser && (
               <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={() => setSelectedUser(null)}>
                 <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
@@ -1088,7 +1087,7 @@ export default function AdminDashboard() {
                   onClick={e => e.stopPropagation()}
                   className="relative w-full max-w-2xl bg-dark-900 border border-white/10 rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto"
                 >
-                  {/* Modal header */}
+                  {}
                   <div className="sticky top-0 bg-dark-900/95 backdrop-blur-sm border-b border-white/5 flex items-center justify-between px-6 py-4 z-10">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/20 flex items-center justify-center text-lg font-black text-primary">
@@ -1105,7 +1104,7 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="p-6 space-y-6">
-                    {/* Basic info */}
+                    {}
                     <div>
                       <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Account Info</h4>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1148,7 +1147,7 @@ export default function AdminDashboard() {
                       </div>
                     </div>
 
-                    {/* Update email / password */}
+                    {}
                     <div>
                       <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Update Credentials</h4>
                       <form onSubmit={handleUpdateUserCredentials} className="glass p-4 rounded-xl border border-white/5 space-y-3">
@@ -1196,7 +1195,7 @@ export default function AdminDashboard() {
                       </form>
                     </div>
 
-                    {/* Company info (if applicable) */}
+                    {}
                     {(selectedUser as User & { company?: { name: string; ownerName: string; cnicOrId: string; contactNumber: string; whatsAppNumber: string; businessAddress: string; licenseNumber: string; status: string; companyType?: string; documents?: { docType: string; fileUrl: string }[] } }).company && (
                       <div>
                         <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Company Info</h4>
@@ -1237,7 +1236,7 @@ export default function AdminDashboard() {
                           ) : null)}
                         </div>
 
-                        {/* Documents */}
+                        {}
                         {((selectedUser as User & { company?: { documents?: { docType: string; fileUrl: string }[] } }).company?.documents?.length ?? 0) > 0 ? (
                           <div className="mt-4">
                             <h5 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Uploaded Documents</h5>
@@ -1273,7 +1272,7 @@ export default function AdminDashboard() {
                       </div>
                     )}
 
-                    {/* Action buttons */}
+                    {}
                     <div className="flex flex-wrap gap-3 pt-2 border-t border-white/5">
                       {selectedUser.status === 'PENDING' ? (
                         <>
@@ -1363,7 +1362,7 @@ export default function AdminDashboard() {
                   <p className="text-slate-400 text-xs">Only you (Super Admin) can create and manage admin accounts. Admins have full access to platform operations but cannot create other admins.</p>
                 </div>
 
-                {/* Create Admin Form */}
+                {}
                 <form onSubmit={handleCreateAdmin} className="glass-card p-6 border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
                   <h4 className="font-semibold text-slate-900 dark:text-white text-sm mb-4 flex items-center gap-2">
                     <span className="w-6 h-6 rounded-md bg-primary/20 text-primary flex items-center justify-center text-xs">➕</span>
@@ -1442,7 +1441,7 @@ export default function AdminDashboard() {
                   </div>
                 </form>
 
-                {/* Existing Admins List */}
+                {}
                 <div className="glass-card p-6 border border-white/5">
                   <h4 className="font-semibold text-slate-900 dark:text-white text-sm mb-4 flex items-center justify-between">
                     <span>Existing Admin Accounts</span>
@@ -1530,7 +1529,7 @@ export default function AdminDashboard() {
                 <h3 className="font-heading font-bold text-slate-900 dark:text-white text-lg mb-2">👤 Profile Management</h3>
 
                 <form onSubmit={handleSaveProfile} className="flex flex-col gap-6">
-                  {/* Update Info */}
+                  {}
                   <div className="glass-card p-6 border border-white/5">
                     <h4 className="font-semibold text-slate-900 dark:text-white text-sm mb-4 flex items-center gap-2">
                       <span className="w-6 h-6 rounded-md bg-primary/20 text-primary flex items-center justify-center text-xs">✏️</span>
@@ -1560,7 +1559,7 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  {/* Change Password */}
+                  {}
                   <div className="glass-card p-6 border border-white/5">
                     <h4 className="font-semibold text-slate-900 dark:text-white text-sm mb-4 flex items-center gap-2">
                       <span className="w-6 h-6 rounded-md bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs">🔒</span>
@@ -1643,7 +1642,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* ── WhatsApp Notification Modal ───────────────────────── */}
+      {}
       <AnimatePresence>
         {whatsAppModal && (
           <motion.div
@@ -1698,7 +1697,7 @@ export default function AdminDashboard() {
         )}
       </AnimatePresence>
 
-      {/* ── Car Detail Modal ───────────────────────────────── */}
+      {}
       <AnimatePresence>
         {selectedCar && (() => {
           const car = selectedCar as Car & { images?: { imageUrl: string; isPrimary: boolean }[], company?: { name: string } }
@@ -1719,7 +1718,7 @@ export default function AdminDashboard() {
                 className="glass-card border border-white/10 rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
                 onClick={e => e.stopPropagation()}
               >
-                {/* Image Gallery */}
+                {}
                 {images.length > 0 ? (
                   <div className="flex gap-2 p-4 overflow-x-auto bg-black/20">
                     {images.map((img, i) => (
@@ -1800,7 +1799,7 @@ export default function AdminDashboard() {
         })()}
       </AnimatePresence>
 
-      {/* ── Room Detail Modal ───────────────────────────────── */}
+      {}
       <AnimatePresence>
         {selectedRoom && (() => {
           const room = selectedRoom
@@ -1821,7 +1820,7 @@ export default function AdminDashboard() {
                 className="glass-card border border-white/10 rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
                 onClick={e => e.stopPropagation()}
               >
-                {/* Image Gallery */}
+                {}
                 {images.length > 0 ? (
                   <div className="flex gap-2 p-4 overflow-x-auto bg-black/20">
                     {images.map((img, i) => (

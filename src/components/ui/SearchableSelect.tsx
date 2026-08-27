@@ -7,11 +7,11 @@ import { cn } from '@/lib/utils'
 export interface SearchableOption {
   value: string
   label: string
-  /** Optional leading content (flag emoji, icon, etc.) */
+  
   prefix?: ReactNode
-  /** Optional trailing badge / meta */
+  
   suffix?: ReactNode
-  /** Extra searchable text (e.g. country code) */
+  
   keywords?: string
 }
 
@@ -28,10 +28,10 @@ interface SearchableSelectProps {
   name?: string
   id?: string
   emptyLabel?: string
-  /** Allow clearing to empty value */
+  
   allowClear?: boolean
   clearLabel?: string
-  /** Compact trigger used in filter sidebars */
+  
   size?: 'sm' | 'md'
 }
 
@@ -39,7 +39,6 @@ function normalize(s: string) {
   return s.trim().toLowerCase()
 }
 
-/** Rank options: starts-with first, then includes; preserve original order within rank */
 export function rankOptions(options: SearchableOption[], query: string): SearchableOption[] {
   const q = normalize(query)
   if (!q) return options
@@ -289,7 +288,7 @@ export default function SearchableSelect({
 
   return (
     <div className={cn('relative w-full', className)} onKeyDown={onKeyDown}>
-      {/* Hidden input for native form required validation */}
+      {}
       {name && (
         <input
           type="hidden"

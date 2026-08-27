@@ -139,7 +139,7 @@ export async function PATCH(request: NextRequest) {
         }
 
         const user = await db.updateUser(id, updateData)
-        // Keep company email in sync when account email changes
+        
         if (updateData.email) {
           const company = await prisma.company.findUnique({ where: { userId: id } })
           if (company) {

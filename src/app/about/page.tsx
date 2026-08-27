@@ -37,8 +37,6 @@ export default function AboutPage() {
       <main className="flex-grow pt-20 pb-16 relative z-10">
         <div className="container-app max-w-4xl mx-auto px-6">
 
-
-
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 mb-16" style={{ alignItems: 'start' }}>
           <div className="lg:col-span-7">
             <motion.div
@@ -86,7 +84,6 @@ export default function AboutPage() {
             </div>
           </div>
         </div>
-
 
         <div className="space-y-6">
           <h2 className="font-heading font-bold text-xl text-slate-900 dark:text-white">

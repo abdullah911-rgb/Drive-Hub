@@ -1,11 +1,10 @@
 import nodemailer from 'nodemailer'
 import { prisma } from './prisma'
 
-/** Strip surrounding quotes that appear when .env values are copy-pasted into Vercel's dashboard */
 function cleanEnv(val: string | undefined): string | undefined {
   if (!val) return val
   let v = val.trim()
-  // Peel nested/wrapping quotes from dashboard paste (e.g. "\"NextTripy\" <a@b.com>")
+  
   for (let i = 0; i < 3; i++) {
     if (
       (v.startsWith('"') && v.endsWith('"')) ||
@@ -19,7 +18,6 @@ function cleanEnv(val: string | undefined): string | undefined {
   return v.replace(/\\"/g, '"').replace(/\\'/g, "'").trim()
 }
 
-/** Build a valid RFC From header; malformed SMTP_FROM often becomes "Name  user"@domain */
 function normalizeFromAddress(rawFrom: string | undefined, smtpUser: string): string {
   const fallback = `"NextTripy" <${smtpUser}>`
   if (!rawFrom) return fallback
@@ -34,7 +32,6 @@ function normalizeFromAddress(rawFrom: string | undefined, smtpUser: string): st
     }
   }
 
-  // Bare email
   if (/^[^\s<>]+@[^\s<>]+$/.test(v)) return v
 
   console.warn('[Email] Invalid SMTP_FROM — falling back to SMTP_USER. Got:', rawFrom)
@@ -59,13 +56,13 @@ function createTransporter(options?: { port?: number; secure?: boolean; requireT
     secure,
     requireTLS,
     ignoreTLS,
-    name: 'nexttripy.com', // EHLO/HELO hostname required by cPanel Exim
+    name: 'nexttripy.com', 
     auth: user && pass ? { user, pass } : undefined,
     tls: {
-      rejectUnauthorized: false, // cPanel/shared-host self-signed certs
+      rejectUnauthorized: false, 
       minVersion: 'TLSv1.2',
     },
-    // Force IPv4 to prevent IPv6 timeouts on serverless (AWS Lambda / Vercel)
+    
     family: 4,
     pool: false,
     connectionTimeout: 12000,
@@ -165,7 +162,6 @@ export async function sendEmailDetailed(opts: {
   const fromAddress = normalizeFromAddress(process.env.SMTP_FROM, smtpUser)
   const html = buildHtml(opts.title, opts.bodyHtml, opts.ctaLabel, opts.ctaUrl)
 
-  // Configure attempt cascade: configured port first, followed by alternate ports
   const configurations = [
     { port: rawPort, secure: rawPort === 465, requireTLS: rawPort !== 465, ignoreTLS: false },
     ...(rawPort === 587
@@ -555,4 +551,4 @@ export const notifications = {
     return { emailSent, whatsAppUrl: buildWhatsAppNotificationUrl(formattedPhone, msg) }
   },
 }
-
+

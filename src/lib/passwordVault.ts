@@ -4,11 +4,10 @@ import { getJwtSecret } from './env'
 const ALGO = 'aes-256-gcm'
 
 function getKey(): Buffer {
-  // Derive a stable 32-byte key from the JWT secret
+  
   return createHash('sha256').update(Buffer.from(getJwtSecret())).digest()
 }
 
-/** Encrypt a password so admins can view/update credentials. Login still uses bcrypt. */
 export function encryptPassword(plain: string): string {
   const iv = randomBytes(12)
   const cipher = createCipheriv(ALGO, getKey(), iv)

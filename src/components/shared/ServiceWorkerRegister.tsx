@@ -7,7 +7,6 @@ export default function ServiceWorkerRegister() {
   useEffect(() => {
     if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return
 
-    // Avoid SW-related breakage during local development (esp. Safari)
     if (process.env.NODE_ENV !== 'production') {
       navigator.serviceWorker.getRegistrations().then(regs => {
         regs.forEach(r => r.unregister())
@@ -32,7 +31,6 @@ export default function ServiceWorkerRegister() {
       })
       .catch(err => console.warn('[PWA] Service worker registration failed:', err))
 
-    // Guard against infinite reload loops (common Safari SW issue)
     const onControllerChange = () => {
       if (reloading.current) return
       reloading.current = true

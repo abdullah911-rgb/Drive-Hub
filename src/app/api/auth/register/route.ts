@@ -49,7 +49,6 @@ async function registerCustomer(data: {
     const passwordHash = await hashPassword(data.password)
     const passwordEnc = encryptPassword(data.password)
 
-    // Resolve cityId from countryId (pick first city for that country)
     let cityId: string | undefined
     if (data.countryId) {
       const cities = await db.getCities(data.countryId) as { id: string }[]
@@ -67,13 +66,12 @@ async function registerCustomer(data: {
       emailVerified: false,
       phoneVerified: false,
       fullName: data.fullName,
-      // Sensitive fields are deferred to /visit page
+      
       cnicOrId: 'Pending',
       countryId: data.countryId || undefined,
       cityId,
     })
 
-    // Notify admin
     try {
       const adminUser = await db.getAdminUser()
       if (adminUser) {
@@ -131,14 +129,13 @@ async function registerCompany(data: {
     const companyType = data.companyType === 'HOTEL' ? 'HOTEL' : 'CAR_RENTAL'
     const assignedRole = companyType === 'HOTEL' ? 'HOTEL' : 'COMPANY'
 
-    // Resolve city (use first city for given country, or first global city as fallback)
     let cityId: string | undefined
     if (data.countryId) {
       const cities = await db.getCities(data.countryId) as { id: string }[]
       cityId = cities[0]?.id
     }
     if (!cityId) {
-      // fallback: any city
+      
       const allCities = await db.getCities('') as { id: string }[]
       cityId = allCities[0]?.id
     }
@@ -184,7 +181,6 @@ async function registerCompany(data: {
       companyType,
     })
 
-    // Notify admin
     try {
       const adminUser = await db.getAdminUser()
       if (adminUser) {

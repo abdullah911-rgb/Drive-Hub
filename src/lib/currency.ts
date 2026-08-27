@@ -38,7 +38,6 @@ export async function convertUSD(amountUSD: number, targetCurrency: string): Pro
   return { amount, rate }
 }
 
-/** Convert an amount in PKR to the target currency using USD as the bridge. */
 export async function convertPKR(amountPKR: number, targetCurrency: string): Promise<{ amount: number; rate: number }> {
   const currency = targetCurrency.toUpperCase().trim()
   if (currency === 'PKR') {
@@ -65,7 +64,6 @@ export function formatSubscriptionPrice(amount: number, currency: string): strin
   return `${amount.toLocaleString(undefined, { maximumFractionDigits: 0 })} ${code}`
 }
 
-/** Coerce Prisma Decimal / string / number to a finite number (avoids React #31). */
 export function toMoneyNumber(value: unknown): number {
   if (typeof value === 'number' && Number.isFinite(value)) return value
   if (typeof value === 'string') {
@@ -84,7 +82,6 @@ export function toMoneyNumber(value: unknown): number {
   return 0
 }
 
-/** Format a room/listing price in the hotel's local currency (e.g. PKR for Pakistan). */
 export function formatMoney(amount: unknown, currency = 'PKR'): string {
   return formatSubscriptionPrice(toMoneyNumber(amount), currency || 'PKR')
 }

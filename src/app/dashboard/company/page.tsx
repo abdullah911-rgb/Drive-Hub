@@ -46,7 +46,7 @@ export default function CompanyDashboard() {
 
   const handleOpenEditModal = (car: Car) => {
     setEditingCarId(car.id)
-    // Prefill existing images as preview entries from stored URLs
+    
     const existingImgs = car.images
       ? car.images.map(img => ({ dataUrl: img.imageUrl, name: 'existing' }))
       : []

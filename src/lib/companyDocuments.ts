@@ -39,7 +39,7 @@ export function validateCompanyDocumentFile(file: File): { valid: boolean; error
 
   const mimeOk = !!file.type && ALLOWED_MIME_TYPES.has(file.type)
   const extOk = ALLOWED_EXTENSIONS.has(fileExtension(file))
-  // Browsers often send empty or application/octet-stream — allow by extension too
+  
   const octetStream = !file.type || file.type === 'application/octet-stream' || file.type === 'binary/octet-stream'
 
   if (!mimeOk && !(octetStream && extOk) && !extOk) {

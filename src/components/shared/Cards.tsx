@@ -9,9 +9,8 @@ import { formatMoney } from '@/lib/currency'
 import { RatingStars, StatusBadge } from '@/components/ui'
 import type { Car, Company, Room } from '@/types'
 
-// Shared hook to check auth state once on mount
 function useIsLoggedIn() {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null) // null = loading
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null) 
 
   useEffect(() => {
     fetch('/api/auth/me', { credentials: 'include' })
@@ -29,7 +28,6 @@ function useIsLoggedIn() {
   return isLoggedIn
 }
 
-// Shared WhatsApp button that shows login prompt when not authenticated
 function WhatsAppButton({
   href,
   isLoggedIn,

@@ -176,10 +176,6 @@ export const db = {
     return withRoleName(u)
   },
 
-  /**
-   * Permanently remove a user and all related data so email/phone can be re-registered.
-   * Does not allow deleting ADMIN / SUPER_ADMIN accounts.
-   */
   async hardDeleteUser(userId: string) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -239,7 +235,7 @@ export const db = {
       select: { id: true, userId: true },
     })
     if (!company) return { ok: false as const, error: 'Company not found' }
-    // Deleting the owning user cascades company + listings and frees email/phone
+    
     return this.hardDeleteUser(company.userId)
   },
 

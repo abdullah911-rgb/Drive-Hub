@@ -153,7 +153,7 @@ export default function RegisterCompanyModal({
               </button>
             </div>
 
-            {/* Business Type Selector */}
+            {}
             <div className="flex gap-3 mb-5">
               {[
                 { type: 'CAR_RENTAL' as const, icon: '🚗', label: 'Car Rental', desc: 'List vehicles for rent' },

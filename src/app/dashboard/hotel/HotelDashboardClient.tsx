@@ -307,7 +307,7 @@ export default function HotelDashboardClient() {
 
   return (
     <div className="container-app py-8">
-      {/* Header */}
+      {}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
           <h1 className="font-heading font-black text-3xl text-slate-900 dark:text-white">
@@ -333,7 +333,7 @@ export default function HotelDashboardClient() {
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {[
           { label: 'Total Rooms', value: rooms.length, icon: '🛏️', color: 'text-primary' },
@@ -350,7 +350,7 @@ export default function HotelDashboardClient() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Sidebar */}
+        {}
         <div className="lg:col-span-3 flex flex-col gap-2">
           <button
             onClick={() => setActiveTab('listings')}
@@ -375,7 +375,7 @@ export default function HotelDashboardClient() {
             <span>→</span>
           </button>
 
-          {/* Hotel Info Card */}
+          {}
           <div className="glass-card no-card-hover p-4 mt-4">
             <h3 className="font-bold text-sm text-slate-900 dark:text-white mb-3">Hotel Info</h3>
             <div className="space-y-2 text-xs text-slate-500 dark:text-slate-400">
@@ -391,11 +391,11 @@ export default function HotelDashboardClient() {
           </div>
         </div>
 
-        {/* Main Content */}
+        {}
         <div className="lg:col-span-9">
           <AnimatePresence mode="wait">
 
-            {/* Rooms Listings Tab */}
+            {}
             {activeTab === 'listings' && (
               <motion.div
                 key="listings"
@@ -436,7 +436,7 @@ export default function HotelDashboardClient() {
                   <div className="grid gap-4">
                     {rooms.map(room => (
                       <div key={room.id} className="glass-card no-card-hover p-4 flex flex-col md:flex-row gap-4">
-                        {/* Image */}
+                        {}
                         <div className="relative w-full md:w-32 h-24 rounded-lg overflow-hidden bg-white/5 flex-shrink-0">
                           {room.images?.[0] ? (
                             <Image src={room.images[0].imageUrl} alt={room.name} fill sizes="128px" className="object-cover" />
@@ -444,7 +444,7 @@ export default function HotelDashboardClient() {
                             <div className="w-full h-full flex items-center justify-center text-3xl">🛏️</div>
                           )}
                         </div>
-                        {/* Info */}
+                        {}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
                             <div>
@@ -469,7 +469,7 @@ export default function HotelDashboardClient() {
                             </div>
                           )}
                         </div>
-                        {/* Price & Actions */}
+                        {}
                         <div className="flex flex-col items-end gap-2 flex-shrink-0">
                           <div className="text-right">
                             <div className="font-bold text-slate-900 dark:text-white text-sm">{formatMoney(room.pricePerNight, currencyCode)}</div>
@@ -497,7 +497,7 @@ export default function HotelDashboardClient() {
               </motion.div>
             )}
 
-            {/* Subscription Tab */}
+            {}
             {activeTab === 'subscription' && (
               <motion.div
                 key="subscription"
@@ -508,7 +508,7 @@ export default function HotelDashboardClient() {
               >
                 <h2 className="font-bold text-lg text-slate-900 dark:text-white mb-5">Subscription Management</h2>
 
-                {/* Plan Card */}
+                {}
                 <div className="glass-card no-card-hover p-6 border border-primary/20 mb-6 bg-gradient-to-br from-primary/5 to-transparent">
                   <div className="flex items-start justify-between">
                     <div>
@@ -540,7 +540,7 @@ export default function HotelDashboardClient() {
                   )}
                 </div>
 
-                {/* Bank Details */}
+                {}
                 {bankDetails && (
                   <div className="glass-card no-card-hover p-5 border border-white/5 mb-6">
                     <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-3">🏦 Admin Bank Transfer Details</h3>
@@ -570,7 +570,7 @@ export default function HotelDashboardClient() {
                   </div>
                 )}
 
-                {/* Payment Form */}
+                {}
                 {(!subscription || subscription.status === 'EXPIRED' || subscription.status === 'CANCELLED') && (
                   <form onSubmit={handlePayment} className="glass-card no-card-hover p-5 space-y-4">
                     <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-1">Submit Lifetime Subscription Payment</h3>
@@ -638,7 +638,7 @@ export default function HotelDashboardClient() {
         </div>
       </div>
 
-      {/* Add/Edit Room Modal */}
+      {}
       <AnimatePresence>
         {showAddRoomModal && (
           <motion.div
@@ -675,7 +675,7 @@ export default function HotelDashboardClient() {
               </div>
 
               <form onSubmit={handleAddRoom} className="space-y-4">
-                {/* Image Upload */}
+                {}
                 <div>
                   <label className="text-xs text-slate-400 mb-2 block">Room Photos (max 2) *</label>
                   <div className="flex gap-2 flex-wrap mb-2">
@@ -704,7 +704,7 @@ export default function HotelDashboardClient() {
                   </div>
                 </div>
 
-                {/* Room Name */}
+                {}
                 <div>
                   <label className="text-xs text-slate-400 mb-1 block">Room Name *</label>
                   <input
@@ -716,7 +716,7 @@ export default function HotelDashboardClient() {
                   />
                 </div>
 
-                {/* Room Type & Capacity */}
+                {}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs text-slate-400 mb-1 block">Room Type *</label>
@@ -745,7 +745,7 @@ export default function HotelDashboardClient() {
                   </div>
                 </div>
 
-                {/* Price & Floor */}
+                {}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs text-slate-400 mb-1 block">Price Per Night ({currencyCode}) *</label>
@@ -772,7 +772,7 @@ export default function HotelDashboardClient() {
                   </div>
                 </div>
 
-                {/* Amenities */}
+                {}
                 <div>
                   <label className="text-xs text-slate-400 mb-2 block">Amenities</label>
                   <div className="flex flex-wrap gap-1.5 mb-2">
@@ -799,7 +799,7 @@ export default function HotelDashboardClient() {
                   />
                 </div>
 
-                {/* Description */}
+                {}
                 <div>
                   <label className="text-xs text-slate-400 mb-1 block">Description *</label>
                   <textarea

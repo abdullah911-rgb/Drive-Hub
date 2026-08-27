@@ -21,7 +21,6 @@ function AuthContent() {
   const [signupRole, setSignupRole] = useState<SignupRole>('CUSTOMER')
   const [loading, setLoading] = useState(false)
 
-  // Password visibility toggles
   const [showLoginPw, setShowLoginPw] = useState(false)
   const [showCustPw, setShowCustPw] = useState(false)
   const [showCustConfPw, setShowCustConfPw] = useState(false)
@@ -63,7 +62,6 @@ function AuthContent() {
     loadCountries()
   }, [])
 
-  // Simple registration state — all sensitive info collected later on /visit
   const [custData, setCustData] = useState({
     fullName: '', phone: '', email: '', countryId: '', password: '', confirmPassword: ''
   })
@@ -73,7 +71,6 @@ function AuthContent() {
     password: '', confirmPassword: '', companyType: 'CAR_RENTAL'
   })
 
-  // Update subscription preview when country changes (for company registration)
   useEffect(() => {
     if (!compData.countryId || countries.length === 0) return
     const country = countries.find(c => c.id === compData.countryId)
@@ -124,7 +121,6 @@ function AuthContent() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Validate passwords match
     if (signupRole === 'CUSTOMER') {
       if (!custData.fullName.trim() || custData.fullName.trim().length < 2) {
         toast.error('Please enter your full name (at least 2 characters)')
@@ -249,7 +245,7 @@ function AuthContent() {
             {tab === 'signup' && (
               <motion.div key="signup" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
 
-                {/* Role selector */}
+                {}
                 <div className="flex gap-2 mb-5">
                   {([
                     { role: 'CUSTOMER', icon: '👤', label: 'Customer' },
@@ -327,7 +323,7 @@ function AuthContent() {
                     </>
                   ) : (
                     <>
-                      {/* Business type toggle */}
+                      {}
                       <div className="flex gap-2 mb-1">
                         {[
                           { type: 'CAR_RENTAL', label: '🚗 Car Rental' },

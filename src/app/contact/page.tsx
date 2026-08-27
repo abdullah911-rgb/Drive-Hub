@@ -50,7 +50,7 @@ export default function ContactPage() {
       <main className="flex-grow pt-20 pb-12 relative z-10">
         <div className="container-app max-w-6xl mx-auto">
 
-          {/* Page header — compact */}
+          {}
           <motion.div
             className="mb-8 text-center"
             initial={{ opacity: 0, y: 14 }}
@@ -64,7 +64,7 @@ export default function ContactPage() {
               Questions about listings, subscriptions, or partnerships? We&apos;re here to help.
             </p>
 
-            {/* Contact badges */}
+            {}
             <div className="mt-4 flex flex-wrap items-center justify-center gap-3 text-sm">
               <span className="flex items-center gap-2 glass px-3 py-1.5 rounded-lg border border-border text-slate-700 dark:text-slate-300 font-semibold text-xs">
                 ✉️ info@nexttripy.com
@@ -83,10 +83,10 @@ export default function ContactPage() {
             </div>
           </motion.div>
 
-          {/* 2-column: form left, images right */}
+          {}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
 
-            {/* LEFT — Contact Form */}
+            {}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -155,7 +155,7 @@ export default function ContactPage() {
                 </form>
               </div>
 
-              {/* Info cards below form */}
+              {}
               <div className="grid grid-cols-3 gap-3 mt-4">
                 {[
                   { icon: '⚡', title: 'Fast Reply', desc: 'Within 24 hours' },
@@ -171,17 +171,17 @@ export default function ContactPage() {
               </div>
             </motion.div>
 
-            {/* RIGHT — Hero images (compact) */}
+            {}
             <motion.div
               className="relative w-full h-[340px] items-center justify-center hidden lg:flex"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
             >
-              {/* Backglow */}
+              {}
               <div className="absolute w-[75%] h-[75%] bg-gradient-to-tr from-primary-500/20 to-secondary-500/20 blur-3xl rounded-full opacity-50 -z-10" />
 
-              {/* Main image: Car */}
+              {}
               <div className="absolute top-3 left-3 w-[72%] h-[56%] rounded-2xl overflow-hidden border-2 border-white/10 shadow-2xl transition-transform duration-500 hover:scale-[1.02]">
                 <Image
                   src="https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&q=80&w=800"
@@ -195,7 +195,7 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              {/* Overlapping image: Hotel Room */}
+              {}
               <div className="absolute bottom-3 right-3 w-[68%] h-[54%] rounded-2xl overflow-hidden border-2 border-white/10 shadow-2xl transition-transform duration-500 hover:scale-[1.02]">
                 <Image
                   src="https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&q=80&w=800"
@@ -208,7 +208,7 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              {/* Floating Badge: Rating */}
+              {}
               <div className="absolute top-[42%] -right-2 bg-card/90 backdrop-blur-lg border border-border rounded-xl p-2.5 shadow-xl flex items-center gap-2 animate-float">
                 <span className="text-lg">⭐</span>
                 <div>
@@ -217,7 +217,7 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              {/* Floating Badge: WhatsApp */}
+              {}
               <div
                 className="absolute bottom-[30%] -left-3 bg-card/90 backdrop-blur-lg border border-border rounded-xl p-2.5 shadow-xl flex items-center gap-2 animate-float"
                 style={{ animationDelay: '2s' }}

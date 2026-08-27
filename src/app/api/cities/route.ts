@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const countryId = searchParams.get('countryId') || undefined
-    const filterType = searchParams.get('filterType') // 'cars' | 'rooms'
+    const filterType = searchParams.get('filterType') 
 
     const where: Record<string, unknown> = { deletedAt: null }
     if (countryId) where.countryId = countryId

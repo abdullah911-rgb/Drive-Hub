@@ -99,7 +99,6 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
     loadData()
   }, [initialCars.length, initialCompanies.length])
 
-  // Always fetch rooms on mount (rooms are never included in server-side props)
   useEffect(() => {
     fetch('/api/rooms?status=APPROVED&limit=3')
       .then((res) => (res.ok ? res.json() : null))
@@ -168,7 +167,7 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
         <span className="absolute top-1 left-2 text-[8px] text-slate-500 font-bold uppercase tracking-wider bg-white/5 px-1 py-0.5 rounded select-none">Ad</span>
         <div className="flex items-center gap-3 w-full h-full">
           <div className="relative h-full aspect-[16/9] rounded-lg overflow-hidden flex-shrink-0 border border-white/5 bg-white/5">
-            {/* Using standard img tag because next/image component doesn't support jfif files natively */}
+            {}
             <img src="/ads.jfif" alt="Google Ad" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
           </div>
           <div className="min-w-0 flex-1">
@@ -190,13 +189,13 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
       <Navbar />
 
       <div className="relative flex flex-col min-h-screen pt-16">
-        {/* Top Ad (Navbar & Hero Gap) */}
+        {}
         <GoogleAd className="mt-2 mb-0" />
 
-        {/* Hero */}
+        {}
         <section className="px-6 pb-6 pt-2">
           <div className="container-app max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            {/* Left side: Content */}
+            {}
             <motion.div
               className="lg:col-span-7 text-left flex flex-col items-start"
               initial={{ opacity: 0, x: -30 }}
@@ -251,17 +250,17 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
               )}
             </motion.div>
 
-            {/* Right side: Premium overlapping images of Cars & Hotels */}
+            {}
             <motion.div
               className="lg:col-span-5 relative w-full h-[400px] md:h-[450px] lg:h-[500px] flex items-center justify-center"
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
             >
-              {/* Backglow decoration */}
+              {}
               <div className="absolute w-[80%] h-[80%] bg-gradient-to-tr from-primary-500/20 to-secondary-500/20 blur-3xl rounded-full opacity-60 dark:opacity-40 -z-10" />
 
-              {/* Main image: Luxury Car */}
+              {}
               <div className="absolute top-4 left-4 w-[75%] h-[60%] rounded-2xl overflow-hidden border-2 border-white/10 shadow-2xl group transition-transform duration-500 hover:scale-[1.02]">
                 <Image
                   src="https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&q=80&w=800"
@@ -275,7 +274,7 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
                 </div>
               </div>
 
-              {/* Overlapping image: Luxury Room */}
+              {}
               <div className="absolute bottom-4 right-4 w-[70%] h-[55%] rounded-2xl overflow-hidden border-2 border-white/10 shadow-2xl group transition-transform duration-500 hover:scale-[1.02]">
                 <Image
                   src="https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&q=80&w=800"
@@ -288,7 +287,7 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
                 </div>
               </div>
 
-              {/* Floating Badge 1: Ratings */}
+              {}
               <div className="absolute top-1/2 right-0 sm:-right-2 transform -translate-y-1/2 bg-card/90 backdrop-blur-lg border border-border rounded-2xl p-3 shadow-xl hidden sm:flex items-center gap-2.5 animate-float">
                 <span className="text-xl">⭐</span>
                 <div>
@@ -297,7 +296,7 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
                 </div>
               </div>
 
-              {/* Floating Badge 2: Support */}
+              {}
               <div className="absolute bottom-1/3 left-0 sm:-left-6 bg-card/90 backdrop-blur-lg border border-border rounded-2xl p-3 shadow-xl hidden sm:flex items-center gap-2.5 animate-float" style={{ animationDelay: '2s' }}>
                 <span className="text-xl">💬</span>
                 <div>
@@ -309,10 +308,10 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
           </div>
         </section>
 
-        {/* Ad Under Hero Images */}
+        {}
         <GoogleAd className="mb-2" maxWidthClass="max-w-3xl" />
 
-        {/* Features */}
+        {}
         <section className="px-6 py-6">
           <div className="container-app max-w-5xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -335,7 +334,7 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
           </div>
         </section>
 
-        {/* Stats */}
+        {}
         {statItems.length > 0 && (
           <motion.section
             className="px-6 pb-6"
@@ -466,7 +465,7 @@ function LandingContent({ initialCars, initialCompanies, stats: initialStats }: 
           </div>
         </section>
 
-        {/* Hotels Section */}
+        {}
         <section id="hotels" className="px-6 py-6 border-t border-border/30">
           <div className="container-app max-w-6xl mx-auto">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6">

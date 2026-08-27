@@ -46,13 +46,11 @@ export async function POST(request: NextRequest) {
     const companyType = rawType === 'HOTEL' ? 'HOTEL' : 'CAR_RENTAL'
     const assignedRole = companyType === 'HOTEL' ? 'HOTEL' : 'COMPANY'
 
-    // Check company name uniqueness
     const companies = await db.getCompanies()
     if (companies.some((c: { name: string }) => c.name.toLowerCase() === companyName.toLowerCase())) {
       return NextResponse.json({ success: false, error: 'A company with this name already exists. Please choose a different name.' }, { status: 409 })
     }
 
-    // Get cityId — required by schema, must be a valid UUID
     const countryCities = await db.getCities(countryId)
     const firstCity = (countryCities as { id: string }[])[0]
     if (!firstCity?.id) {
@@ -80,7 +78,6 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Save documents (non-blocking)
     try {
       await saveCompanyRegistrationDocuments(companyId, documents)
     } catch (docErr) {
@@ -92,7 +89,6 @@ export async function POST(request: NextRequest) {
       fullName: ownerName,
     })
 
-    // Notify admin (non-blocking)
     try {
       const adminUser = await db.getAdminUser()
       if (adminUser) {

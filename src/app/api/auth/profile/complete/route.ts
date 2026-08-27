@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     const userType = formData.get('userType') as string
 
     if (userType === 'CUSTOMER') {
-      // Update customer-specific fields
+      
       const fatherName = (formData.get('fatherName') as string)?.trim()
       const cnicOrId = (formData.get('cnicOrId') as string)?.trim()
       const dateOfBirth = (formData.get('dateOfBirth') as string)?.trim()
@@ -37,7 +37,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: false, error: 'All customer fields are required' }, { status: 400 })
       }
 
-      // Resolve cityId from countryId
       const cities = await db.getCities(countryId) as { id: string }[]
       const cityId = cities[0]?.id
 
@@ -50,10 +49,9 @@ export async function POST(request: NextRequest) {
         cityId,
         emergencyName,
         emergencyPhone,
-        status: 'PENDING', // back to pending for admin re-verification
+        status: 'PENDING', 
       })
 
-      // Notify admin
       try {
         const adminUser = await db.getAdminUser()
         if (adminUser) {
@@ -65,12 +63,12 @@ export async function POST(request: NextRequest) {
             isRead: false,
           })
         }
-      } catch { /* non-critical */ }
+      } catch {  }
 
       return NextResponse.json({ success: true, data: { message: 'Profile submitted for review.' } })
 
     } else if (userType === 'COMPANY' || userType === 'HOTEL') {
-      // Update company-specific fields
+      
       const ownerName = (formData.get('ownerName') as string)?.trim()
       const cnicOrId = (formData.get('cnicOrId') as string)?.trim()
       const licenseNumber = (formData.get('licenseNumber') as string)?.trim()
@@ -81,7 +79,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: false, error: 'All company fields are required' }, { status: 400 })
       }
 
-      // Get company associated with this user
       const user = await prisma.user.findUnique({
         where: { id: currentUser.userId },
         include: { company: true },
@@ -91,10 +88,8 @@ export async function POST(request: NextRequest) {
       }
       const companyId = user.company.id
 
-      // Update user cnicOrId
       await db.updateUser(currentUser.userId, { cnicOrId, status: 'PENDING' })
 
-      // Update company fields
       await db.updateCompany(companyId, {
         ownerName,
         cnicOrId,
@@ -105,7 +100,6 @@ export async function POST(request: NextRequest) {
         status: 'PENDING',
       })
 
-      // Save uploaded documents — failures must not be silent
       const documents: { id: string; companyId: string; docType: string; fileUrl: string }[] = []
       const docSaves: { entry: FormDataEntryValue | null; docType: 'LICENSE_FRONT' | 'CNIC_FRONT' | 'CNIC_BACK' }[] = [
         { entry: formData.get('licenseDocument') ?? formData.get('LICENSE_FRONT'), docType: 'LICENSE_FRONT' },
@@ -135,7 +129,7 @@ export async function POST(request: NextRequest) {
       }
 
       if (documents.length > 0) {
-        // Soft-delete prior docs of the same types so re-uploads replace cleanly
+        
         const types = documents.map((d) => d.docType)
         await prisma.companyDocument.updateMany({
           where: { companyId, docType: { in: types }, deletedAt: null },
@@ -144,7 +138,6 @@ export async function POST(request: NextRequest) {
         await db.createCompanyDocuments(documents)
       }
 
-      // Notify admin
       try {
         const adminUser = await db.getAdminUser()
         if (adminUser) {
@@ -156,7 +149,7 @@ export async function POST(request: NextRequest) {
             isRead: false,
           })
         }
-      } catch { /* non-critical */ }
+      } catch {  }
 
       return NextResponse.json({ success: true, data: { message: 'Company profile submitted for review.' } })
     }

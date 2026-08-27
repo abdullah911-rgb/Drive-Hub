@@ -9,7 +9,6 @@ export async function POST() {
       return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 })
     }
 
-    // Set cnicOrId to 'SKIPPED' so we know the user deliberately skipped
     await db.updateUser(currentUser.userId, { cnicOrId: 'SKIPPED' })
 
     return NextResponse.json({ success: true, data: { message: 'Profile skipped. You can complete it later.' } })

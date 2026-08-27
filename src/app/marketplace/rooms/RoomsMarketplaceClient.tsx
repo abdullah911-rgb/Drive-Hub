@@ -41,7 +41,6 @@ export default function RoomsMarketplaceClient() {
   const [cities, setCities] = useState<City[]>([])
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null)
 
-  // Fetch countries
   useEffect(() => {
     async function fetchCountries() {
       try {
@@ -57,7 +56,6 @@ export default function RoomsMarketplaceClient() {
     fetchCountries()
   }, [])
 
-  // Set initial country
   useEffect(() => {
     if (countries.length === 0) return
     const sessionCountry = typeof window !== 'undefined' ? sessionStorage.getItem('selectedCountry') : null
@@ -66,7 +64,6 @@ export default function RoomsMarketplaceClient() {
     setSelectedCountry(match || countries[0])
   }, [countries])
 
-  // Fetch cities when country changes
   useEffect(() => {
     if (!selectedCountry) return
     setSelectedCityId('')
@@ -130,7 +127,7 @@ export default function RoomsMarketplaceClient() {
 
   const FilterPanel = () => (
     <div className="flex flex-col gap-5">
-      {/* City */}
+      {}
       <div>
         <label className="text-slate-400 text-xs font-semibold mb-2 block">Location / City</label>
         <SearchableSelect
@@ -145,7 +142,7 @@ export default function RoomsMarketplaceClient() {
         />
       </div>
 
-      {/* Room Type */}
+      {}
       <div>
         <label className="text-slate-400 text-xs font-semibold mb-2 block">Room Type</label>
         <SearchableSelect
@@ -161,7 +158,7 @@ export default function RoomsMarketplaceClient() {
         />
       </div>
 
-      {/* Max Price */}
+      {}
       <div>
         <label className="text-slate-400 text-xs font-semibold mb-2 block">Max Price / Night</label>
         <input
@@ -177,7 +174,7 @@ export default function RoomsMarketplaceClient() {
         )}
       </div>
 
-      {/* Min Guests */}
+      {}
       <div>
         <label className="text-slate-400 text-xs font-semibold mb-2 block">Min Guests</label>
         <SearchableSelect
@@ -202,7 +199,7 @@ export default function RoomsMarketplaceClient() {
   return (
     <div className="container-app py-8">
 
-      {/* Hero Section */}
+      {}
       <motion.div
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -211,7 +208,7 @@ export default function RoomsMarketplaceClient() {
       >
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            {/* Country Dropdown */}
+            {}
             <div className="relative mb-3 w-full max-w-xs">
               <SearchableSelect
                 size="sm"
@@ -249,10 +246,10 @@ export default function RoomsMarketplaceClient() {
         </div>
       </motion.div>
 
-      {/* Main Grid */}
+      {}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
 
-        {/* Desktop Sidebar */}
+        {}
         <aside className="hidden lg:block lg:col-span-1 glass-card p-6 h-fit sticky top-24 border border-white/5">
           <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4">
             <h3 className="font-heading font-bold text-white text-base">Filters</h3>
@@ -263,7 +260,7 @@ export default function RoomsMarketplaceClient() {
           <FilterPanel />
         </aside>
 
-        {/* Mobile filter toggle */}
+        {}
         <div className="lg:hidden flex items-center justify-between gap-4">
           <button
             onClick={() => setShowMobileFilters(true)}
@@ -276,7 +273,7 @@ export default function RoomsMarketplaceClient() {
           )}
         </div>
 
-        {/* Mobile Drawer */}
+        {}
         <AnimatePresence>
           {showMobileFilters && (
             <>
@@ -306,7 +303,7 @@ export default function RoomsMarketplaceClient() {
           )}
         </AnimatePresence>
 
-        {/* Room Grid */}
+        {}
         <div className="lg:col-span-3">
           {!loading && (
             <p className="text-slate-500 text-xs mb-4">
@@ -346,7 +343,7 @@ export default function RoomsMarketplaceClient() {
                 >
                   <Link href={`/marketplace/rooms/${room.id}`} className="block group">
                     <div className="glass-card h-full overflow-hidden">
-                      {/* Image */}
+                      {}
                       <div className="relative w-full h-48 bg-white/5 overflow-hidden">
                         {room.images?.[0] ? (
                           <Image
@@ -370,7 +367,7 @@ export default function RoomsMarketplaceClient() {
                         </div>
                       </div>
 
-                      {/* Content */}
+                      {}
                       <div className="p-4">
                         <h3 className="font-bold text-white text-sm leading-tight">{room.name}</h3>
                         {room.company && (

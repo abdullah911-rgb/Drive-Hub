@@ -63,7 +63,7 @@ export async function middleware(request: NextRequest) {
 
     return NextResponse.next({ request: { headers: requestHeaders } })
   } catch {
-    // Invalid / expired JWT — clear cookie everywhere (not only dashboard) so Safari doesn't keep a bad session
+    
     const response = pathname.startsWith('/dashboard')
       ? NextResponse.redirect(new URL('/auth', request.url))
       : NextResponse.next()
